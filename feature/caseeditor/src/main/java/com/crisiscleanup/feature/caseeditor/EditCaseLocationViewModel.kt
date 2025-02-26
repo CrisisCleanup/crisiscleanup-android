@@ -51,6 +51,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
@@ -253,11 +254,13 @@ internal class EditableLocationDataEditor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-        permissionManager.permissionChanges.map {
-            if (it == locationPermissionGranted && !isMapMoved.getAndSet(false)) {
-                setMyLocationCoordinates()
+        permissionManager.permissionChanges
+            .onEach {
+                if (it == locationPermissionGranted && !isMapMoved.getAndSet(false)) {
+                    setMyLocationCoordinates()
+                }
             }
-        }.launchIn(coroutineScope)
+            .launchIn(coroutineScope)
 
         addressSearchRepository.startSearchSession()
 

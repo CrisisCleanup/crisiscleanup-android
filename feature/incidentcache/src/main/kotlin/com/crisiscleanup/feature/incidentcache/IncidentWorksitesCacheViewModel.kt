@@ -1,55 +1,63 @@
 package com.crisiscleanup.feature.incidentcache
 
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.PermissionManager
-import com.crisiscleanup.core.common.PermissionStatus
-import com.crisiscleanup.core.common.locationPermissionGranted
+import com.crisiscleanup.core.common.di.ApplicationScope
+import com.crisiscleanup.core.common.log.AppLogger
+import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
+import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.relativeTime
 import com.crisiscleanup.core.common.subscribedReplay
+import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentCacheRepository
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
-import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
-import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
-import com.crisiscleanup.core.mapmarker.util.smallOffset
-import com.crisiscleanup.core.mapmarker.util.toLatLng
+import com.crisiscleanup.core.model.data.BoundedRegionParameters
 import com.crisiscleanup.core.model.data.InitialIncidentWorksitesCachePreferences
-import com.google.android.gms.maps.Projection
-import com.google.android.gms.maps.model.BitmapDescriptor
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
+import com.crisiscleanup.core.model.data.boundedRegionParametersNone
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
-import com.crisiscleanup.core.common.R as commonR
 
 @HiltViewModel
 class IncidentWorksitesCacheViewModel @Inject constructor(
     incidentSelector: IncidentSelector,
     private val incidentCacheRepository: IncidentCacheRepository,
-    private val permissionManager: PermissionManager,
-    private val locationProvider: LocationProvider,
+    permissionManager: PermissionManager,
+    locationProvider: LocationProvider,
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
     appEnv: AppEnv,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
-) : ViewModel(), BoundedRegionDataEditor {
+    @ApplicationScope private val externalScope: CoroutineScope,
+    @Logger(CrisisCleanupLoggers.Sync) private val logger: AppLogger,
+) : ViewModel() {
     val isNotProduction = appEnv.isNotProduction
 
     val incident = incidentSelector.incident
+
+    val boundedRegionDataEditor: BoundedRegionDataEditor =
+        IncidentCacheBoundedRegionDataEditor(
+            permissionManager,
+            locationProvider,
+            drawableResourceBitmapProvider,
+            viewModelScope,
+            ioDispatcher,
+        )
 
     val isSyncing = incidentCacheRepository.isSyncingActiveIncident
         .stateIn(
@@ -71,7 +79,7 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
             started = subscribedReplay(),
         )
 
-    val isUpdatingSyncParameters = MutableStateFlow(false)
+    val isUpdatingSyncMode = MutableStateFlow(false)
     val syncingParameters = incidentCacheRepository.cachePreferences
         .stateIn(
             scope = viewModelScope,
@@ -79,71 +87,110 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
             started = subscribedReplay(),
         )
 
-    override val centerCoordinates = MutableStateFlow(LatLng(0.0, 0.0))
+    private val hasUserChangedBoundedRegion = AtomicBoolean(false)
+    val isUpdatingBoundedRegionParameters = MutableStateFlow(false)
 
-    private var zoomCache = defaultMapZoom
-    override val mapMarkerIcon: BitmapDescriptor?
-
-    private val defaultMapZoom: Float
-        get() {
-            val zoom = 19
-            return zoom + (Math.random() * 1e-3).toFloat()
-        }
-
-    private var isMapLoaded = false
-
-    override val mapCameraZoom = MutableStateFlow(MapViewCameraZoomDefault)
-
-    private var hasReceivedMapChange = AtomicBoolean(false)
-
-    /**
-     * Indicates the map was manually moved
-     */
-    private val isMapMoved = AtomicBoolean(false)
-
-    override val showExplainPermissionLocation = mutableStateOf(false)
+    val editableRegionBoundedParameters = MutableStateFlow(boundedRegionParametersNone)
 
     init {
-        // TODO Common dimensions
-        val pinMarkerSize = Pair(32f, 48f)
-        mapMarkerIcon = drawableResourceBitmapProvider.getIcon(
-            commonR.drawable.cc_foreground_pin,
-            pinMarkerSize,
-        )
+        syncingParameters
+            .onEach {
+                val syncingRegionParameters = it.boundedRegionParameters
+                if (editableRegionBoundedParameters.compareAndSet(
+                        boundedRegionParametersNone,
+                        syncingRegionParameters,
+                    )
+                ) {
+                    with(syncingRegionParameters) {
+                        if (regionLatitude != 0.0 || regionLongitude != 0.0) {
+                            // TODO Update map coordinates
+                        }
+                    }
 
-        permissionManager.permissionChanges.map {
-            if (it == locationPermissionGranted && !isMapMoved.getAndSet(false)) {
-                setMyLocationCoordinates()
+                    if (!permissionManager.hasLocationPermission.value &&
+                        syncingRegionParameters.isRegionMyLocation
+                    ) {
+                        updateBoundedRegionParameters { regionParameters ->
+                            regionParameters.copy(isRegionMyLocation = false)
+                        }
+                    }
+                }
             }
-        }.launchIn(viewModelScope)
+            .launchIn(viewModelScope)
+
+        boundedRegionDataEditor.centerCoordinates
+            .throttleLatest(300)
+            .onEach { coordinates ->
+                if (hasUserChangedBoundedRegion.get() || boundedRegionDataEditor.isUserActed) {
+                    updateBoundedRegionParameters {
+                        it.copy(
+                            regionLatitude = coordinates.latitude,
+                            regionLongitude = coordinates.longitude,
+                        )
+                    }
+                }
+            }
+            .flowOn(ioDispatcher)
+            .launchIn(externalScope)
+
+        editableRegionBoundedParameters
+            .throttleLatest(300)
+            .onEach {
+                if (!hasUserChangedBoundedRegion.get()) {
+                    return@onEach
+                }
+
+                if (!isUpdatingBoundedRegionParameters.compareAndSet(
+                        expect = false,
+                        update = true,
+                    )
+                ) {
+                    return@onEach
+                }
+
+                val updatedParameters = syncingParameters.value.copy(
+                    boundedRegionParameters = it,
+                )
+                try {
+                    incidentCacheRepository.updateCachePreferences(updatedParameters)
+                } finally {
+                    isUpdatingBoundedRegionParameters.value = false
+                }
+            }
+            .flowOn(ioDispatcher)
+            .launchIn(externalScope)
     }
 
     private fun updatePreferences(
         isPaused: Boolean,
         isRegionBounded: Boolean,
     ) {
-        if (!isUpdatingSyncParameters.compareAndSet(expect = false, update = true)) {
+        if (!isUpdatingSyncMode.compareAndSet(expect = false, update = true)) {
             return
         }
 
         val parameters = syncingParameters.value
-        val radius = if (isRegionBounded && parameters.regionRadiusMiles <= 0) {
-            // TODO Use constant
-            10f
-        } else {
-            parameters.regionRadiusMiles
+        val boundedRegionParameters = with(parameters.boundedRegionParameters) {
+            if (isRegionBounded && regionRadiusMiles <= 0) {
+                copy(
+                    // TODO Use constant
+                    regionRadiusMiles = 10f,
+                )
+            } else {
+                this
+            }
         }
         val updatedParameters = parameters.copy(
             isPaused = isPaused,
             isRegionBounded = isRegionBounded,
-            regionRadiusMiles = radius,
+            boundedRegionParameters,
         )
 
         viewModelScope.launch(ioDispatcher) {
             try {
                 incidentCacheRepository.updateCachePreferences(updatedParameters)
             } finally {
-                isUpdatingSyncParameters.value = false
+                isUpdatingSyncMode.value = false
             }
         }
     }
@@ -161,7 +208,6 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
     }
 
     fun boundCachingCases() {
-        // TODO Region parameters
         updatePreferences(isPaused = false, isRegionBounded = true)
 
         // TODO Restart caching if region parameters are defined
@@ -173,76 +219,22 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
         }
     }
 
-    private fun centerCoordinatesZoom(durationMs: Int = 0) = MapViewCameraZoom(
-        centerCoordinates.value.smallOffset(),
-        defaultMapZoom,
-        durationMs,
-    )
-
-    // BoundedRegionDataEditor
-
-    override fun onMapLoaded() {
-        mapCameraZoom.value = centerCoordinatesZoom()
+    private fun updateBoundedRegionParameters(op: (parameters: BoundedRegionParameters) -> BoundedRegionParameters) {
+        hasUserChangedBoundedRegion.set(true)
+        editableRegionBoundedParameters.value = op(editableRegionBoundedParameters.value)
     }
 
-    override fun onMapCameraChange(
-        cameraPosition: CameraPosition,
-        projection: Projection?,
-        isActiveChange: Boolean,
-    ) {
-        zoomCache = cameraPosition.zoom
-
-        projection?.let {
-            if (hasReceivedMapChange.compareAndSet(false, true)) {
-                mapCameraZoom.value = centerCoordinatesZoom()
-            } else {
-                if (isMapLoaded) {
-                    val center = it.visibleRegion.latLngBounds.center
-                    centerCoordinates.value = center
-                }
+    fun setBoundedUseMyLocation(useMyLocation: Boolean) {
+        if (useMyLocation) {
+            if (boundedRegionDataEditor.useMyLocation()) {
+                updateBoundedRegionParameters { it.copy(isRegionMyLocation = true) }
             }
-        }
-
-        if (isActiveChange) {
-            isMapMoved.set(true)
+        } else {
+            updateBoundedRegionParameters { it.copy(isRegionMyLocation = false) }
         }
     }
 
-    override fun centerOnLocation() {
-        val coordinates = centerCoordinates.value.smallOffset()
-        mapCameraZoom.value = MapViewCameraZoom(coordinates, zoomCache)
-    }
-
-    private fun setMyLocationCoordinates() {
-        viewModelScope.launch(ioDispatcher) {
-            locationProvider.getLocation()?.let {
-                val coordinates = it.toLatLng().smallOffset()
-                centerCoordinates.value = coordinates
-                mapCameraZoom.value = MapViewCameraZoom(coordinates, defaultMapZoom)
-                // TODO Is isUserAction correct when permission must be granted?
-            }
-        }
-    }
-
-    override fun useMyLocation() {
-        when (permissionManager.requestLocationPermission()) {
-            PermissionStatus.Granted -> {
-                setMyLocationCoordinates()
-            }
-
-            PermissionStatus.ShowRationale -> {
-                showExplainPermissionLocation.value = true
-            }
-
-            PermissionStatus.Requesting -> {
-                isMapMoved.set(false)
-            }
-
-            PermissionStatus.Denied,
-            PermissionStatus.Undefined,
-            -> {
-                // Ignore these statuses as they're not important
-            }
-        }
+    fun setBoundedRegionRadius(radius: Float) {
+        updateBoundedRegionParameters { it.copy(regionRadiusMiles = radius) }
     }
 }

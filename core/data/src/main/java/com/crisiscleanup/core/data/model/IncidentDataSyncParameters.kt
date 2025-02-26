@@ -17,8 +17,9 @@ data class IncidentDataSyncParameters(
         val timeMarkerZero = Instant.fromEpochSeconds(0)
     }
 
+    // TODO Write tests
     val lastUpdated by lazy {
-        var latest = timeMarkerZero
+        var latest = boundedSyncedAt
         listOf(
             syncDataMeasures.short,
             syncDataMeasures.full,
@@ -71,7 +72,8 @@ data class IncidentDataSyncParameters(
         val radius: Float,
     ) {
         val isDefined by lazy {
-            radius >= 0f &&
+            radius > 0f &&
+                (latitude != 0.0 || longitude != 0.0) &&
                 latitude > -90 && latitude < 90 &&
                 longitude >= -180 && longitude <= 180
         }

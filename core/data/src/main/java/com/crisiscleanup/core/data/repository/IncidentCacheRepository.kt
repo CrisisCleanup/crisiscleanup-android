@@ -254,10 +254,11 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             }
 
             val syncStatsEntity = syncParameterDao.getSyncStats(incidentId)
+            val regionParameters = syncPreferences.boundedRegionParameters
             val preferencesBoundedRegion = IncidentDataSyncParameters.BoundedRegion(
-                latitude = syncPreferences.regionLatitude,
-                longitude = syncPreferences.regionLongitude,
-                radius = syncPreferences.regionRadiusMiles,
+                latitude = regionParameters.regionLatitude,
+                longitude = regionParameters.regionLongitude,
+                radius = regionParameters.regionRadiusMiles,
             )
             val syncStats =
                 syncStatsEntity?.asExternalModel(appLogger) ?: IncidentDataSyncParameters(
@@ -279,7 +280,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     cacheBoundedWorksites(
                         incidentId,
                         isPaused = syncPreferences.isPaused,
-                        isMyLocationBounded = syncPreferences.isRegionMyLocation,
+                        isMyLocationBounded = regionParameters.isRegionMyLocation,
                         preferencesBoundedRegion = preferencesBoundedRegion,
                         savedBoundedRegion = syncStats.boundedRegion,
                         syncStats.boundedSyncedAt,
@@ -417,7 +418,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             }
         }
 
-        if (boundedRegion.radius <= 0) {
+        if (!boundedRegion.isDefined) {
             log("Bounding region (lat=${boundedRegion.latitude}, lng=${boundedRegion.longitude}, ${boundedRegion.radius} miles) not fully specified")
         } else if (Clock.System.now() - syncedAt < boundsCacheTimeout &&
             savedBoundedRegion?.isSignificantChange(boundedRegion) == false

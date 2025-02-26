@@ -448,7 +448,7 @@ class CasesViewModel @Inject constructor(
             .launchIn(viewModelScope)
 
         permissionManager.permissionChanges
-            .map {
+            .onEach {
                 if (it == locationPermissionGranted) {
                     setTileRendererLocation()
 

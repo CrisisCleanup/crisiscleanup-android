@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -21,7 +20,6 @@ import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.textMessagePadding
 import com.crisiscleanup.feature.caseeditor.CaseLocationDataEditor
-import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
 import com.crisiscleanup.feature.caseeditor.EditCaseLocationViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,8 +47,8 @@ internal fun EditCaseAddressSearchRoute(
                 onAction = onBack,
             )
             val locationQuery by editor.locationInputData.locationQuery.collectAsStateWithLifecycle()
-            FullAddressSearchInput(viewModel, editor, locationQuery, true, isEditable)
-            AddressSearchResults(viewModel, editor, locationQuery, isEditable)
+            FullAddressSearchInput(editor, locationQuery, true, isEditable)
+            AddressSearchResults(editor, locationQuery, isEditable)
         }
 
         LocationOutOfBoundsDialog(editor)
@@ -59,13 +57,12 @@ internal fun EditCaseAddressSearchRoute(
 
 @Composable
 internal fun FullAddressSearchInput(
-    viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
     locationQuery: String,
     hasFocus: Boolean = false,
     isEditable: Boolean = false,
 ) {
-    val updateQuery = remember(viewModel) { { s: String -> editor.onQueryChange(s) } }
+    val updateQuery = editor::onQueryChange
     val fullAddressLabel = LocalAppTranslator.current("caseView.full_address")
     OutlinedClearableTextField(
         modifier = Modifier
@@ -89,7 +86,6 @@ internal fun FullAddressSearchInput(
 
 @Composable
 internal fun ColumnScope.AddressSearchResults(
-    viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
     locationQuery: String,
     isEditable: Boolean = false,
@@ -104,7 +100,6 @@ internal fun ColumnScope.AddressSearchResults(
     } else {
         val query = locationQuery.trim()
         SearchContents(
-            viewModel,
             editor,
             query,
             isEditable,

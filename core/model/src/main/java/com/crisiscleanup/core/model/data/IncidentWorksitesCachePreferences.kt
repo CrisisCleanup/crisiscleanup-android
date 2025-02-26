@@ -1,12 +1,18 @@
 package com.crisiscleanup.core.model.data
 
+data class BoundedRegionParameters(
+    val isRegionMyLocation: Boolean = false,
+    val regionLatitude: Double = 0.0,
+    val regionLongitude: Double = 0.0,
+    val regionRadiusMiles: Float = 0f,
+)
+
+val boundedRegionParametersNone = BoundedRegionParameters()
+
 data class IncidentWorksitesCachePreferences(
     val isPaused: Boolean,
     val isRegionBounded: Boolean,
-    val isRegionMyLocation: Boolean,
-    val regionLatitude: Double,
-    val regionLongitude: Double,
-    val regionRadiusMiles: Float,
+    val boundedRegionParameters: BoundedRegionParameters,
 ) {
     val isAutoCache by lazy {
         !(isPaused || isRegionBounded)
@@ -16,8 +22,5 @@ data class IncidentWorksitesCachePreferences(
 val InitialIncidentWorksitesCachePreferences = IncidentWorksitesCachePreferences(
     isPaused = false,
     isRegionBounded = false,
-    isRegionMyLocation = false,
-    regionLatitude = 0.0,
-    regionLongitude = 0.0,
-    regionRadiusMiles = 0f,
+    boundedRegionParameters = boundedRegionParametersNone,
 )

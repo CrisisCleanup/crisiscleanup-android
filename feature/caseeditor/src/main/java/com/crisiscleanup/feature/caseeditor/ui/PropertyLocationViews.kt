@@ -106,15 +106,14 @@ internal fun PropertyLocationView(
             )
         }
 
-        val useMyLocation = remember(viewModel) { { editor.useMyLocation() } }
         LocationMapActionBar(
             isEditable,
             moveLocationOnMap = onMoveLocationOnMap,
-            useMyLocation = useMyLocation,
+            useMyLocation = editor::useMyLocation,
         )
 
         val closePermissionDialog =
-            remember(viewModel) { { editor.showExplainPermissionLocation.value = false } }
+            remember(editor) { { editor.showExplainPermissionLocation.value = false } }
         val explainPermission by editor.showExplainPermissionLocation
         ExplainLocationPermissionDialog(
             showDialog = explainPermission,
