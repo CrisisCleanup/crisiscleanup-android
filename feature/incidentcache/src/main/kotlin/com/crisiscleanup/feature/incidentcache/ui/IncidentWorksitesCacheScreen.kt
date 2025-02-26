@@ -97,88 +97,89 @@ private fun IncidentWorksitesCacheScreen(
 
     var contentSize by remember { mutableStateOf(IntSize.Zero) }
 
-    Column(
-        Modifier.fillMaxSize()
-            .verticalScroll(
-                rememberScrollState(),
-                enabled = !isMapMoving,
-            )
-            .onGloballyPositioned {
-                contentSize = it.size
-            },
-    ) {
+    Column(Modifier.fillMaxSize()) {
         TopAppBarBackAction(
             title = incident.shortName,
             onAction = onBack,
         )
 
-        val syncedText = lastSynced?.let {
-            t("~~Synced {sync_date}")
-                .replace("{sync_date}", it)
-        } ?: t("~~Awaiting sync of {incident_name}")
-            .replace("{incident_name}", incident.shortName)
-        Row(
-            listItemModifier,
-            horizontalArrangement = listItemSpacedBy,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(syncedText)
-
-            // TODO remove if buttons show loading state
-            AnimatedBusyIndicator(
-                isSyncingIncident,
-                padding = 0.dp,
+        Column(
+            Modifier.verticalScroll(
+                rememberScrollState(),
+                enabled = !isMapMoving,
             )
-        }
+                .onGloballyPositioned {
+                    contentSize = it.size
+                },
+        ) {
+            val syncedText = lastSynced?.let {
+                t("~~Synced {sync_date}")
+                    .replace("{sync_date}", it)
+            } ?: t("~~Awaiting sync of {incident_name}")
+                .replace("{incident_name}", incident.shortName)
+            Row(
+                listItemModifier,
+                horizontalArrangement = listItemSpacedBy,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(syncedText)
 
-        CrisisCleanupRadioButton(
-            listItemModifier,
-            syncParameters.isAutoCache,
-            text = t("~~Auto download Cases"),
-            enabled = isParametersEnabled,
-            onSelect = viewModel::resumeCachingCases,
-        ) {
-            // TODO Downloaded newest Cases action
-        }
-        CrisisCleanupRadioButton(
-            listItemModifier,
-            syncParameters.isPaused,
-            text = t("~~Pause downloading Cases"),
-            enabled = isParametersEnabled,
-            onSelect = viewModel::pauseCachingCases,
-        ) {
-            t("~~Resume downloading Cases by selecting to auto download or download Cases in a region")
-        }
-        CrisisCleanupRadioButton(
-            listItemModifier,
-            isBoundedRegionSync,
-            text = t("~~Downloading Cases within specified region"),
-            enabled = isParametersEnabled,
-            onSelect = viewModel::boundCachingCases,
-        )
+                // TODO remove if buttons show loading state
+                AnimatedBusyIndicator(
+                    isSyncingIncident,
+                    padding = 0.dp,
+                )
+            }
 
-        CompositionLocalProvider(
-            LocalContentColor provides if (isBoundedRegionSync) {
-                MaterialTheme.colorScheme.onSurface
-            } else {
-                MaterialTheme.colorScheme.onSurface.disabledAlpha()
-            },
-        ) {
-            BoundedRegionSection(
-                contentSize,
-                isUpdatingSyncParameters = isUpdatingSyncParameters,
-                isBoundedRegionSync = isBoundedRegionSync,
-                syncParameters,
-                editor = viewModel,
-                setMovingMap = { isMapMoving = it },
+            CrisisCleanupRadioButton(
+                listItemModifier,
+                syncParameters.isAutoCache,
+                text = t("~~Auto download Cases"),
+                enabled = isParametersEnabled,
+                onSelect = viewModel::resumeCachingCases,
+            ) {
+                // TODO Downloaded newest Cases action
+            }
+            CrisisCleanupRadioButton(
+                listItemModifier,
+                syncParameters.isPaused,
+                text = t("~~Pause downloading Cases"),
+                enabled = isParametersEnabled,
+                onSelect = viewModel::pauseCachingCases,
+            ) {
+                t("~~Resume downloading Cases by selecting to auto download or download Cases in a region")
+            }
+            CrisisCleanupRadioButton(
+                listItemModifier,
+                isBoundedRegionSync,
+                text = t("~~Downloading Cases within specified region"),
+                enabled = isParametersEnabled,
+                onSelect = viewModel::boundCachingCases,
             )
-        }
 
-        if (isNotProduction) {
-            CrisisCleanupTextButton(
-                text = "Reset Incident Cases cache",
-                onClick = viewModel::resetCaching,
-            )
+            CompositionLocalProvider(
+                LocalContentColor provides if (isBoundedRegionSync) {
+                    MaterialTheme.colorScheme.onSurface
+                } else {
+                    MaterialTheme.colorScheme.onSurface.disabledAlpha()
+                },
+            ) {
+                BoundedRegionSection(
+                    contentSize,
+                    isUpdatingSyncParameters = isUpdatingSyncParameters,
+                    isBoundedRegionSync = isBoundedRegionSync,
+                    syncParameters,
+                    editor = viewModel,
+                    setMovingMap = { isMapMoving = it },
+                )
+            }
+
+            if (isNotProduction) {
+                CrisisCleanupTextButton(
+                    text = "Reset Incident Cases cache",
+                    onClick = viewModel::resetCaching,
+                )
+            }
         }
     }
 }
