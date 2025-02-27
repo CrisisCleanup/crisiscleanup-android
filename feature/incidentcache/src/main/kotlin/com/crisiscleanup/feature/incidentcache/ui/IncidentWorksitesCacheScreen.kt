@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -93,7 +94,6 @@ private fun IncidentWorksitesCacheScreen(
 
     val lastSynced by viewModel.lastSynced.collectAsStateWithLifecycle()
 
-    val isUpdatingCachePreferences by viewModel.isUpdatingCachePreferences.collectAsStateWithLifecycle()
     val editingParameters by viewModel.editingPreferences.collectAsStateWithLifecycle()
 
     var isMapMoving by remember { mutableStateOf(false) }
@@ -341,7 +341,12 @@ private fun BoundedRegionSection(
             .fillMaxWidth()
             .height(mapHeightAnimated),
     ) {
-        val mapWidthFill = if (isBoundedRegion && isBoundedByCoordinates) 0.9f else 1f
+        val mapWidth = if (contentSize.width > 0) {
+            val scrollWidth = if (isBoundedRegion && isBoundedByCoordinates) 64.dp else 0.dp
+            with(density) { contentSize.width.toDp() } - scrollWidth
+        } else {
+            0.dp
+        }
         MovableMapView(
             editor,
             isEditable = isBoundedRegion,
@@ -361,7 +366,7 @@ private fun BoundedRegionSection(
                 )
                 .align(Alignment.CenterEnd)
                 .animateContentSize()
-                .fillMaxWidth(mapWidthFill),
+                .width(mapWidth),
             onReleaseMapTouch = { setMovingMap(false) },
             circleRadius = if (isBoundedRegion) regionParameters.regionRadiusMiles else 0.0,
         )
