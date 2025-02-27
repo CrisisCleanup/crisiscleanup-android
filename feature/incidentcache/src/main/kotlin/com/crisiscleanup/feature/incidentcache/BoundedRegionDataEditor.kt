@@ -46,8 +46,8 @@ interface BoundedRegionDataEditor {
     fun centerOnLocation()
     fun setCoordinates(latitude: Double, longitude: Double)
 
-    fun checkMyLocation(): Boolean
-    fun useMyLocation(): Boolean
+    fun checkMyLocation(): PermissionStatus
+    fun useMyLocation()
 }
 
 internal class IncidentCacheBoundedRegionDataEditor(
@@ -98,7 +98,6 @@ internal class IncidentCacheBoundedRegionDataEditor(
             .onEach {
                 if (it == locationPermissionGranted && !isMapMoved.getAndSet(false)) {
                     setMyLocationCoordinates()
-                    // TODO Update bounded region if is response to a use my location request
                 }
             }
             .launchIn(coroutineScope)
@@ -154,16 +153,16 @@ internal class IncidentCacheBoundedRegionDataEditor(
         }
     }
 
-    private fun checkLocationPermission(setLocation: Boolean): Boolean {
+    private fun checkLocationPermission(setLocation: Boolean): PermissionStatus {
         if (setLocation) {
             isMapMoved.set(false)
         }
-        when (permissionManager.requestLocationPermission()) {
+        val status = permissionManager.requestLocationPermission()
+        when (status) {
             PermissionStatus.Granted -> {
                 if (setLocation) {
                     setMyLocationCoordinates()
                 }
-                return true
             }
 
             PermissionStatus.ShowRationale -> {
@@ -178,10 +177,12 @@ internal class IncidentCacheBoundedRegionDataEditor(
             }
         }
 
-        return false
+        return status
     }
 
     override fun checkMyLocation() = checkLocationPermission(false)
 
-    override fun useMyLocation() = checkLocationPermission(true)
+    override fun useMyLocation() {
+        checkLocationPermission(true)
+    }
 }

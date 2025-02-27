@@ -1,11 +1,14 @@
 package com.crisiscleanup.feature.incidentcache
 
+import androidx.lifecycle.AtomicReference
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.PermissionManager
+import com.crisiscleanup.core.common.PermissionStatus
 import com.crisiscleanup.core.common.di.ApplicationScope
+import com.crisiscleanup.core.common.locationPermissionGranted
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -13,14 +16,13 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.relativeTime
 import com.crisiscleanup.core.common.subscribedReplay
+import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentCacheRepository
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
 import com.crisiscleanup.core.model.data.BOUNDED_REGION_RADIUS_MILES_DEFAULT
-import com.crisiscleanup.core.model.data.BoundedRegionParameters
 import com.crisiscleanup.core.model.data.InitialIncidentWorksitesCachePreferences
-import com.crisiscleanup.core.model.data.boundedRegionParametersNone
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -32,8 +34,11 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
 class IncidentWorksitesCacheViewModel @Inject constructor(
@@ -42,6 +47,7 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
     permissionManager: PermissionManager,
     locationProvider: LocationProvider,
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
+    private val syncPuller: SyncPuller,
     appEnv: AppEnv,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @ApplicationScope private val externalScope: CoroutineScope,
@@ -80,8 +86,8 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
             started = subscribedReplay(),
         )
 
-    val isUpdatingSyncMode = MutableStateFlow(false)
-    val syncingParameters = incidentCacheRepository.cachePreferences
+    val isUpdatingCachePreferences = MutableStateFlow(false)
+    private val syncCachePreferences = incidentCacheRepository.cachePreferences
         .stateIn(
             scope = viewModelScope,
             initialValue = InitialIncidentWorksitesCachePreferences,
@@ -89,19 +95,24 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
         )
 
     private val hasUserChangedBoundedRegion = AtomicBoolean(false)
-    val isUpdatingBoundedRegionParameters = MutableStateFlow(false)
 
-    val editableRegionBoundedParameters = MutableStateFlow(boundedRegionParametersNone)
+    val editingPreferences = MutableStateFlow(InitialIncidentWorksitesCachePreferences)
+
+    private val hasUserInteracted: Boolean
+        get() = hasUserChangedBoundedRegion.get() || boundedRegionDataEditor.isUserActed
+
+    private val epochZero = Instant.fromEpochSeconds(0)
+    private val locationPermissionExpiration = AtomicReference(epochZero)
 
     init {
-        syncingParameters
+        syncCachePreferences
             .onEach {
-                val syncingRegionParameters = it.boundedRegionParameters
-                if (editableRegionBoundedParameters.compareAndSet(
-                        boundedRegionParametersNone,
-                        syncingRegionParameters,
+                if (editingPreferences.compareAndSet(
+                        InitialIncidentWorksitesCachePreferences,
+                        it,
                     )
                 ) {
+                    val syncingRegionParameters = it.boundedRegionParameters
                     with(syncingRegionParameters) {
                         if (regionLatitude != 0.0 || regionLongitude != 0.0) {
                             boundedRegionDataEditor.setCoordinates(regionLatitude, regionLongitude)
@@ -111,71 +122,73 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
                     if (syncingRegionParameters.isRegionMyLocation &&
                         !permissionManager.hasLocationPermission.value
                     ) {
-                        updateBoundedRegionParameters { regionParameters ->
-                            regionParameters.copy(isRegionMyLocation = false)
-                        }
+                        editingPreferences.compareAndSet(
+                            it,
+                            editingPreferences.value.copy(
+                                boundedRegionParameters = syncingRegionParameters.copy(
+                                    isRegionMyLocation = false,
+                                ),
+                            ),
+                        )
                     }
                 }
             }
             .launchIn(viewModelScope)
 
         boundedRegionDataEditor.centerCoordinates
-            .throttleLatest(300)
+            .throttleLatest(100)
             .onEach { coordinates ->
-                if (hasUserChangedBoundedRegion.get() || boundedRegionDataEditor.isUserActed) {
-                    updateBoundedRegionParameters {
-                        it.copy(
+                if (hasUserInteracted) {
+                    val preferences = editingPreferences.value
+                    editingPreferences.value = preferences.copy(
+                        boundedRegionParameters = preferences.boundedRegionParameters.copy(
                             regionLatitude = coordinates.latitude,
                             regionLongitude = coordinates.longitude,
-                        )
+                        ),
+                    )
+                }
+            }
+            .flowOn(ioDispatcher)
+            .launchIn(externalScope)
+
+        editingPreferences
+            .throttleLatest(300)
+            .onEach {
+                if (!hasUserInteracted) {
+                    return@onEach
+                }
+
+                // TODO Keep state consistent
+                isUpdatingCachePreferences.value = true
+                try {
+                    incidentCacheRepository.updateCachePreferences(it)
+                } finally {
+                    isUpdatingCachePreferences.value = false
+                }
+            }
+            .flowOn(ioDispatcher)
+            .launchIn(externalScope)
+
+        permissionManager.permissionChanges
+            .onEach {
+                if (it == locationPermissionGranted) {
+                    val expirationTimestamp = locationPermissionExpiration.getAndSet(epochZero)
+                    if (expirationTimestamp > Clock.System.now()) {
+                        boundCachingCases(true)
                     }
                 }
             }
-            .flowOn(ioDispatcher)
-            .launchIn(externalScope)
-
-        editableRegionBoundedParameters
-            .throttleLatest(300)
-            .onEach {
-                if (!hasUserChangedBoundedRegion.get() &&
-                    !boundedRegionDataEditor.isUserActed
-                ) {
-                    return@onEach
-                }
-
-                if (!isUpdatingBoundedRegionParameters.compareAndSet(
-                        expect = false,
-                        update = true,
-                    )
-                ) {
-                    return@onEach
-                }
-
-                val updatedParameters = syncingParameters.value.copy(
-                    boundedRegionParameters = it,
-                )
-                try {
-                    incidentCacheRepository.updateCachePreferences(updatedParameters)
-                } finally {
-                    isUpdatingBoundedRegionParameters.value = false
-                }
-            }
-            .flowOn(ioDispatcher)
-            .launchIn(externalScope)
+            .launchIn(viewModelScope)
     }
 
     private fun updatePreferences(
         isPaused: Boolean,
         isRegionBounded: Boolean,
         isNearMe: Boolean = false,
-        onPreferencesUpdated: () -> Unit = {},
+        onPreferencesSent: () -> Unit = {},
     ) {
-        if (!isUpdatingSyncMode.compareAndSet(expect = false, update = true)) {
-            return
-        }
-
-        val parameters = syncingParameters.value
-        val boundedRegionParameters = with(editableRegionBoundedParameters.value) {
+        val preferences = editingPreferences.value
+        val boundedRegionParameters = with(editingPreferences.value.boundedRegionParameters) {
             if (isRegionBounded && regionRadiusMiles <= 0) {
                 copy(
                     regionRadiusMiles = BOUNDED_REGION_RADIUS_MILES_DEFAULT,
@@ -186,48 +199,39 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
         }.copy(
             isRegionMyLocation = isNearMe,
         )
-        val updatedParameters = parameters.copy(
+
+        editingPreferences.value = preferences.copy(
             isPaused = isPaused,
             isRegionBounded = isRegionBounded,
             boundedRegionParameters,
         )
 
-        viewModelScope.launch(ioDispatcher) {
-            try {
-                // TODO Atomic update
-                incidentCacheRepository.updateCachePreferences(updatedParameters)
-                editableRegionBoundedParameters.value = updatedParameters.boundedRegionParameters
-                onPreferencesUpdated()
-            } finally {
-                isUpdatingSyncMode.value = false
-            }
-        }
+        onPreferencesSent()
     }
 
     fun resumeCachingCases() {
         updatePreferences(isPaused = false, isRegionBounded = false)
 
-        // TODO Restart caching
+        syncPuller.appPullIncidentData(cancelOngoing = true)
     }
 
     fun pauseCachingCases() {
         updatePreferences(isPaused = true, isRegionBounded = false)
 
-        // TODO Cancel ongoing
+        syncPuller.stopPullWorksites()
     }
 
-    fun boundCachingCases(isNearMe: Boolean) {
-        val isValidUpdate = if (isNearMe) {
+    fun boundCachingCases(
+        isNearMe: Boolean,
+        isUserAction: Boolean = false,
+    ) {
+        val permissionStatus = if (isNearMe) {
             boundedRegionDataEditor.checkMyLocation()
         } else {
-            true
+            null
         }
 
-        if (isNearMe && !isValidUpdate) {
-            // TODO Alert if requested permissions and permissions is granted quickly after
-        }
-
-        if (isValidUpdate) {
+        if (!isNearMe || permissionStatus == PermissionStatus.Granted) {
             updatePreferences(
                 isPaused = false,
                 isRegionBounded = true,
@@ -236,10 +240,20 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
                 if (isNearMe) {
                     boundedRegionDataEditor.useMyLocation()
                 }
+
+                syncPuller.appPullIncidentData(cancelOngoing = true)
+            }
+        } else {
+            if (isUserAction) {
+                val now = Clock.System.now()
+                val expiration = when (permissionStatus) {
+                    PermissionStatus.Requesting -> now + 10.seconds
+                    PermissionStatus.ShowRationale -> now + 60.seconds
+                    else -> epochZero
+                }
+                locationPermissionExpiration.set(expiration)
             }
         }
-
-        // TODO Restart caching if region parameters are defined
     }
 
     fun resetCaching() {
@@ -248,12 +262,14 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
         }
     }
 
-    private fun updateBoundedRegionParameters(op: (parameters: BoundedRegionParameters) -> BoundedRegionParameters) {
-        editableRegionBoundedParameters.value = op(editableRegionBoundedParameters.value)
-    }
-
     fun setBoundedRegionRadius(radius: Float) {
         hasUserChangedBoundedRegion.set(true)
-        updateBoundedRegionParameters { it.copy(regionRadiusMiles = radius.toDouble()) }
+
+        val preferences = editingPreferences.value
+        editingPreferences.value = preferences.copy(
+            boundedRegionParameters = preferences.boundedRegionParameters.copy(
+                regionRadiusMiles = radius.toDouble(),
+            ),
+        )
     }
 }

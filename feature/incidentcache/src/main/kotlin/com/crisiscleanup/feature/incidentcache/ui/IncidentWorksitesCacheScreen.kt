@@ -93,10 +93,8 @@ private fun IncidentWorksitesCacheScreen(
 
     val lastSynced by viewModel.lastSynced.collectAsStateWithLifecycle()
 
-    val isUpdatingSyncParameters by viewModel.isUpdatingSyncMode.collectAsStateWithLifecycle()
-    val isParametersEnabled = !isUpdatingSyncParameters
-    val syncParameters by viewModel.syncingParameters.collectAsStateWithLifecycle()
-    val boundedRegionParameters by viewModel.editableRegionBoundedParameters.collectAsStateWithLifecycle()
+    val isUpdatingCachePreferences by viewModel.isUpdatingCachePreferences.collectAsStateWithLifecycle()
+    val editingParameters by viewModel.editingPreferences.collectAsStateWithLifecycle()
 
     var isMapMoving by remember { mutableStateOf(false) }
 
@@ -165,40 +163,36 @@ private fun IncidentWorksitesCacheScreen(
 
             synChoiceItem(
                 itemKey = "sync-auto-download",
-                syncParameters.isAutoCache,
+                editingParameters.isAutoCache,
                 textKey = "~~Adaptive",
                 subTextKey = "~~Changes the strategy and amount of Cases downloaded relative to network speed.",
-                enabled = isParametersEnabled,
                 onSelect = viewModel::resumeCachingCases,
             )
 
             synChoiceItem(
                 itemKey = "sync-pause",
-                syncParameters.isPaused,
+                editingParameters.isPaused,
                 textKey = "~~Paused",
                 subTextKey = "~~Pause downloading Cases until network speed is sufficient to resume.",
-                enabled = isParametersEnabled,
                 onSelect = viewModel::pauseCachingCases,
             )
 
             synChoiceItem(
                 itemKey = "sync-near-me",
-                syncParameters.isBoundedNearMe,
+                editingParameters.isBoundedNearMe,
                 textKey = "~~Near me",
                 subTextKey = "~~Download Cases around my current location.",
-                enabled = isParametersEnabled,
                 onSelect = {
-                    viewModel.boundCachingCases(true)
+                    viewModel.boundCachingCases(true, isUserAction = true)
                     scrollToNearMeSection()
                 },
             )
 
             synChoiceItem(
                 itemKey = "sync-bounded-region",
-                syncParameters.isBoundedByCoordinates,
+                editingParameters.isBoundedByCoordinates,
                 textKey = "~~Specify area",
                 subTextKey = "~~Drag the map to download Cases surrounding the pin.",
-                enabled = isParametersEnabled,
                 onSelect = {
                     viewModel.boundCachingCases(false)
                     scrollToBoundedSection()
@@ -208,7 +202,7 @@ private fun IncidentWorksitesCacheScreen(
             item {
                 Column {
                     CompositionLocalProvider(
-                        LocalContentColor provides if (syncParameters.isRegionBounded) {
+                        LocalContentColor provides if (editingParameters.isRegionBounded) {
                             MaterialTheme.colorScheme.onSurface
                         } else {
                             MaterialTheme.colorScheme.onSurface.disabledAlpha()
@@ -216,11 +210,10 @@ private fun IncidentWorksitesCacheScreen(
                     ) {
                         BoundedRegionSection(
                             contentSize,
-                            isUpdatingSyncParameters = isUpdatingSyncParameters,
-                            isBoundedNearMe = syncParameters.isBoundedNearMe,
-                            isBoundedByCoordinates = syncParameters.isBoundedByCoordinates,
-                            boundedRegionParameters,
-                            editor = viewModel.boundedRegionDataEditor,
+                            isBoundedNearMe = editingParameters.isBoundedNearMe,
+                            isBoundedByCoordinates = editingParameters.isBoundedByCoordinates,
+                            editingParameters.boundedRegionParameters,
+                            viewModel.boundedRegionDataEditor,
                             setMovingMap = {
                                 isMapMoving = it
                             },
@@ -260,8 +253,8 @@ private fun LazyListScope.synChoiceItem(
     isSelected: Boolean,
     textKey: String,
     subTextKey: String,
-    enabled: Boolean,
-    onSelect: () -> Unit,
+    enabled: Boolean = true,
+    onSelect: () -> Unit = {},
 ) {
     item(
         key = itemKey,
@@ -307,7 +300,6 @@ private fun LazyListScope.synChoiceItem(
 @Composable
 private fun BoundedRegionSection(
     contentSize: IntSize,
-    isUpdatingSyncParameters: Boolean,
     isBoundedNearMe: Boolean,
     isBoundedByCoordinates: Boolean,
     regionParameters: BoundedRegionParameters,
@@ -320,8 +312,7 @@ private fun BoundedRegionSection(
 
     val isBoundedRegion = isBoundedNearMe || isBoundedByCoordinates
 
-    val isRegionEditable = !isUpdatingSyncParameters &&
-        isBoundedRegion
+    val isRegionEditable = isBoundedRegion
 
     val density = LocalDensity.current
     val mapContentHeightDp = remember(contentSize) {
@@ -339,7 +330,7 @@ private fun BoundedRegionSection(
     }
 
     Box(
-        Modifier.fillMaxWidth()
+        Modifier
             .animateContentSize(
                 finishedListener = { _, _ ->
                     if (isBoundedRegion) {
@@ -347,8 +338,10 @@ private fun BoundedRegionSection(
                     }
                 },
             )
+            .fillMaxWidth()
             .height(mapHeightAnimated),
     ) {
+        val mapWidthFill = if (isBoundedRegion && isBoundedByCoordinates) 0.9f else 1f
         MovableMapView(
             editor,
             isEditable = isBoundedRegion,
@@ -365,7 +358,10 @@ private fun BoundedRegionSection(
                             else -> true
                         }
                     },
-                ),
+                )
+                .align(Alignment.CenterEnd)
+                .animateContentSize()
+                .fillMaxWidth(mapWidthFill),
             onReleaseMapTouch = { setMovingMap(false) },
             circleRadius = if (isBoundedRegion) regionParameters.regionRadiusMiles else 0.0,
         )

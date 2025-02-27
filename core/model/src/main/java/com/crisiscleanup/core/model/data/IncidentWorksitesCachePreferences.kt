@@ -9,7 +9,7 @@ data class BoundedRegionParameters(
     val regionRadiusMiles: Double = 0.0,
 )
 
-val boundedRegionParametersNone = BoundedRegionParameters()
+val BoundedRegionParametersNone = BoundedRegionParameters()
 
 data class IncidentWorksitesCachePreferences(
     val isPaused: Boolean,
@@ -32,5 +32,5 @@ data class IncidentWorksitesCachePreferences(
 val InitialIncidentWorksitesCachePreferences = IncidentWorksitesCachePreferences(
     isPaused = false,
     isRegionBounded = false,
-    boundedRegionParameters = boundedRegionParametersNone,
+    boundedRegionParameters = BoundedRegionParametersNone,
 )
