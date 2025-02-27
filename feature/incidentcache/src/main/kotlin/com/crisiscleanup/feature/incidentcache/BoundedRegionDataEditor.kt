@@ -44,7 +44,9 @@ interface BoundedRegionDataEditor {
     )
 
     fun centerOnLocation()
+    fun setCoordinates(latitude: Double, longitude: Double)
 
+    fun checkMyLocation(): Boolean
     fun useMyLocation(): Boolean
 }
 
@@ -66,9 +68,6 @@ internal class IncidentCacheBoundedRegionDataEditor(
 
     private var hasReceivedMapChange = AtomicBoolean(false)
 
-    /**
-     * Indicates the map was manually moved
-     */
     private val isMapMoved = AtomicBoolean(false)
 
     override var isUserActed = false
@@ -78,7 +77,7 @@ internal class IncidentCacheBoundedRegionDataEditor(
 
     private val defaultMapZoom: Float
         get() {
-            val zoom = 19
+            val zoom = 8
             return zoom + (Math.random() * 1e-3).toFloat()
         }
 
@@ -132,13 +131,16 @@ internal class IncidentCacheBoundedRegionDataEditor(
         if (isActiveChange) {
             isUserActed = true
             isMapMoved.set(true)
-            // TODO Unset always use my location if truly moved by user dragging the map
         }
     }
 
     override fun centerOnLocation() {
         val coordinates = centerCoordinates.value.smallOffset()
         mapCameraZoom.value = MapViewCameraZoom(coordinates, zoomCache)
+    }
+
+    override fun setCoordinates(latitude: Double, longitude: Double) {
+        centerCoordinates.value = LatLng(latitude, longitude)
     }
 
     private fun setMyLocationCoordinates() {
@@ -152,10 +154,15 @@ internal class IncidentCacheBoundedRegionDataEditor(
         }
     }
 
-    override fun useMyLocation(): Boolean {
+    private fun checkLocationPermission(setLocation: Boolean): Boolean {
+        if (setLocation) {
+            isMapMoved.set(false)
+        }
         when (permissionManager.requestLocationPermission()) {
             PermissionStatus.Granted -> {
-                setMyLocationCoordinates()
+                if (setLocation) {
+                    setMyLocationCoordinates()
+                }
                 return true
             }
 
@@ -163,10 +170,7 @@ internal class IncidentCacheBoundedRegionDataEditor(
                 showExplainPermissionLocation.value = true
             }
 
-            PermissionStatus.Requesting -> {
-                isMapMoved.set(false)
-            }
-
+            PermissionStatus.Requesting,
             PermissionStatus.Denied,
             PermissionStatus.Undefined,
             -> {
@@ -176,4 +180,8 @@ internal class IncidentCacheBoundedRegionDataEditor(
 
         return false
     }
+
+    override fun checkMyLocation() = checkLocationPermission(false)
+
+    override fun useMyLocation() = checkLocationPermission(true)
 }

@@ -17,6 +17,7 @@ import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentCacheRepository
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
+import com.crisiscleanup.core.model.data.BOUNDED_REGION_RADIUS_MILES_DEFAULT
 import com.crisiscleanup.core.model.data.BoundedRegionParameters
 import com.crisiscleanup.core.model.data.InitialIncidentWorksitesCachePreferences
 import com.crisiscleanup.core.model.data.boundedRegionParametersNone
@@ -103,12 +104,12 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
                 ) {
                     with(syncingRegionParameters) {
                         if (regionLatitude != 0.0 || regionLongitude != 0.0) {
-                            // TODO Update map coordinates
+                            boundedRegionDataEditor.setCoordinates(regionLatitude, regionLongitude)
                         }
                     }
 
-                    if (!permissionManager.hasLocationPermission.value &&
-                        syncingRegionParameters.isRegionMyLocation
+                    if (syncingRegionParameters.isRegionMyLocation &&
+                        !permissionManager.hasLocationPermission.value
                     ) {
                         updateBoundedRegionParameters { regionParameters ->
                             regionParameters.copy(isRegionMyLocation = false)
@@ -136,7 +137,9 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
         editableRegionBoundedParameters
             .throttleLatest(300)
             .onEach {
-                if (!hasUserChangedBoundedRegion.get()) {
+                if (!hasUserChangedBoundedRegion.get() &&
+                    !boundedRegionDataEditor.isUserActed
+                ) {
                     return@onEach
                 }
 
@@ -164,22 +167,25 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
     private fun updatePreferences(
         isPaused: Boolean,
         isRegionBounded: Boolean,
+        isNearMe: Boolean = false,
+        onPreferencesUpdated: () -> Unit = {},
     ) {
         if (!isUpdatingSyncMode.compareAndSet(expect = false, update = true)) {
             return
         }
 
         val parameters = syncingParameters.value
-        val boundedRegionParameters = with(parameters.boundedRegionParameters) {
+        val boundedRegionParameters = with(editableRegionBoundedParameters.value) {
             if (isRegionBounded && regionRadiusMiles <= 0) {
                 copy(
-                    // TODO Use constant
-                    regionRadiusMiles = 10f,
+                    regionRadiusMiles = BOUNDED_REGION_RADIUS_MILES_DEFAULT,
                 )
             } else {
                 this
             }
-        }
+        }.copy(
+            isRegionMyLocation = isNearMe,
+        )
         val updatedParameters = parameters.copy(
             isPaused = isPaused,
             isRegionBounded = isRegionBounded,
@@ -188,7 +194,10 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
 
         viewModelScope.launch(ioDispatcher) {
             try {
+                // TODO Atomic update
                 incidentCacheRepository.updateCachePreferences(updatedParameters)
+                editableRegionBoundedParameters.value = updatedParameters.boundedRegionParameters
+                onPreferencesUpdated()
             } finally {
                 isUpdatingSyncMode.value = false
             }
@@ -207,8 +216,28 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
         // TODO Cancel ongoing
     }
 
-    fun boundCachingCases() {
-        updatePreferences(isPaused = false, isRegionBounded = true)
+    fun boundCachingCases(isNearMe: Boolean) {
+        val isValidUpdate = if (isNearMe) {
+            boundedRegionDataEditor.checkMyLocation()
+        } else {
+            true
+        }
+
+        if (isNearMe && !isValidUpdate) {
+            // TODO Alert if requested permissions and permissions is granted quickly after
+        }
+
+        if (isValidUpdate) {
+            updatePreferences(
+                isPaused = false,
+                isRegionBounded = true,
+                isNearMe = isNearMe,
+            ) {
+                if (isNearMe) {
+                    boundedRegionDataEditor.useMyLocation()
+                }
+            }
+        }
 
         // TODO Restart caching if region parameters are defined
     }
@@ -220,21 +249,11 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
     }
 
     private fun updateBoundedRegionParameters(op: (parameters: BoundedRegionParameters) -> BoundedRegionParameters) {
-        hasUserChangedBoundedRegion.set(true)
         editableRegionBoundedParameters.value = op(editableRegionBoundedParameters.value)
     }
 
-    fun setBoundedUseMyLocation(useMyLocation: Boolean) {
-        if (useMyLocation) {
-            if (boundedRegionDataEditor.useMyLocation()) {
-                updateBoundedRegionParameters { it.copy(isRegionMyLocation = true) }
-            }
-        } else {
-            updateBoundedRegionParameters { it.copy(isRegionMyLocation = false) }
-        }
-    }
-
     fun setBoundedRegionRadius(radius: Float) {
-        updateBoundedRegionParameters { it.copy(regionRadiusMiles = radius) }
+        hasUserChangedBoundedRegion.set(true)
+        updateBoundedRegionParameters { it.copy(regionRadiusMiles = radius.toDouble()) }
     }
 }

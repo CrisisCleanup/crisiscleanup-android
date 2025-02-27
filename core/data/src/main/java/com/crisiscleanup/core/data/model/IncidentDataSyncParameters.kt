@@ -69,7 +69,7 @@ data class IncidentDataSyncParameters(
     data class BoundedRegion(
         val latitude: Double,
         val longitude: Double,
-        val radius: Float,
+        val radius: Double,
     ) {
         val isDefined by lazy {
             radius > 0f &&

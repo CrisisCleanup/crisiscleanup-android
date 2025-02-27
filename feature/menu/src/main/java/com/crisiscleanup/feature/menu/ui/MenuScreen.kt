@@ -688,10 +688,12 @@ private fun IncidentCacheView(
     ) {
         val syncingPolicy = if (incidentCachePreferences.isPaused) {
             t("~~Pause downloading Cases")
-        } else if (incidentCachePreferences.isRegionBounded) {
-            t("~~Downloading Cases within specified region")
+        } else if (incidentCachePreferences.isBoundedNearMe) {
+            t("~~Download Cases near me")
+        } else if (incidentCachePreferences.isBoundedByCoordinates) {
+            t("~~Download Cases in specific area")
         } else {
-            t("~~Auto download Cases")
+            t("~~Adaptively download Cases")
         }
         Text(
             syncingPolicy,

@@ -3,21 +3,22 @@ package com.crisiscleanup.feature.incidentcache.ui
 import android.view.MotionEvent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -35,23 +36,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.crisiscleanup.core.common.milesToMeters
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.AnimatedBusyIndicator
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupRadioButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.ExplainLocationPermissionDialog
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
-import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
+import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
 import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
 import com.crisiscleanup.core.model.data.BoundedRegionParameters
@@ -61,6 +62,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.maps.android.compose.CameraMoveStartedReason
+import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -94,7 +96,6 @@ private fun IncidentWorksitesCacheScreen(
     val isUpdatingSyncParameters by viewModel.isUpdatingSyncMode.collectAsStateWithLifecycle()
     val isParametersEnabled = !isUpdatingSyncParameters
     val syncParameters by viewModel.syncingParameters.collectAsStateWithLifecycle()
-    val isBoundedRegionSync = syncParameters.isRegionBounded
     val boundedRegionParameters by viewModel.editableRegionBoundedParameters.collectAsStateWithLifecycle()
 
     var isMapMoving by remember { mutableStateOf(false) }
@@ -103,10 +104,18 @@ private fun IncidentWorksitesCacheScreen(
 
     val scrollState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
-    val scrollToBoundedSection = remember(scrollState) {
+    val scrollToNearMeSection = remember(scrollState) {
         {
             coroutineScope.launch {
                 scrollState.animateScrollToItem(4)
+            }
+            Unit
+        }
+    }
+    val scrollToBoundedSection = remember(scrollState) {
+        {
+            coroutineScope.launch {
+                scrollState.animateScrollToItem(5)
             }
             Unit
         }
@@ -140,7 +149,6 @@ private fun IncidentWorksitesCacheScreen(
                 ) {
                     Text(syncedText)
 
-                    // TODO remove if buttons show loading state
                     AnimatedBusyIndicator(
                         isSyncingIncident,
                         padding = 0.dp,
@@ -148,56 +156,59 @@ private fun IncidentWorksitesCacheScreen(
                 }
             }
 
-            item(
-                key = "sync-auto-download",
-                contentType = "sync-choice-item",
-            ) {
-                CrisisCleanupRadioButton(
+            item {
+                Text(
+                    "~~Cases are downloaded according to the selected strategy",
                     listItemModifier,
-                    syncParameters.isAutoCache,
-                    text = t("~~Auto download Cases"),
-                    enabled = isParametersEnabled,
-                    onSelect = viewModel::resumeCachingCases,
-                ) {
-                    // TODO Downloaded newest Cases action
-                }
-            }
-
-            item(
-                key = "sync-pause",
-                contentType = "sync-choice-item",
-            ) {
-                CrisisCleanupRadioButton(
-                    listItemModifier,
-                    syncParameters.isPaused,
-                    text = t("~~Pause downloading Cases"),
-                    enabled = isParametersEnabled,
-                    onSelect = viewModel::pauseCachingCases,
-                ) {
-                    t("~~Resume downloading Cases by selecting to auto download or download Cases in a region")
-                }
-            }
-
-            item(
-                key = "sync-bounded-region",
-                contentType = "sync-choice-item",
-            ) {
-                CrisisCleanupRadioButton(
-                    listItemModifier,
-                    isBoundedRegionSync,
-                    text = t("~~Downloading Cases within specified region"),
-                    enabled = isParametersEnabled,
-                    onSelect = {
-                        viewModel.boundCachingCases()
-                        scrollToBoundedSection()
-                    },
                 )
             }
+
+            synChoiceItem(
+                itemKey = "sync-auto-download",
+                syncParameters.isAutoCache,
+                textKey = "~~Adaptive",
+                subTextKey = "~~Changes the strategy and amount of Cases downloaded relative to network speed.",
+                enabled = isParametersEnabled,
+                onSelect = viewModel::resumeCachingCases,
+            )
+
+            synChoiceItem(
+                itemKey = "sync-pause",
+                syncParameters.isPaused,
+                textKey = "~~Paused",
+                subTextKey = "~~Pause downloading Cases until network speed is sufficient to resume.",
+                enabled = isParametersEnabled,
+                onSelect = viewModel::pauseCachingCases,
+            )
+
+            synChoiceItem(
+                itemKey = "sync-near-me",
+                syncParameters.isBoundedNearMe,
+                textKey = "~~Near me",
+                subTextKey = "~~Download Cases around my current location.",
+                enabled = isParametersEnabled,
+                onSelect = {
+                    viewModel.boundCachingCases(true)
+                    scrollToNearMeSection()
+                },
+            )
+
+            synChoiceItem(
+                itemKey = "sync-bounded-region",
+                syncParameters.isBoundedByCoordinates,
+                textKey = "~~Specify area",
+                subTextKey = "~~Drag the map to download Cases surrounding the pin.",
+                enabled = isParametersEnabled,
+                onSelect = {
+                    viewModel.boundCachingCases(false)
+                    scrollToBoundedSection()
+                },
+            )
 
             item {
                 Column {
                     CompositionLocalProvider(
-                        LocalContentColor provides if (isBoundedRegionSync) {
+                        LocalContentColor provides if (syncParameters.isRegionBounded) {
                             MaterialTheme.colorScheme.onSurface
                         } else {
                             MaterialTheme.colorScheme.onSurface.disabledAlpha()
@@ -206,14 +217,14 @@ private fun IncidentWorksitesCacheScreen(
                         BoundedRegionSection(
                             contentSize,
                             isUpdatingSyncParameters = isUpdatingSyncParameters,
-                            isBoundedRegionSync = isBoundedRegionSync,
+                            isBoundedNearMe = syncParameters.isBoundedNearMe,
+                            isBoundedByCoordinates = syncParameters.isBoundedByCoordinates,
                             boundedRegionParameters,
                             editor = viewModel.boundedRegionDataEditor,
                             setMovingMap = {
                                 isMapMoving = it
                             },
                             onMovableMap = scrollToBoundedSection,
-                            setUseMyLocation = viewModel::setBoundedUseMyLocation,
                             updateRegionRadius = viewModel::setBoundedRegionRadius,
                         )
                     }
@@ -244,28 +255,73 @@ private fun IncidentWorksitesCacheScreen(
     )
 }
 
+private fun LazyListScope.synChoiceItem(
+    itemKey: String,
+    isSelected: Boolean,
+    textKey: String,
+    subTextKey: String,
+    enabled: Boolean,
+    onSelect: () -> Unit,
+) {
+    item(
+        key = itemKey,
+        contentType = "sync-choice-item",
+    ) {
+        val t = LocalAppTranslator.current
+
+        var radioButtonWidth by remember { mutableStateOf(48.dp) }
+        val density = LocalDensity.current
+        Column(
+            Modifier
+                .selectable(
+                    selected = isSelected,
+                    enabled = enabled,
+                    onClick = onSelect,
+                    role = Role.RadioButton,
+                )
+                .then(listItemModifier),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                RadioButton(
+                    isSelected,
+                    onSelect,
+                    Modifier.onGloballyPositioned {
+                        radioButtonWidth = with(density) { it.size.width.toDp() }
+                    },
+                    enabled,
+                )
+                Text(t(textKey))
+            }
+            Text(
+                t(subTextKey),
+                Modifier
+                    .padding(start = radioButtonWidth)
+                    .animateContentSize(),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+    }
+}
+
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun BoundedRegionSection(
     contentSize: IntSize,
     isUpdatingSyncParameters: Boolean,
-    isBoundedRegionSync: Boolean,
+    isBoundedNearMe: Boolean,
+    isBoundedByCoordinates: Boolean,
     regionParameters: BoundedRegionParameters,
     editor: BoundedRegionDataEditor,
     setMovingMap: (Boolean) -> Unit,
     onMovableMap: () -> Unit,
-    setUseMyLocation: (Boolean) -> Unit,
     updateRegionRadius: (Float) -> Unit,
 ) {
     val t = LocalAppTranslator.current
 
-    var isMapMovable by remember { mutableStateOf(false) }
-    val setMapMovable = { isMovable: Boolean ->
-        isMapMovable = isMovable
-    }
+    val isBoundedRegion = isBoundedNearMe || isBoundedByCoordinates
 
     val isRegionEditable = !isUpdatingSyncParameters &&
-        isBoundedRegionSync
+        isBoundedRegion
 
     val density = LocalDensity.current
     val mapContentHeightDp = remember(contentSize) {
@@ -276,47 +332,17 @@ private fun BoundedRegionSection(
             minSize.toDp()
         }
     }
-    val mapHeightAnimated = if (isBoundedRegionSync && isMapMovable) {
+    val mapHeightAnimated = if (isBoundedRegion) {
         mapContentHeightDp
     } else {
-        mapContentHeightDp.div(2)
+        mapContentHeightDp.div(3)
     }
 
-    Row(
-        Modifier
-            .clickable(
-                enabled = isRegionEditable,
-                onClick = {
-                    setMapMovable(!isMapMovable)
-                },
-            )
-            .listItemPadding(),
-        horizontalArrangement = listItemSpacedBy,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(
-            Modifier.weight(1f),
-            verticalArrangement = listItemSpacedByHalf,
-        ) {
-            Text(t("~~Change location on map"))
-            Text(
-                t("~~Toggle on to be able to change the map location"),
-                style = MaterialTheme.typography.bodySmall,
-            )
-        }
-        Switch(
-            isMapMovable,
-            setMapMovable,
-            enabled = isRegionEditable,
-        )
-    }
-
-    val isMapEditable = isRegionEditable && isMapMovable
     Box(
         Modifier.fillMaxWidth()
             .animateContentSize(
                 finishedListener = { _, _ ->
-                    if (isMapMovable) {
+                    if (isBoundedRegion) {
                         onMovableMap()
                     }
                 },
@@ -325,16 +351,14 @@ private fun BoundedRegionSection(
     ) {
         MovableMapView(
             editor,
-            isEditable = isMapEditable,
+            isEditable = isBoundedRegion,
+            isMovable = isBoundedByCoordinates,
             Modifier
                 .pointerInteropFilter(
                     onTouchEvent = {
                         when (it.action) {
                             MotionEvent.ACTION_DOWN -> {
-                                setMovingMap(isMapMovable)
-                                if (!isMapMovable) {
-                                    // TODO Alert if this happens more than x times per n second
-                                }
+                                setMovingMap(isBoundedByCoordinates)
                                 false
                             }
 
@@ -343,69 +367,35 @@ private fun BoundedRegionSection(
                     },
                 ),
             onReleaseMapTouch = { setMovingMap(false) },
+            circleRadius = if (isBoundedRegion) regionParameters.regionRadiusMiles else 0.0,
         )
 
-        if (!isMapEditable) {
+        if (!isBoundedRegion) {
             Box(
                 Modifier
                     .background(Color.Black.disabledAlpha())
                     .fillMaxSize(),
             )
-            if (isBoundedRegionSync && !isMapMovable) {
-                CompositionLocalProvider(
-                    LocalContentColor provides Color.White,
-                ) {
-                    CrisisCleanupIconButton(
-                        // TODO Update button ripple size proportional to icon size
-                        modifier = Modifier.align(Alignment.Center),
-                        // TODO Common dimensions
-                        iconModifier = Modifier.size(96.dp),
-                        imageVector = CrisisCleanupIcons.PanMap,
-                        contentDescription = t("~~Change location on map"),
-                        onClick = { isMapMovable = true },
-                    )
-                }
-            }
         }
     }
 
     Row(
-        Modifier
-            .clickable(
-                enabled = isRegionEditable,
-                onClick = {
-                    setUseMyLocation(!regionParameters.isRegionMyLocation)
-                },
-            )
-            .listItemPadding(),
-        horizontalArrangement = listItemSpacedBy,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            t("~~Always use my location"),
-            Modifier.weight(1f),
-        )
-        Switch(
-            regionParameters.isRegionMyLocation,
-            onCheckedChange = setUseMyLocation,
-            enabled = isRegionEditable,
-        )
-    }
-
-    Column(
         Modifier.listItemPadding(),
-        verticalArrangement = listItemSpacedByHalf,
+        horizontalArrangement = listItemSpacedByHalf,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         val fixedRadius = "%.1f".format(regionParameters.regionRadiusMiles)
         Text(
             t("~~Radius {magnitude} mi.")
                 .replace("{magnitude}", fixedRadius),
+            Modifier.weight(1f),
         )
         Slider(
-            regionParameters.regionRadiusMiles,
-            onValueChange = updateRegionRadius,
-            valueRange = 1.0f..120.0f,
-            enabled = isRegionEditable,
+            regionParameters.regionRadiusMiles.toFloat(),
+            updateRegionRadius,
+            Modifier.weight(1f),
+            isRegionEditable,
+            1.0f..120.0f,
         )
     }
 }
@@ -414,8 +404,10 @@ private fun BoundedRegionSection(
 private fun MovableMapView(
     editor: BoundedRegionDataEditor,
     isEditable: Boolean,
+    isMovable: Boolean,
     modifier: Modifier = Modifier,
     onReleaseMapTouch: () -> Unit = {},
+    circleRadius: Double = 0.0,
 ) {
     val onMapLoaded = editor::onMapLoaded
     val onMapCameraChange = remember(editor) {
@@ -435,21 +427,23 @@ private fun MovableMapView(
     markerState.position = coordinates
 
     var uiSettings by rememberMapUiSettings()
-    if (uiSettings.scrollGesturesEnabled != isEditable) {
+    LaunchedEffect(isEditable, isMovable) {
         uiSettings = uiSettings.copy(
-            scrollGesturesEnabled = isEditable,
+            scrollGesturesEnabled = isEditable && isMovable,
             zoomGesturesEnabled = isEditable,
             zoomControlsEnabled = isEditable,
         )
     }
+
     val mapProperties by rememberMapProperties()
+
     val cameraPositionState = rememberCameraPositionState()
     LaunchedEffect(cameraPositionState.isMoving) {
         if (!cameraPositionState.isMoving) {
             onReleaseMapTouch()
         }
     }
-    // TODO Draw radius where data will be cached
+
     GoogleMap(
         modifier = modifier,
         uiSettings = uiSettings,
@@ -461,6 +455,15 @@ private fun MovableMapView(
             markerState,
             icon = editor.mapMarkerIcon,
         )
+        if (circleRadius > 0.0) {
+            Circle(
+                center = coordinates,
+                fillColor = primaryOrangeColor.disabledAlpha(),
+                radius = circleRadius.milesToMeters,
+                strokeColor = primaryOrangeColor,
+                strokeWidth = 10f,
+            )
+        }
     }
 
     LaunchedEffect(mapCameraZoom) {

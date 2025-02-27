@@ -29,7 +29,6 @@ import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.MyLocation
-import androidx.compose.material.icons.filled.OpenWith
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonOutline
 import androidx.compose.material.icons.filled.Phone
@@ -89,7 +88,6 @@ object CrisisCleanupIcons {
     val MoreVert = icons.MoreVert
     val MyLocation = icons.MyLocation
     val Organization = icons.Domain
-    val PanMap = icons.OpenWith
     val Person = icons.Person
     val PendingRequestRedeploy = icons.Schedule
     val Phone = icons.Phone

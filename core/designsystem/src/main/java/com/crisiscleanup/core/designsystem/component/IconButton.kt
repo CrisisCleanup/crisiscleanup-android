@@ -128,6 +128,6 @@ fun CrisisCleanupDrawableIconButtonPreview() {
 fun CrisisCleanupVectorIconButtonPreview() {
     CrisisCleanupElevatedIconButton(
         iconModifier = Modifier.size(96.dp),
-        imageVector = CrisisCleanupIcons.PanMap,
+        imageVector = CrisisCleanupIcons.Delete,
     )
 }
