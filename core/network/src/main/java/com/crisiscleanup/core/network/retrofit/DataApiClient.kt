@@ -171,7 +171,7 @@ private interface DataSourceApi {
     @TokenAuthenticationHeader
     @GET("worksites")
     suspend fun getWorksites(
-        @Query("id__in")
+        @Query("id__in", encoded = true)
         worksiteIds: String,
     ): NetworkWorksitesFullResult
 
@@ -193,8 +193,8 @@ private interface DataSourceApi {
         pageCount: Int,
         @Query("page")
         pageOffset: Int?,
-        @Query("center_coordinates")
-        centerCoordinates: List<Double>?,
+        @Query("center_coordinates", encoded = true)
+        centerCoordinates: String?,
         @Query("updated_at__gt")
         updatedAtAfter: Instant?,
     ): NetworkWorksitesPageResult
@@ -467,10 +467,10 @@ class DataApiClient @Inject constructor(
         longitude: Double?,
         updatedAtAfter: Instant?,
     ): NetworkWorksitesPageResult {
-        val centerCoordinates: List<Double>? = if (latitude == null && longitude == null) {
+        val centerCoordinates = if (latitude == null && longitude == null) {
             null
         } else {
-            listOf(latitude!!, longitude!!)
+            "$longitude,$latitude"
         }
         return networkApi.getWorksitesPage(
             incidentId,

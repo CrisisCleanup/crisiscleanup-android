@@ -8,20 +8,20 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
 
 enum class IncidentPullDataType {
-    ShortWorksites,
-    FullWorksites,
+    WorksitesCore,
+    WorksitesAdditional,
     Organizations,
 }
 
 private val worksiteDataPullTypes = setOf(
-    IncidentPullDataType.ShortWorksites,
-    IncidentPullDataType.FullWorksites,
+    IncidentPullDataType.WorksitesCore,
+    IncidentPullDataType.WorksitesAdditional,
 )
 
 data class IncidentDataPullStats(
     val incidentId: Long = EmptyIncident.id,
     val incidentName: String = EmptyIncident.shortName,
-    val pullType: IncidentPullDataType = IncidentPullDataType.ShortWorksites,
+    val pullType: IncidentPullDataType = IncidentPullDataType.WorksitesCore,
     val isIndeterminate: Boolean = false,
 
     val isStarted: Boolean = false,

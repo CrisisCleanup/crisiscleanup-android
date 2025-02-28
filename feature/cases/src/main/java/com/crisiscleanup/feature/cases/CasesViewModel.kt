@@ -215,7 +215,7 @@ class CasesViewModel @Inject constructor(
     val dataProgress = dataPullReporter.incidentDataPullStats
         .map {
             val showProgress = it.isOngoing && it.isPullingWorksites
-            val isSecondary = it.pullType == IncidentPullDataType.FullWorksites
+            val isSecondary = it.pullType == IncidentPullDataType.WorksitesAdditional
             val progress = it.progress
             DataProgressMetrics(
                 isSecondary,

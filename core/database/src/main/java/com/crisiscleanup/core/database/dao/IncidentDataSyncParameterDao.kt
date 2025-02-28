@@ -61,7 +61,7 @@ interface IncidentDataSyncParameterDao {
         WHERE id=:incidentId
         """,
     )
-    fun updateFullUpdatedBefore(
+    fun updateAdditionalUpdatedBefore(
         incidentId: Long,
         updatedBefore: Instant,
     )
@@ -74,7 +74,7 @@ interface IncidentDataSyncParameterDao {
         WHERE id=:incidentId
         """,
     )
-    fun updateFullUpdatedAfter(
+    fun updateAdditionalUpdatedAfter(
         incidentId: Long,
         updatedAfter: Instant,
     )

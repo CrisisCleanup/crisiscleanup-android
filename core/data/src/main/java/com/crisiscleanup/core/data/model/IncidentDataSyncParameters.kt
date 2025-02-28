@@ -21,8 +21,8 @@ data class IncidentDataSyncParameters(
     val lastUpdated by lazy {
         var latest = boundedSyncedAt
         listOf(
-            syncDataMeasures.short,
-            syncDataMeasures.full,
+            syncDataMeasures.core,
+            syncDataMeasures.additional,
         ).forEach {
             with(it) {
                 if (isDeltaSync) {
@@ -39,13 +39,13 @@ data class IncidentDataSyncParameters(
     }
 
     data class SyncDataMeasure(
-        val short: SyncTimeMarker,
-        val full: SyncTimeMarker,
+        val core: SyncTimeMarker,
+        val additional: SyncTimeMarker,
     ) {
         companion object {
             fun relative(reference: Instant = Clock.System.now()) = SyncDataMeasure(
-                short = SyncTimeMarker.relative(reference),
-                full = SyncTimeMarker.relative(reference),
+                core = SyncTimeMarker.relative(reference),
+                additional = SyncTimeMarker.relative(reference),
             )
         }
     }

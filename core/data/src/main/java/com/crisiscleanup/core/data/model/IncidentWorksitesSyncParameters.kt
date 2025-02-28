@@ -19,13 +19,13 @@ fun IncidentDataSyncParametersEntity.asExternalModel(logger: AppLogger): Inciden
     return IncidentDataSyncParameters(
         incidentId = id,
         syncDataMeasures = IncidentDataSyncParameters.SyncDataMeasure(
-            short = IncidentDataSyncParameters.SyncTimeMarker(
+            core = IncidentDataSyncParameters.SyncTimeMarker(
                 before = updatedBefore,
                 after = updatedAfter,
             ),
-            full = IncidentDataSyncParameters.SyncTimeMarker(
-                before = fullUpdatedBefore,
-                after = fullUpdatedAfter,
+            additional = IncidentDataSyncParameters.SyncTimeMarker(
+                before = additionalUpdatedBefore,
+                after = additionalUpdatedAfter,
             ),
         ),
         boundedRegion = boundedRegion,
@@ -44,10 +44,10 @@ fun IncidentDataSyncParameters.asEntity(logger: AppLogger): IncidentDataSyncPara
     } ?: ""
     return IncidentDataSyncParametersEntity(
         incidentId,
-        updatedBefore = syncDataMeasures.short.before,
-        updatedAfter = syncDataMeasures.short.after,
-        fullUpdatedBefore = syncDataMeasures.full.before,
-        fullUpdatedAfter = syncDataMeasures.full.after,
+        updatedBefore = syncDataMeasures.core.before,
+        updatedAfter = syncDataMeasures.core.after,
+        additionalUpdatedBefore = syncDataMeasures.additional.before,
+        additionalUpdatedAfter = syncDataMeasures.additional.after,
         boundedRegion = boundedRegion,
         boundedSyncedAt = boundedSyncedAt,
     )
