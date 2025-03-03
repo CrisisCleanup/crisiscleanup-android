@@ -45,7 +45,6 @@ import com.crisiscleanup.core.data.di.CasesFilterTypes
 import com.crisiscleanup.core.data.incidentcache.IncidentDataPullReporter
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
-import com.crisiscleanup.core.data.model.IncidentPullDataType
 import com.crisiscleanup.core.data.model.progressMetrics
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AppDataManagementRepository
@@ -61,7 +60,6 @@ import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.mapmarker.WorkTypeChipIconProvider
-import com.crisiscleanup.core.model.data.DataProgressMetrics
 import com.crisiscleanup.core.model.data.EmptyCleanupTeam
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.EquipmentData

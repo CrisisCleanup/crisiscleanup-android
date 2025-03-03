@@ -46,7 +46,6 @@ import com.crisiscleanup.core.data.WorksiteInteractor
 import com.crisiscleanup.core.data.di.CasesFilterType
 import com.crisiscleanup.core.data.di.CasesFilterTypes
 import com.crisiscleanup.core.data.incidentcache.IncidentDataPullReporter
-import com.crisiscleanup.core.data.model.IncidentPullDataType
 import com.crisiscleanup.core.data.model.progressMetrics
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AppPreferencesRepository
@@ -61,7 +60,6 @@ import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
 import com.crisiscleanup.core.mapmarker.util.toLatLng
-import com.crisiscleanup.core.model.data.DataProgressMetrics
 import com.crisiscleanup.core.model.data.TableDataWorksite
 import com.crisiscleanup.core.model.data.TableWorksiteClaimAction
 import com.crisiscleanup.core.model.data.Worksite
