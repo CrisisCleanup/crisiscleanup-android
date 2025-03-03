@@ -403,16 +403,13 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         var boundedRegion = preferencesBoundedRegion
 
         if (isMyLocationBounded) {
-            val locationCoordinates = locationProvider.coordinates
-
-            // TODO Query current coordinates, with timeout, rather than using cached
+            val locationCoordinates = locationProvider.getLocation(15.seconds)
             locationCoordinates?.let {
                 boundedRegion = boundedRegion.copy(
                     latitude = it.first,
                     longitude = it.second,
                 )
             }
-
             if (locationCoordinates == null) {
                 log(
                     "Current user location is not cached. Falling back to last set location.",
