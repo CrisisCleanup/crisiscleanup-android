@@ -33,8 +33,6 @@ data class IncidentDataPullStats(
     val savedCount: Int = 0,
 
     private val startProgressAmount: Float = 0.001f,
-
-    val saveStartedAmount: Float = 0.33f,
 ) {
     val isOngoing: Boolean
         get() = isStarted && !isEnded

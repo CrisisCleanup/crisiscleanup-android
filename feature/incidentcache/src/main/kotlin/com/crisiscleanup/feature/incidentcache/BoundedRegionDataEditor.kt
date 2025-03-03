@@ -114,6 +114,11 @@ internal class IncidentCacheBoundedRegionDataEditor(
         projection: Projection?,
         isActiveChange: Boolean,
     ) {
+        if (isActiveChange) {
+            isUserActed = true
+            isMapMoved.set(true)
+        }
+
         zoomCache = cameraPosition.zoom
 
         projection?.let {
@@ -125,11 +130,6 @@ internal class IncidentCacheBoundedRegionDataEditor(
                     centerCoordinates.value = center
                 }
             }
-        }
-
-        if (isActiveChange) {
-            isUserActed = true
-            isMapMoved.set(true)
         }
     }
 

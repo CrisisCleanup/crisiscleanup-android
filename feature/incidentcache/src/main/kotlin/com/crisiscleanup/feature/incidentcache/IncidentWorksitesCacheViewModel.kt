@@ -94,12 +94,12 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
             started = subscribedReplay(),
         )
 
-    private val hasUserChangedBoundedRegion = AtomicBoolean(false)
+    private var isUserActed = AtomicBoolean(false)
 
     val editingPreferences = MutableStateFlow(InitialIncidentWorksitesCachePreferences)
 
     private val hasUserInteracted: Boolean
-        get() = hasUserChangedBoundedRegion.get() || boundedRegionDataEditor.isUserActed
+        get() = isUserActed.get() || boundedRegionDataEditor.isUserActed
 
     private val epochZero = Instant.fromEpochSeconds(0)
     private val locationPermissionExpiration = AtomicReference(epochZero)
@@ -210,12 +210,16 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
     }
 
     fun resumeCachingCases() {
+        isUserActed.set(true)
+
         updatePreferences(isPaused = false, isRegionBounded = false)
 
         syncPuller.appPullIncidentData(cancelOngoing = true)
     }
 
     fun pauseCachingCases() {
+        isUserActed.set(true)
+
         updatePreferences(isPaused = true, isRegionBounded = false)
 
         syncPuller.stopPullWorksites()
@@ -225,6 +229,10 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
         isNearMe: Boolean,
         isUserAction: Boolean = false,
     ) {
+        if (isUserAction) {
+            isUserActed.set(true)
+        }
+
         val permissionStatus = if (isNearMe) {
             boundedRegionDataEditor.checkMyLocation()
         } else {
@@ -263,7 +271,7 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
     }
 
     fun setBoundedRegionRadius(radius: Float) {
-        hasUserChangedBoundedRegion.set(true)
+        isUserActed.set(true)
 
         val preferences = editingPreferences.value
         editingPreferences.value = preferences.copy(

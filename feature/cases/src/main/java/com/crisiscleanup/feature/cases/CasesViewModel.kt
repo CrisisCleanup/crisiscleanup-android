@@ -343,7 +343,7 @@ class CasesViewModel @Inject constructor(
         get() = casesMapTileManager.clearTileLayer
 
     private val tileClearRefreshInterval = 5.seconds
-    private var tileRefreshedInstant: Instant = Instant.fromEpochSeconds(0)
+    private var tileRefreshedInstant = Instant.fromEpochSeconds(0)
     private var tileClearWorksitesCount = 0
 
     private val totalCasesCount = combine(
@@ -666,8 +666,7 @@ class CasesViewModel @Inject constructor(
         var refreshTiles = true
         var clearCache = false
 
-        // TODO Change run to apply
-        pullStats.run {
+        pullStats.apply {
             val isIncidentChange = idCount.id != incidentId
 
             // TODO Stale tiles will flash in certain cases.
@@ -680,30 +679,45 @@ class CasesViewModel @Inject constructor(
             }
 
             if (!isStarted || isIncidentChange) {
-                return@run
+                return@apply
             }
 
             refreshTiles = isEnded
             clearCache = isEnded
 
-            if (this.dataCount < 3000) {
-                return@run
-            }
-
             val now = Clock.System.now()
-            if (!refreshTiles && progress > saveStartedAmount) {
-                val sinceLastRefresh = now - tileRefreshedInstant
-                val projectedDelta = projectedFinish - now
-                refreshTiles = now - startTime > tileClearRefreshInterval &&
-                    sinceLastRefresh > tileClearRefreshInterval &&
-                    projectedDelta > tileClearRefreshInterval
-                if (idCount.totalCount - tileClearWorksitesCount >= 6000 &&
-                    dataCount - tileClearWorksitesCount > 3000
-                ) {
-                    clearCache = true
-                    refreshTiles = true
+
+            if (isIndeterminate) {
+                if (!refreshTiles) {
+                    val sinceLastRefresh = now - tileRefreshedInstant
+
+                    refreshTiles = now - startTime > tileClearRefreshInterval &&
+                        sinceLastRefresh > tileClearRefreshInterval
+                    if (refreshTiles) {
+                        clearCache = true
+                    }
+                }
+            } else {
+                if (dataCount < 3000) {
+                    return@apply
+                }
+
+                if (!refreshTiles && savedCount > 600) {
+                    val sinceLastRefresh = now - tileRefreshedInstant
+                    val projectedDelta = projectedFinish - now
+                    refreshTiles = now - startTime > tileClearRefreshInterval &&
+                        sinceLastRefresh > tileClearRefreshInterval &&
+                        projectedDelta > tileClearRefreshInterval
+
+                    if (idCount.totalCount - tileClearWorksitesCount >= 6000 &&
+                        dataCount - tileClearWorksitesCount > 3000
+                    ) {
+                        clearCache = true
+                        refreshTiles = true
+                    }
                 }
             }
+
             if (refreshTiles) {
                 tileRefreshedInstant = now
             }

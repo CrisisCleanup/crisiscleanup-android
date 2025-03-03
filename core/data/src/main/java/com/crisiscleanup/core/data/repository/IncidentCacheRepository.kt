@@ -9,6 +9,7 @@ import com.crisiscleanup.core.common.kmToMiles
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
+import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.common.sync.SyncResult
 import com.crisiscleanup.core.data.IncidentSelector
@@ -435,7 +436,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             val downloadSpeedTracker = CountTimeTracker()
 
             val queryCount = if (isPaused) 10 else 60
-            var queryOffset = 0
+            var queryPage = 1
             var savedWorksiteIds = emptySet<Long>()
             var initialCount = -1
             var savedCount = 0
@@ -451,7 +452,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     val result = networkDataSource.getWorksitesPage(
                         incidentId,
                         pageCount = queryCount,
-                        pageOffset = queryOffset,
+                        pageOffset = queryPage,
                         latitude = boundedRegion.latitude,
                         longitude = boundedRegion.longitude,
                         updatedAtAfter = queryBoundedRegionAfter,
@@ -478,7 +479,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
                     statsUpdater.addQueryCount(networkData.size)
 
-                    queryOffset += networkData.size
+                    queryPage += 1
 
                     val deduplicateWorksites = networkData.filter {
                         !savedWorksiteIds.contains(it.id)
@@ -559,6 +560,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 timeMarkers,
                 statsUpdater,
                 downloadSpeedTracker,
+                isNetworkCountAdditive = false,
                 { count: Int, before: Instant ->
                     networkDataSource.getWorksitesPageBefore(incidentId, count, before)
                 },
@@ -606,6 +608,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         timeMarkers: IncidentDataSyncParameters.SyncTimeMarker,
         statsUpdater: IncidentDataPullStatsUpdater,
         downloadSpeedTracker: CountTimeTracker,
+        isNetworkCountAdditive: Boolean,
         getNetworkData: suspend (Int, Instant) -> T,
         saveToDb: suspend (List<U>) -> Unit,
     ) where T : WorksiteDataResult<U>, U : WorksiteDataSubset = coroutineScope {
@@ -631,9 +634,14 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     queryCount,
                     beforeTimeMarker,
                 )
-                if (initialCount < 0) {
-                    initialCount = result.count ?: 0
-                    statsUpdater.setDataCount(initialCount)
+
+                if (isNetworkCountAdditive) {
+                    statsUpdater.addDataCount(result.count ?: 0)
+                } else {
+                    if (initialCount < 0) {
+                        initialCount = result.count ?: 0
+                        statsUpdater.setDataCount(initialCount)
+                    }
                 }
                 result.data ?: emptyList()
             }
@@ -851,6 +859,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 timeMarkers,
                 statsUpdater,
                 downloadSpeedTracker,
+                isNetworkCountAdditive = true,
                 { count: Int, before: Instant ->
                     networkDataSource.getWorksitesFlagsFormDataPageBefore(
                         incidentId,
@@ -1013,10 +1022,10 @@ private val EmptySyncPlan = IncidentDataSyncPlan(
 private fun List<Double>.radiusMiles(boundedRegion: IncidentDataSyncParameters.BoundedRegion) =
     if (size == 2) {
         haversineDistance(
-            get(1),
-            get(0),
-            boundedRegion.latitude,
-            boundedRegion.longitude,
+            get(1).radians,
+            get(0).radians,
+            boundedRegion.latitude.radians,
+            boundedRegion.longitude.radians,
         ).kmToMiles
     } else {
         null
