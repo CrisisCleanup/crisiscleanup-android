@@ -25,9 +25,9 @@ data class IncidentDataSyncParametersEntity(
     @ColumnInfo("updated_after")
     val updatedAfter: Instant,
     @ColumnInfo("full_updated_before")
-    val fullUpdatedBefore: Instant,
+    val additionalUpdatedBefore: Instant,
     @ColumnInfo("full_updated_after")
-    val fullUpdatedAfter: Instant,
+    val additionalUpdatedAfter: Instant,
     @ColumnInfo("bounded_region")
     val boundedRegion: String,
     @ColumnInfo("bounded_synced_at")

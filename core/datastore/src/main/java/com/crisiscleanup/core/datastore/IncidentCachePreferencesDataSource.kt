@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.datastore
 
 import androidx.datastore.core.DataStore
+import com.crisiscleanup.core.model.data.BoundedRegionParameters
 import com.crisiscleanup.core.model.data.IncidentWorksitesCachePreferences
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -12,22 +13,25 @@ class IncidentCachePreferencesDataSource @Inject constructor(
         IncidentWorksitesCachePreferences(
             isPaused = it.isPaused,
             isRegionBounded = it.isRegionBounded,
-            isRegionMyLocation = it.isRegionMyLocation,
-            regionLatitude = it.regionLatitude,
-            regionLongitude = it.regionLongitude,
-            regionRadiusMiles = it.regionRadiusMiles,
+            BoundedRegionParameters(
+                isRegionMyLocation = it.isRegionMyLocation,
+                regionLatitude = it.regionLatitude,
+                regionLongitude = it.regionLongitude,
+                regionRadiusMiles = it.regionRadiusMiles,
+            ),
         )
     }
 
     suspend fun setPreferences(preferences: IncidentWorksitesCachePreferences) {
         dataStore.updateData {
+            val regionParameters = preferences.boundedRegionParameters
             it.copy {
                 isPaused = preferences.isPaused
                 isRegionBounded = preferences.isRegionBounded
-                isRegionMyLocation = preferences.isRegionMyLocation
-                regionLatitude = preferences.regionLatitude
-                regionLongitude = preferences.regionLongitude
-                regionRadiusMiles = preferences.regionRadiusMiles
+                isRegionMyLocation = regionParameters.isRegionMyLocation
+                regionLatitude = regionParameters.regionLatitude
+                regionLongitude = regionParameters.regionLongitude
+                regionRadiusMiles = regionParameters.regionRadiusMiles
             }
         }
     }

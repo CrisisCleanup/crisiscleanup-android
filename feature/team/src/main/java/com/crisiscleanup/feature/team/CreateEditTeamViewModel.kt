@@ -42,10 +42,14 @@ import com.crisiscleanup.core.data.UserRoleRefresher
 import com.crisiscleanup.core.data.WorksiteInteractor
 import com.crisiscleanup.core.data.di.CasesFilterType
 import com.crisiscleanup.core.data.di.CasesFilterTypes
+import com.crisiscleanup.core.data.incidentcache.IncidentDataPullReporter
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
+import com.crisiscleanup.core.data.model.IncidentPullDataType
+import com.crisiscleanup.core.data.model.progressMetrics
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AppDataManagementRepository
+import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
 import com.crisiscleanup.core.data.repository.EquipmentRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
@@ -54,11 +58,10 @@ import com.crisiscleanup.core.data.repository.TeamChangeRepository
 import com.crisiscleanup.core.data.repository.TeamsRepository
 import com.crisiscleanup.core.data.repository.UsersRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
-import com.crisiscleanup.core.data.util.IncidentDataPullReporter
-import com.crisiscleanup.core.data.util.dataPullProgress
 import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.mapmarker.WorkTypeChipIconProvider
+import com.crisiscleanup.core.model.data.DataProgressMetrics
 import com.crisiscleanup.core.model.data.EmptyCleanupTeam
 import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.EquipmentData
@@ -125,6 +128,7 @@ class CreateEditTeamViewModel @Inject constructor(
     tileProvider: TileProvider,
     @CasesFilterType(CasesFilterTypes.TeamCases)
     filterRepository: CasesFilterRepository,
+    private val appPreferencesRepository: AppPreferencesRepository,
     val mapCaseIconProvider: MapCaseIconProvider,
     worksiteInteractor: WorksiteInteractor,
     equipmentRepository: EquipmentRepository,
@@ -306,7 +310,8 @@ class CreateEditTeamViewModel @Inject constructor(
 
     val isIncidentLoading = incidentsRepository.isLoading
 
-    val dataProgress = dataPullReporter.dataPullProgress
+    val dataProgress = dataPullReporter.incidentDataPullStats
+        .map { it.progressMetrics }
         .stateIn(
             scope = viewModelScope,
             initialValue = zeroDataProgress,
@@ -323,9 +328,10 @@ class CreateEditTeamViewModel @Inject constructor(
     ) { b0, progress, b2 -> b0 || progress.isLoadingPrimary || b2 }
 
     private val mapBoundsManager = CasesMapBoundsManager(
-        viewModelScope,
         incidentSelector,
         incidentBoundsProvider,
+        appPreferencesRepository,
+        viewModelScope,
         ioDispatcher,
         logger,
     )

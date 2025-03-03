@@ -4,7 +4,7 @@ import com.crisiscleanup.core.network.model.NetworkAccountProfileResult
 import com.crisiscleanup.core.network.model.NetworkCaseHistoryEvent
 import com.crisiscleanup.core.network.model.NetworkCountResult
 import com.crisiscleanup.core.network.model.NetworkEquipmentListResult
-import com.crisiscleanup.core.network.model.NetworkFlagsFormData
+import com.crisiscleanup.core.network.model.NetworkFlagsFormDataResult
 import com.crisiscleanup.core.network.model.NetworkIncident
 import com.crisiscleanup.core.network.model.NetworkIncidentOrganization
 import com.crisiscleanup.core.network.model.NetworkIncidentShort
@@ -27,7 +27,6 @@ import com.crisiscleanup.core.network.model.NetworkWorkTypeStatusResult
 import com.crisiscleanup.core.network.model.NetworkWorksiteCoreData
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.core.network.model.NetworkWorksiteLocationSearch
-import com.crisiscleanup.core.network.model.NetworkWorksitePage
 import com.crisiscleanup.core.network.model.NetworkWorksiteShort
 import com.crisiscleanup.core.network.model.NetworkWorksitesPageResult
 import kotlinx.datetime.Instant
@@ -98,7 +97,7 @@ interface CrisisCleanupNetworkDataSource {
         latitude: Double? = null,
         longitude: Double? = null,
         updatedAtAfter: Instant? = null,
-    ): List<NetworkWorksitePage>
+    ): NetworkWorksitesPageResult
 
     suspend fun getWorksitesPageUpdatedAt(
         incidentId: Long,
@@ -107,12 +106,56 @@ interface CrisisCleanupNetworkDataSource {
         isPagingBackwards: Boolean,
     ): NetworkWorksitesPageResult
 
+    suspend fun getWorksitesPageBefore(
+        incidentId: Long,
+        pageCount: Int,
+        updatedBefore: Instant,
+    ) = getWorksitesPageUpdatedAt(
+        incidentId,
+        pageCount,
+        updatedBefore,
+        true,
+    )
+
+    suspend fun getWorksitesPageAfter(
+        incidentId: Long,
+        pageCount: Int,
+        updatedAfter: Instant,
+    ) = getWorksitesPageUpdatedAt(
+        incidentId,
+        pageCount,
+        updatedAfter,
+        false,
+    )
+
     suspend fun getWorksitesFlagsFormDataPage(
         incidentId: Long,
         pageCount: Int,
-        pageOffset: Int? = null,
-        updatedAtAfter: Instant? = null,
-    ): List<NetworkFlagsFormData>
+        updatedAt: Instant,
+        isPagingBackwards: Boolean,
+    ): NetworkFlagsFormDataResult
+
+    suspend fun getWorksitesFlagsFormDataPageBefore(
+        incidentId: Long,
+        pageCount: Int,
+        updatedAfter: Instant,
+    ) = getWorksitesFlagsFormDataPage(
+        incidentId,
+        pageCount,
+        updatedAfter,
+        true,
+    )
+
+    suspend fun getWorksitesFlagsFormDataPageAfter(
+        incidentId: Long,
+        pageCount: Int,
+        updatedAfter: Instant,
+    ) = getWorksitesFlagsFormDataPage(
+        incidentId,
+        pageCount,
+        updatedAfter,
+        false,
+    )
 
     suspend fun getLocationSearchWorksites(
         incidentId: Long,
@@ -186,26 +229,4 @@ interface CrisisCleanupNetworkDataSource {
         limit: Int = 0,
         offset: Int = 0,
     ): NetworkUserEquipmentListResult
-
-    suspend fun getWorksitesPageBefore(
-        incidentId: Long,
-        pageCount: Int,
-        updatedBefore: Instant,
-    ): NetworkWorksitesPageResult = getWorksitesPageUpdatedAt(
-        incidentId,
-        pageCount,
-        updatedBefore,
-        true,
-    )
-
-    suspend fun getWorksitesPageAfter(
-        incidentId: Long,
-        pageCount: Int,
-        updatedAfter: Instant,
-    ): NetworkWorksitesPageResult = getWorksitesPageUpdatedAt(
-        incidentId,
-        pageCount,
-        updatedAfter,
-        false,
-    )
 }

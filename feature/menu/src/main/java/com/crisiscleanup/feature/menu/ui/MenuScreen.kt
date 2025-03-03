@@ -678,6 +678,9 @@ private fun IncidentCacheView(
 ) {
     val t = LocalAppTranslator.current
 
+    // TODO Show warning when
+    //      - Paused and speed is fast
+    //      - Not paused and speed is slow
     Row(
         modifier,
         horizontalArrangement = listItemSpacedBy,
@@ -685,10 +688,12 @@ private fun IncidentCacheView(
     ) {
         val syncingPolicy = if (incidentCachePreferences.isPaused) {
             t("~~Pause downloading Cases")
-        } else if (incidentCachePreferences.isRegionBounded) {
-            t("~~Downloading Cases within specified region")
+        } else if (incidentCachePreferences.isBoundedNearMe) {
+            t("~~Download Cases near me")
+        } else if (incidentCachePreferences.isBoundedByCoordinates) {
+            t("~~Download Cases in specific area")
         } else {
-            t("~~Auto download Cases")
+            t("~~Adaptively download Cases")
         }
         Text(
             syncingPolicy,

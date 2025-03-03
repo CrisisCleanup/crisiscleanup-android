@@ -3,6 +3,7 @@ package com.crisiscleanup.di
 import android.content.ContentResolver
 import android.content.Context
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
 import com.crisiscleanup.AndroidLocationProvider
 import com.crisiscleanup.AndroidPermissionManager
 import com.crisiscleanup.AndroidPhoneNumberPicker
@@ -87,6 +88,11 @@ object AppObjectModule {
     fun providesContentResolver(
         @ApplicationContext context: Context,
     ): ContentResolver = context.contentResolver
+
+    @Provides
+    fun providesConnectivityManager(
+        @ApplicationContext context: Context,
+    ): ConnectivityManager = context.getSystemService(ConnectivityManager::class.java)
 
     @Provides
     fun firebaseAnalytics(

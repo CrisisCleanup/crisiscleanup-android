@@ -25,8 +25,8 @@ fun CrisisCleanupRadioButton(
     textStyle: TextStyle = MaterialTheme.typography.bodyLarge,
     enabled: Boolean = true,
     enableToggle: Boolean = true,
-    spaceTrailingContent: Boolean = false,
     horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
+    spaceTrailingContent: Boolean = false,
     trailingContent: (@Composable () -> Unit)? = null,
 ) {
     Row(

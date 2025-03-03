@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.data.model
 
+import com.crisiscleanup.core.model.data.DataProgressMetrics
 import com.crisiscleanup.core.model.data.EmptyIncident
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -8,20 +9,20 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
 
 enum class IncidentPullDataType {
-    ShortWorksites,
-    FullWorksites,
+    WorksitesCore,
+    WorksitesAdditional,
     Organizations,
 }
 
 private val worksiteDataPullTypes = setOf(
-    IncidentPullDataType.ShortWorksites,
-    IncidentPullDataType.FullWorksites,
+    IncidentPullDataType.WorksitesCore,
+    IncidentPullDataType.WorksitesAdditional,
 )
 
 data class IncidentDataPullStats(
     val incidentId: Long = EmptyIncident.id,
     val incidentName: String = EmptyIncident.shortName,
-    val pullType: IncidentPullDataType = IncidentPullDataType.ShortWorksites,
+    val pullType: IncidentPullDataType = IncidentPullDataType.WorksitesCore,
     val isIndeterminate: Boolean = false,
 
     val isStarted: Boolean = false,
@@ -33,8 +34,6 @@ data class IncidentDataPullStats(
     val savedCount: Int = 0,
 
     private val startProgressAmount: Float = 0.001f,
-
-    val saveStartedAmount: Float = 0.33f,
 ) {
     val isOngoing: Boolean
         get() = isStarted && !isEnded
@@ -76,3 +75,15 @@ data class IncidentDataPullStats(
             return startTime.plus(projectedDeltaSeconds)
         }
 }
+
+val IncidentDataPullStats.progressMetrics: DataProgressMetrics
+    get() {
+        val showProgress = isOngoing && isPullingWorksites
+        val isSecondary = pullType == IncidentPullDataType.WorksitesAdditional
+        val progress = progress
+        return DataProgressMetrics(
+            isSecondary,
+            showProgress,
+            progress,
+        )
+    }

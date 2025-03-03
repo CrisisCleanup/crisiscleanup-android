@@ -21,7 +21,6 @@ import com.crisiscleanup.feature.qrcode.navigation.ScanQrCodeArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
@@ -46,11 +45,13 @@ class ScanQrCodeViewModel @Inject constructor(
         private set
 
     init {
-        permissionManager.permissionChanges.map {
-            if (it == cameraPermissionGranted) {
-                isCameraPermissionGranted = true
+        permissionManager.permissionChanges
+            .onEach {
+                if (it == cameraPermissionGranted) {
+                    isCameraPermissionGranted = true
+                }
             }
-        }.launchIn(viewModelScope)
+            .launchIn(viewModelScope)
 
         if (requestCameraPermission()) {
             isCameraPermissionGranted = true

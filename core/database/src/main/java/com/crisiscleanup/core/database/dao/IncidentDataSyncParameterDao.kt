@@ -54,6 +54,47 @@ interface IncidentDataSyncParameterDao {
     )
 
     @Transaction
+    @Query(
+        """
+        UPDATE OR IGNORE incident_data_sync_parameters
+        SET full_updated_before=:updatedBefore
+        WHERE id=:incidentId
+        """,
+    )
+    fun updateAdditionalUpdatedBefore(
+        incidentId: Long,
+        updatedBefore: Instant,
+    )
+
+    @Transaction
+    @Query(
+        """
+        UPDATE OR IGNORE incident_data_sync_parameters
+        SET full_updated_after=:updatedAfter
+        WHERE id=:incidentId
+        """,
+    )
+    fun updateAdditionalUpdatedAfter(
+        incidentId: Long,
+        updatedAfter: Instant,
+    )
+
+    @Transaction
+    @Query(
+        """
+        UPDATE OR IGNORE incident_data_sync_parameters
+        SET bounded_region=:boundedRegion,
+            bounded_synced_at=:boundedSyncedAt
+        WHERE id=:incidentId
+        """,
+    )
+    fun updatedBoundedParameters(
+        incidentId: Long,
+        boundedRegion: String,
+        boundedSyncedAt: Instant,
+    )
+
+    @Transaction
     @Query("DELETE FROM incident_data_sync_parameters WHERE id=:id")
-    fun deleteSyncStats(id: Long)
+    fun deleteSyncParameters(id: Long)
 }

@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
@@ -137,7 +138,7 @@ class CasesFilterViewModel @Inject constructor(
 
     init {
         permissionManager.permissionChanges
-            .map {
+            .onEach {
                 if (it == locationPermissionGranted) {
                     changeDistanceFilter()
                 }

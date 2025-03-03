@@ -234,6 +234,9 @@ internal class CreateEditTeamCaseMapManager(
     }
 
     override fun syncWorksitesDelta(forceRefreshAll: Boolean) {
-        syncPuller.appPullIncidentWorksitesDelta(forceRefreshAll)
+        syncPuller.appPullIncidentData(
+            cacheFullWorksites = true,
+            restartCacheCheckpoint = forceRefreshAll,
+        )
     }
 }

@@ -8,6 +8,6 @@ message IncidentCachePreferences {
   bool is_region_bounded = 2;
   double region_latitude = 3;
   double region_longitude = 4;
-  float region_radius_miles = 5;
+  double region_radius_miles = 5;
   bool is_region_my_location = 6;
 }

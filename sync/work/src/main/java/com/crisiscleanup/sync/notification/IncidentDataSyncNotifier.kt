@@ -60,7 +60,7 @@ internal class IncidentDataSyncNotifier @Inject constructor(
                             appContext.getString(
                                 R.string.saving_indeterminate_data,
                             )
-                        } else if (pullType == IncidentPullDataType.ShortWorksites) {
+                        } else if (pullType == IncidentPullDataType.WorksitesCore) {
                             appContext.getString(
                                 R.string.saved_cases_out_of,
                                 savedCount,

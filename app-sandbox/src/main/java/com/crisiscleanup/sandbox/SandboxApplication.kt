@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.ContentResolver
 import android.content.Context
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
 import android.util.Log
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.LocationProvider
@@ -232,4 +233,9 @@ object AppObjectModule {
     @Provides
     fun providesContentResolver(@ApplicationContext context: Context): ContentResolver =
         context.contentResolver
+
+    @Provides
+    fun providesConnectivityManager(
+        @ApplicationContext context: Context,
+    ): ConnectivityManager = context.getSystemService(ConnectivityManager::class.java)
 }

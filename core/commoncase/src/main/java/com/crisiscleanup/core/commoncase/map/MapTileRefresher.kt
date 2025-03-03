@@ -14,7 +14,7 @@ class MapTileRefresher(
     private val casesMapTileManager: CasesMapTileLayerManager,
     private val tileClearRefreshInterval: Duration = 5.seconds,
 ) {
-    private var tileRefreshedInstant: Instant = Instant.epochZero
+    private var tileRefreshedInstant = Instant.epochZero
     private var tileClearWorksitesCount = 0
 
     // Attempts to clear/refresh map tiles minimally during data loads and incident changes
@@ -26,7 +26,7 @@ class MapTileRefresher(
         var refreshTiles = true
         var clearCache = false
 
-        pullStats.run {
+        pullStats.apply {
             val isIncidentChange = idCount.id != incidentId
 
             // TODO Stale tiles will flash in certain cases.
@@ -39,30 +39,45 @@ class MapTileRefresher(
             }
 
             if (!isStarted || isIncidentChange) {
-                return@run
+                return@apply
             }
 
             refreshTiles = isEnded
             clearCache = isEnded
 
-            if (this.dataCount < 3000) {
-                return@run
-            }
-
             val now = Clock.System.now()
-            if (!refreshTiles && progress > saveStartedAmount) {
-                val sinceLastRefresh = now - tileRefreshedInstant
-                val projectedDelta = projectedFinish - now
-                refreshTiles = now - startTime > tileClearRefreshInterval &&
-                    sinceLastRefresh > tileClearRefreshInterval &&
-                    projectedDelta > tileClearRefreshInterval
-                if (idCount.totalCount - tileClearWorksitesCount >= 6000 &&
-                    dataCount - tileClearWorksitesCount > 3000
-                ) {
-                    clearCache = true
-                    refreshTiles = true
+
+            if (isIndeterminate) {
+                if (!refreshTiles) {
+                    val sinceLastRefresh = now - tileRefreshedInstant
+
+                    refreshTiles = now - startTime > tileClearRefreshInterval &&
+                        sinceLastRefresh > tileClearRefreshInterval
+                    if (refreshTiles) {
+                        clearCache = true
+                    }
+                }
+            } else {
+                if (dataCount < 3000) {
+                    return@apply
+                }
+
+                if (!refreshTiles && savedCount > 600) {
+                    val sinceLastRefresh = now - tileRefreshedInstant
+                    val projectedDelta = projectedFinish - now
+                    refreshTiles = now - startTime > tileClearRefreshInterval &&
+                        sinceLastRefresh > tileClearRefreshInterval &&
+                        projectedDelta > tileClearRefreshInterval
+
+                    if (idCount.totalCount - tileClearWorksitesCount >= 6000 &&
+                        dataCount - tileClearWorksitesCount > 3000
+                    ) {
+                        clearCache = true
+                        refreshTiles = true
+                    }
                 }
             }
+
             if (refreshTiles) {
                 tileRefreshedInstant = now
             }

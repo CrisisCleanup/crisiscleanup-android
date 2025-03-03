@@ -14,6 +14,7 @@ secrets {
 }
 
 dependencies {
+    implementation(projects.core.mapmarker)
     implementation(projects.core.selectincident)
 
     implementation(libs.kotlinx.datetime)

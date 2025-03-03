@@ -47,6 +47,7 @@ import com.crisiscleanup.core.data.di.CasesFilterType
 import com.crisiscleanup.core.data.di.CasesFilterTypes
 import com.crisiscleanup.core.data.incidentcache.IncidentDataPullReporter
 import com.crisiscleanup.core.data.model.IncidentPullDataType
+import com.crisiscleanup.core.data.model.progressMetrics
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
@@ -229,16 +230,7 @@ class CasesViewModel @Inject constructor(
     val isIncidentLoading = incidentsRepository.isLoading
 
     val dataProgress = dataPullReporter.incidentDataPullStats
-        .map {
-            val showProgress = it.isOngoing && it.isPullingWorksites
-            val isSecondary = it.pullType == IncidentPullDataType.FullWorksites
-            val progress = it.progress
-            DataProgressMetrics(
-                isSecondary,
-                showProgress,
-                progress,
-            )
-        }
+        .map { it.progressMetrics }
         .stateIn(
             scope = viewModelScope,
             initialValue = zeroDataProgress,
@@ -397,7 +389,7 @@ class CasesViewModel @Inject constructor(
             .launchIn(viewModelScope)
 
         permissionManager.permissionChanges
-            .map {
+            .onEach {
                 if (it == locationPermissionGranted) {
                     setTileRendererLocation()
 

@@ -283,12 +283,14 @@ class ViewCaseViewModel @Inject constructor(
             mapMarkerIcon.value = inBoundsPinIcon
         }
 
-        permissionManager.permissionChanges.map {
-            if (it == cameraPermissionGranted) {
-                caseMediaManager.continueTakePhotoGate.set(true)
-                isCameraPermissionGranted = true
+        permissionManager.permissionChanges
+            .onEach {
+                if (it == cameraPermissionGranted) {
+                    caseMediaManager.continueTakePhotoGate.set(true)
+                    isCameraPermissionGranted = true
+                }
             }
-        }.launchIn(viewModelScope)
+            .launchIn(viewModelScope)
 
         viewModelScope.launch(ioDispatcher) {
             accountDataRefresher.updateMyOrganization(false)

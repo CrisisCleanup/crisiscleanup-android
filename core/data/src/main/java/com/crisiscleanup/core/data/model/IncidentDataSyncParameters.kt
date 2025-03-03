@@ -17,11 +17,12 @@ data class IncidentDataSyncParameters(
         val timeMarkerZero = Instant.fromEpochSeconds(0)
     }
 
+    // TODO Write tests
     val lastUpdated by lazy {
-        var latest = timeMarkerZero
+        var latest = boundedSyncedAt
         listOf(
-            syncDataMeasures.short,
-            syncDataMeasures.full,
+            syncDataMeasures.core,
+            syncDataMeasures.additional,
         ).forEach {
             with(it) {
                 if (isDeltaSync) {
@@ -38,13 +39,13 @@ data class IncidentDataSyncParameters(
     }
 
     data class SyncDataMeasure(
-        val short: SyncTimeMarker,
-        val full: SyncTimeMarker,
+        val core: SyncTimeMarker,
+        val additional: SyncTimeMarker,
     ) {
         companion object {
             fun relative(reference: Instant = Clock.System.now()) = SyncDataMeasure(
-                short = SyncTimeMarker.relative(reference),
-                full = SyncTimeMarker.relative(reference),
+                core = SyncTimeMarker.relative(reference),
+                additional = SyncTimeMarker.relative(reference),
             )
         }
     }
@@ -68,26 +69,27 @@ data class IncidentDataSyncParameters(
     data class BoundedRegion(
         val latitude: Double,
         val longitude: Double,
-        val radius: Float,
+        val radius: Double,
     ) {
         val isDefined by lazy {
-            radius >= 0f &&
+            radius > 0f &&
+                (latitude != 0.0 || longitude != 0.0) &&
                 latitude > -90 && latitude < 90 &&
                 longitude >= -180 && longitude <= 180
         }
 
-        fun isSimilar(
+        fun isSignificantChange(
             other: BoundedRegion,
             thresholdMiles: Float = 0.5f,
         ): Boolean {
-            if (abs(radius - other.radius) > thresholdMiles) {
-                return false
-            }
-
-            // 1/69 ~= 0.145
+            // ~69 miles in 1 degree. 1/69 ~= 0.0145 (degrees).
             val thresholdDegrees = 0.0145 * thresholdMiles
-            return abs(latitude - other.latitude) < thresholdDegrees &&
-                abs(longitude - other.longitude) < thresholdDegrees
+            return abs(radius - other.radius) > thresholdMiles ||
+                abs(latitude - other.latitude) > thresholdDegrees ||
+                abs(longitude.cap360 - other.longitude.cap360) > thresholdDegrees
         }
     }
 }
+
+private val Double.cap360: Double
+    get() = (this + 360.0) % 360.0

@@ -120,7 +120,7 @@ class AppSyncer @Inject constructor(
             forcePullIncidents = forcePullIncidents,
             cacheSelectedIncident = cacheSelectedIncident,
             cacheActiveIncidentWorksites = cacheActiveIncidentWorksites,
-            cacheFullWorksites = cacheFullWorksites,
+            cacheWorksitesAdditional = cacheFullWorksites,
             restartCacheCheckpoint = restartCacheCheckpoint,
         )
         if (!isPlanSubmitted) {
