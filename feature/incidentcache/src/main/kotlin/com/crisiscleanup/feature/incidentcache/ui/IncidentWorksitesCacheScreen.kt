@@ -142,9 +142,9 @@ private fun IncidentWorksitesCacheScreen(
                 contentType = "text-item",
             ) {
                 val syncedText = lastSynced?.let {
-                    t("~~Completely synced {sync_date}")
+                    t("~~Synced {sync_date}")
                         .replace("{sync_date}", it)
-                } ?: t("~~Awaiting complete sync of {incident_name}")
+                } ?: t("~~Awaiting sync of {incident_name}")
                     .replace("{incident_name}", incident.shortName)
                 Text(
                     syncedText,
@@ -160,13 +160,13 @@ private fun IncidentWorksitesCacheScreen(
                 ) {
                     val syncStageMessage = when (syncStage) {
                         IncidentCacheStage.Start -> t("~~Ready to sync")
-                        IncidentCacheStage.Incidents -> t("~~Syncing Incidents")
-                        IncidentCacheStage.WorksitesBounded -> t("~~Syncing Cases nearby/in area")
-                        IncidentCacheStage.WorksitesPreload -> t("~~Syncing Cases nearby")
-                        IncidentCacheStage.WorksitesCore -> t("~~Syncing Cases")
-                        IncidentCacheStage.WorksitesAdditional -> t("~~Syncing additional Case data")
-                        IncidentCacheStage.ActiveIncident -> t("~~Syncing active Incident")
-                        IncidentCacheStage.ActiveIncidentOrganization -> t("~~Syncing organizations")
+                        IncidentCacheStage.Incidents -> t("~~Syncing Incidents...")
+                        IncidentCacheStage.WorksitesBounded -> t("~~Syncing Cases nearby/in area...")
+                        IncidentCacheStage.WorksitesPreload -> t("~~Syncing Cases nearby...")
+                        IncidentCacheStage.WorksitesCore -> t("~~Syncing Cases...")
+                        IncidentCacheStage.WorksitesAdditional -> t("~~Syncing additional Case data...")
+                        IncidentCacheStage.ActiveIncident -> t("~~Syncing active Incident...")
+                        IncidentCacheStage.ActiveIncidentOrganization -> t("~~Syncing organizations in Incident...")
                         IncidentCacheStage.End -> t("~~Sync finished")
                     }
                     Text(syncStageMessage)

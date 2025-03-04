@@ -447,7 +447,8 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             } else {
                 syncedAt
             }
-            cacheBounded(
+            // TODO Adjust strategy according to save count and speed
+            val savedCount = cacheBounded(
                 incidentId,
                 isPaused,
                 boundedRegion,
@@ -455,6 +456,9 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 queryAfter,
                 ::log,
             )
+            if (!isPaused && savedCount == 0) {
+                // TODO Alert no Cases were found in the specified region
+            }
         }
     }
 
@@ -518,15 +522,19 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
         val downloadSpeedTracker = CountTimeTracker()
 
-        val queryCount = if (isPaused) 10 else 60
+        val queryCount = if (isPaused) {
+            10
+        } else if (appEnv.isProduction) {
+            60
+        } else {
+            40
+        }
         var queryPage = 1
         var savedWorksiteIds = emptySet<Long>()
         var initialCount = -1
         var savedCount = 0
         var isOuterRegionReached = false
         val syncStart = Clock.System.now()
-
-        val pendingFullWorksiteIds = mutableListOf<Long>()
 
         do {
             ensureActive()
@@ -550,11 +558,11 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             if (networkData.isEmpty()) {
                 isOuterRegionReached = true
 
-                if (savedCount == 0) {
-                    // TODO Alert 0 Worksites were in the bounded region or take action and cache without bounds
-                }
-
                 log("Cached ($savedCount/$initialCount) Worksites around ${boundedRegion.latitude},${boundedRegion.longitude}.")
+
+                if (savedCount == 0) {
+                    break
+                }
             } else {
                 val isSlowDownload =
                     downloadSpeedTracker.averageSpeed() < slowSpeedDownload
@@ -581,8 +589,16 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
                 savedWorksiteIds = networkData.map { it.id }.toSet()
 
-                if (pendingFullWorksiteIds.size < 600) {
-                    pendingFullWorksiteIds.addAll(savedWorksiteIds)
+                if (savedWorksiteIds.isNotEmpty()) {
+                    ensureActive()
+
+                    try {
+                        val networkWorksites =
+                            networkDataSource.getWorksitesFlagsFormData(savedWorksiteIds)
+                        saveAdditional(networkWorksites, statsUpdater)
+                    } catch (e: Exception) {
+                        appLogger.logDebug(e)
+                    }
                 }
 
                 ensureActive()
@@ -594,7 +610,13 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     lastCoordinates.radiusMiles(boundedRegion) ?: maxRadius
                 isOuterRegionReached = furthestWorksiteRadius >= maxRadius
 
-                log("Cached ${deduplicateWorksites.size} (${if (isOuterRegionReached) "all within $furthestWorksiteRadius/$maxRadius mi., $queryCount/$initialCount" else "$savedCount/$initialCount"}) around ${boundedRegion.latitude},${boundedRegion.longitude}.")
+                val distanceDetails = if (isOuterRegionReached) {
+                    "all within $furthestWorksiteRadius/$maxRadius mi."
+                } else {
+                    "up to $furthestWorksiteRadius mi."
+                }
+                val locationDetails = "${boundedRegion.latitude},${boundedRegion.longitude}"
+                log("Cached ${deduplicateWorksites.size} ($savedCount/$initialCount) $distanceDetails around $locationDetails.")
 
                 if (savedCount > maxCount) {
                     break
@@ -602,7 +624,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             }
 
             if (isPaused) {
-                return@coroutineScope
+                return@coroutineScope savedCount
             }
         } while (networkData.isNotEmpty() && !isOuterRegionReached)
 
@@ -619,6 +641,8 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 syncStart,
             )
         }
+
+        savedCount
     }
 
     // ~50000 Cases longer than 10 mins is a reasonable threshold
@@ -1033,18 +1057,6 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
             ensureActive()
         }
-    }
-
-    private suspend fun saveFullWorksites(
-        worksiteIds: List<Long>,
-        syncStart: Instant,
-        interval: Int = 20,
-    ) {
-        // TODO Save full worksites iterating by interval
-//        networkDataSource.getWorksites()?.let { networkWorksites ->
-//            val entities = networkWorksites.map(NetworkWorksiteFull::asEntities)
-//            worksiteDaoPlus.syncWorksites(entities, syncStart)
-//        }
     }
 
     override suspend fun resetIncidentSyncStats(incidentId: Long) {
