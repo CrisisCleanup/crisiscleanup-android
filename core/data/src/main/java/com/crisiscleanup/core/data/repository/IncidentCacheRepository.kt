@@ -62,6 +62,7 @@ import kotlin.time.Duration.Companion.seconds
 
 interface IncidentCacheRepository {
     val isSyncingActiveIncident: Flow<Boolean>
+    val cacheStage: Flow<IncidentCacheStage>
 
     val cachePreferences: Flow<IncidentWorksitesCachePreferences>
 
@@ -125,6 +126,8 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             incidentId == syncingId
         }
 
+    override val cacheStage = MutableStateFlow(IncidentCacheStage.Start)
+
     override val cachePreferences = incidentCachePreferences.preferences
 
     override fun streamSyncStats(incidentId: Long) =
@@ -182,6 +185,8 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         stage: IncidentCacheStage,
         details: String = "",
     ) {
+        cacheStage.value = stage
+
         if (appEnv.isProduction) {
             return
         }
@@ -294,11 +299,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 }
             } else {
                 if (!syncPreferences.isPaused) {
-                    preloadBounded(
-                        incidentId,
-                        syncStats,
-                        worksitesCoreStatsUpdater,
-                    )
+                    preloadBounded(incidentId, worksitesCoreStatsUpdater)
                 }
 
                 worksitesCoreStatsUpdater.setDeterminate()
@@ -397,6 +398,8 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         }
     }
 
+    private suspend fun getLocation() = locationProvider.getLocation(10.seconds)
+
     private suspend fun cacheBoundedWorksites(
         incidentId: Long,
         isPaused: Boolean,
@@ -414,7 +417,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         var boundedRegion = preferencesBoundedRegion
 
         if (isMyLocationBounded) {
-            val locationCoordinates = locationProvider.getLocation(15.seconds)
+            val locationCoordinates = getLocation()
             locationCoordinates?.let {
                 boundedRegion = boundedRegion.copy(
                     latitude = it.first,
@@ -439,22 +442,24 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         } else {
             log("Caching bounded Worksites")
 
+            val queryAfter = if (savedBoundedRegion?.isSignificantChange(boundedRegion) == true) {
+                null
+            } else {
+                syncedAt
+            }
             cacheBounded(
                 incidentId,
                 isPaused,
-                savedBoundedRegion,
                 boundedRegion,
                 statsUpdater,
-                syncedAt,
+                queryAfter,
                 ::log,
             )
-            // TODO Query full worksites data efficiently
         }
     }
 
     private suspend fun preloadBounded(
         incidentId: Long,
-        syncParameters: IncidentDataSyncParameters,
         statsUpdater: IncidentDataPullStatsUpdater,
     ) {
         val localCount = worksitesRepository.getWorksitesCount(incidentId)
@@ -467,7 +472,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             return
         }
 
-        locationProvider.getLocation(15.seconds)?.let {
+        getLocation()?.let {
             val boundedRegion = IncidentDataSyncParameters.BoundedRegion(
                 latitude = it.first,
                 longitude = it.second,
@@ -488,11 +493,9 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     cacheBounded(
                         incidentId,
                         false,
-                        savedBoundedRegion = syncParameters.boundedRegion,
-                        boundedRegion = boundedRegion,
+                        boundedRegion,
                         statsUpdater,
-                        syncParameters.boundedSyncedAt,
-                        ::log,
+                        log = ::log,
                         maxCount = 300,
                     )
                 } catch (e: Exception) {
@@ -505,10 +508,9 @@ class IncidentWorksitesCacheRepository @Inject constructor(
     private suspend fun cacheBounded(
         incidentId: Long,
         isPaused: Boolean,
-        savedBoundedRegion: IncidentDataSyncParameters.BoundedRegion?,
         boundedRegion: IncidentDataSyncParameters.BoundedRegion,
         statsUpdater: IncidentDataPullStatsUpdater,
-        syncedAt: Instant,
+        queryAfter: Instant? = null,
         log: (String) -> Unit,
         maxCount: Int = Int.MAX_VALUE,
     ) = coroutineScope {
@@ -522,9 +524,9 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         var initialCount = -1
         var savedCount = 0
         var isOuterRegionReached = false
-        val queryBoundedRegionAfter: Instant? =
-            if (savedBoundedRegion?.isSignificantChange(boundedRegion) == true) null else syncedAt
         val syncStart = Clock.System.now()
+
+        val pendingFullWorksiteIds = mutableListOf<Long>()
 
         do {
             ensureActive()
@@ -536,7 +538,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     pageOffset = queryPage,
                     latitude = boundedRegion.latitude,
                     longitude = boundedRegion.longitude,
-                    updatedAtAfter = queryBoundedRegionAfter,
+                    updatedAtAfter = queryAfter,
                 )
                 if (initialCount < 0) {
                     initialCount = result.count ?: 0
@@ -549,7 +551,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 isOuterRegionReached = true
 
                 if (savedCount == 0) {
-                    // TODO Alert 0 Worksites were in the bounded region or take action and remove bounds
+                    // TODO Alert 0 Worksites were in the bounded region or take action and cache without bounds
                 }
 
                 log("Cached ($savedCount/$initialCount) Worksites around ${boundedRegion.latitude},${boundedRegion.longitude}.")
@@ -579,7 +581,9 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
                 savedWorksiteIds = networkData.map { it.id }.toSet()
 
-                // TODO Accumulate worksite IDs for querying full data later
+                if (pendingFullWorksiteIds.size < 600) {
+                    pendingFullWorksiteIds.addAll(savedWorksiteIds)
+                }
 
                 ensureActive()
 
@@ -1051,22 +1055,22 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         incidentCachePreferences.setPreferences(preferences)
     }
 
-    private enum class IncidentCacheStage {
-        Start,
-        Incidents,
-        WorksitesBounded,
-        WorksitesPreload,
-        WorksitesCore,
-        WorksitesAdditional,
-        ActiveIncident,
-        ActiveIncidentOrganization,
-        End,
-    }
-
     private data class SyncStageResult(
         val isSuccess: Boolean = false,
         val isSlowDownload: Boolean = false,
     )
+}
+
+enum class IncidentCacheStage {
+    Start,
+    Incidents,
+    WorksitesBounded,
+    WorksitesPreload,
+    WorksitesCore,
+    WorksitesAdditional,
+    ActiveIncident,
+    ActiveIncidentOrganization,
+    End,
 }
 
 private data class IncidentDataSyncPlan(

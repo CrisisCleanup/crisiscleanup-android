@@ -20,6 +20,7 @@ import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.IncidentCacheRepository
+import com.crisiscleanup.core.data.repository.IncidentCacheStage
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
 import com.crisiscleanup.core.model.data.BOUNDED_REGION_RADIUS_MILES_DEFAULT
 import com.crisiscleanup.core.model.data.InitialIncidentWorksitesCachePreferences
@@ -70,6 +71,13 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = false,
+            started = subscribedReplay(),
+        )
+
+    val syncStage = incidentCacheRepository.cacheStage
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = IncidentCacheStage.Start,
             started = subscribedReplay(),
         )
 

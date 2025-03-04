@@ -631,7 +631,7 @@ class CasesViewModel @Inject constructor(
 
     private fun setMapToMyCoordinates() {
         viewModelScope.launch {
-            locationProvider.getLocation()?.let { myLocation ->
+            locationProvider.getLocation(10.seconds)?.let { myLocation ->
                 _mapCameraZoom.value = MapViewCameraZoom(
                     myLocation.toLatLng(),
                     (11f + Math.random() * 1e-3).toFloat(),
