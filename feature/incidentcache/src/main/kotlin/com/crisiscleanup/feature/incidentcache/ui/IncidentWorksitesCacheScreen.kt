@@ -142,7 +142,8 @@ private fun IncidentWorksitesCacheScreen(
                 contentType = "text-item",
             ) {
                 val syncedText = lastSynced?.let {
-                    t("~~Synced {sync_date}")
+                    t("~~Synced {incident_name} {sync_date}")
+                        .replace("{incident_name}", incident.shortName)
                         .replace("{sync_date}", it)
                 } ?: t("~~Awaiting sync of {incident_name}")
                     .replace("{incident_name}", incident.shortName)
@@ -178,14 +179,23 @@ private fun IncidentWorksitesCacheScreen(
                 }
             }
 
-            item(
-                key = "strategy-selection-info",
-                contentType = "text-item",
-            ) {
-                Text(
-                    "~~Cases are downloaded according to the selected strategy",
+            item {
+                Row(
                     listItemModifier,
-                )
+                    horizontalArrangement = listItemSpacedBy,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        "~~Cases are downloaded according to the selected strategy",
+                        Modifier.weight(1f),
+                    )
+
+                    CrisisCleanupTextButton(
+                        text = t("~~Resync"),
+                        onClick = viewModel::resync,
+                        enabled = !editingParameters.isPaused,
+                    )
+                }
             }
 
             synChoiceItem(

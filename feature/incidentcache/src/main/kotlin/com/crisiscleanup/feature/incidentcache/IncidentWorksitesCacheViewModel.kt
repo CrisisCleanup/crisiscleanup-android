@@ -272,6 +272,10 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
         }
     }
 
+    fun resync() {
+        syncPuller.appPullIncidentData(cancelOngoing = true)
+    }
+
     fun resetCaching() {
         viewModelScope.launch(ioDispatcher) {
             incidentCacheRepository.resetIncidentSyncStats(incident.value.id)

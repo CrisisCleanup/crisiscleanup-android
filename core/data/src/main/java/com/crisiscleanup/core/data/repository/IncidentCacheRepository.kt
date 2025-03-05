@@ -149,6 +149,15 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             .toSet()
         val selectedIncident = appPreferences.userData.first().selectedIncidentId
         val isIncidentCached = incidentIds.contains(selectedIncident)
+
+        if (incidentIds.isNotEmpty() &&
+            !isIncidentCached &&
+            selectedIncident == EmptyIncident.id &&
+            !forcePullIncidents
+        ) {
+            return false
+        }
+
         val submittedPlan = IncidentDataSyncPlan(
             selectedIncident,
             syncIncidents = forcePullIncidents || !isIncidentCached,
