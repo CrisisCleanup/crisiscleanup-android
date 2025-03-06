@@ -236,6 +236,8 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
             val syncPreferences = cachePreferences.first()
 
+            val isPaused = syncPreferences.isPaused
+
             val incidents = incidentsRepository.incidents.first()
             if (incidents.isEmpty()) {
                 return@coroutineScope SyncResult.Error("Failed to sync Incidents")
@@ -300,7 +302,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 if (preferencesBoundedRegion.isDefined) {
                     cacheBoundedWorksites(
                         incidentId,
-                        isPaused = syncPreferences.isPaused,
+                        isPaused = isPaused,
                         isMyLocationBounded = regionParameters.isRegionMyLocation,
                         preferencesBoundedRegion = preferencesBoundedRegion,
                         savedBoundedRegion = syncStats.boundedRegion,
@@ -311,7 +313,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     partialSyncReasons.add("Incomplete bounded region. Skipping Worksites sync.")
                 }
             } else {
-                if (!syncPreferences.isPaused) {
+                if (!isPaused) {
                     preloadBounded(incidentId, worksitesCoreStatsUpdater)
                 }
 
@@ -319,7 +321,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
                 val shortResult = cacheShortWorksites(
                     incidentId,
-                    syncPreferences.isPaused,
+                    isPaused,
                     syncStats,
                     worksitesCoreStatsUpdater,
                 )
@@ -331,7 +333,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
             // TODO Alert elsewhere by subscribing to DataDownloadSpeedMonitor and IncidentWorksitesCachePreferences distinctUntilChanged (speed and isPaused)
 
-            if (syncPreferences.isPaused) {
+            if (isPaused) {
                 if (isSlowDownload) {
                     partialSyncReasons.add("Worksite downloads are paused")
                     skipWorksiteCaching = true
@@ -377,7 +379,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
                 cacheAdditionalWorksiteData(
                     incidentId,
-                    syncPreferences.isPaused,
+                    isPaused,
                     syncStats,
                     worksitesAdditionalStatsUpdater,
                 )
@@ -395,6 +397,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         } finally {
             if (syncPlanReference.compareAndSet(syncPlan, EmptySyncPlan)) {
                 incidentDataPullStats.value = IncidentDataPullStats(isEnded = true)
+                cacheStage.value = IncidentCacheStage.End
             }
 
             if (syncingIncidentId.compareAndSet(incidentId, EmptyIncident.id)) {
@@ -524,7 +527,6 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 statsUpdater,
                 queryAfter,
                 ::log,
-                updateLocation = true,
             )
             if (!isPaused && savedCount == 0) {
                 // TODO Alert no Cases were found in the specified region
@@ -561,8 +563,6 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     )
                 }
 
-                log("Preloading bounded Worksites. $localCount local. $networkCount total.")
-
                 try {
                     cacheBounded(
                         incidentId,
@@ -587,7 +587,6 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         queryAfter: Instant? = null,
         log: (String) -> Unit,
         maxCount: Int = 5000,
-        updateLocation: Boolean = false,
     ) = coroutineScope {
         statsUpdater.setIndeterminate()
 
@@ -640,8 +639,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     break
                 }
             } else {
-                val isSlowDownload =
-                    downloadSpeedTracker.averageSpeed() < slowSpeedDownload
+                val isSlowDownload = downloadSpeedTracker.averageSpeed() < slowSpeedDownload
                 speedMonitor.onSpeedChange(isSlowDownload)
 
                 statsUpdater.addQueryCount(networkData.size)
@@ -696,17 +694,15 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     break
                 }
 
-                if (updateLocation) {
-                    getLocation(incidentId)?.let {
-                        val updatedRegion = liveRegion.copy(
-                            latitude = it.first,
-                            longitude = it.second,
-                        )
-                        if (liveRegion.isSignificantChange(updatedRegion)) {
-                            liveRegion = updatedRegion
-                            queryPage = 1
-                            liveQueryAfter = null
-                        }
+                getLocation(incidentId)?.let {
+                    val updatedRegion = liveRegion.copy(
+                        latitude = it.first,
+                        longitude = it.second,
+                    )
+                    if (liveRegion.isSignificantChange(updatedRegion)) {
+                        liveRegion = updatedRegion
+                        queryPage = 1
+                        liveQueryAfter = null
                     }
                 }
             }

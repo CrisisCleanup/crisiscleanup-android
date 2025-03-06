@@ -17,7 +17,8 @@ interface IncidentMapTracker {
 class AppIncidentMapTracker @Inject constructor() : IncidentMapTracker {
     private val locationCache = AtomicReference<Pair<Double, Double>?>(null)
 
-    override val lastLocation = locationCache.get()
+    override val lastLocation: Pair<Double, Double>?
+        get() = locationCache.get()
 
     override fun track(latitude: Double, longitude: Double) {
         locationCache.set(Pair(latitude, longitude))
