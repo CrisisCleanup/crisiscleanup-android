@@ -524,6 +524,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 statsUpdater,
                 queryAfter,
                 ::log,
+                updateLocation = true,
             )
             if (!isPaused && savedCount == 0) {
                 // TODO Alert no Cases were found in the specified region
@@ -549,7 +550,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             val boundedRegion = IncidentDataSyncParameters.BoundedRegion(
                 latitude = it.first,
                 longitude = it.second,
-                radius = 30.0,
+                radius = 15.0,
             )
             if (boundedRegion.isDefined) {
                 fun log(message: String) {
@@ -585,7 +586,8 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         statsUpdater: IncidentDataPullStatsUpdater,
         queryAfter: Instant? = null,
         log: (String) -> Unit,
-        maxCount: Int = Int.MAX_VALUE,
+        maxCount: Int = 5000,
+        updateLocation: Boolean = false,
     ) = coroutineScope {
         statsUpdater.setIndeterminate()
 
@@ -605,17 +607,22 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         var isOuterRegionReached = false
         val syncStart = Clock.System.now()
 
+        var liveRegion = boundedRegion
+        var liveQueryAfter = queryAfter
+
         do {
             ensureActive()
+
+            val locationDetails = "${liveRegion.latitude},${liveRegion.longitude}"
 
             val networkData = downloadSpeedTracker.time {
                 val result = networkDataSource.getWorksitesPage(
                     incidentId,
                     pageCount = queryCount,
                     pageOffset = queryPage,
-                    latitude = boundedRegion.latitude,
-                    longitude = boundedRegion.longitude,
-                    updatedAtAfter = queryAfter,
+                    latitude = liveRegion.latitude,
+                    longitude = liveRegion.longitude,
+                    updatedAtAfter = liveQueryAfter,
                 )
                 if (initialCount < 0) {
                     initialCount = result.count ?: 0
@@ -627,7 +634,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             if (networkData.isEmpty()) {
                 isOuterRegionReached = true
 
-                log("Cached ($savedCount/$initialCount) Worksites around ${boundedRegion.latitude},${boundedRegion.longitude}.")
+                log("Cached ($savedCount/$initialCount) Worksites around $locationDetails.")
 
                 if (savedCount == 0) {
                     break
@@ -672,11 +679,10 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
                 ensureActive()
 
-                val maxRadius = boundedRegion.radius
+                val maxRadius = liveRegion.radius
 
                 val lastCoordinates = networkData.last().location.coordinates
-                val furthestWorksiteRadius =
-                    lastCoordinates.radiusMiles(boundedRegion) ?: maxRadius
+                val furthestWorksiteRadius = lastCoordinates.radiusMiles(liveRegion) ?: maxRadius
                 isOuterRegionReached = furthestWorksiteRadius >= maxRadius
 
                 val distanceDetails = if (isOuterRegionReached) {
@@ -684,11 +690,24 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 } else {
                     "up to $furthestWorksiteRadius mi."
                 }
-                val locationDetails = "${boundedRegion.latitude},${boundedRegion.longitude}"
                 log("Cached ${deduplicateWorksites.size} ($savedCount/$initialCount) $distanceDetails around $locationDetails.")
 
                 if (savedCount > maxCount) {
                     break
+                }
+
+                if (updateLocation) {
+                    getLocation(incidentId)?.let {
+                        val updatedRegion = liveRegion.copy(
+                            latitude = it.first,
+                            longitude = it.second,
+                        )
+                        if (liveRegion.isSignificantChange(updatedRegion)) {
+                            liveRegion = updatedRegion
+                            queryPage = 1
+                            liveQueryAfter = null
+                        }
+                    }
                 }
             }
 
@@ -699,7 +718,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
         if (isOuterRegionReached) {
             val boundedRegionEncoded = try {
-                Json.encodeToString(boundedRegion)
+                Json.encodeToString(liveRegion)
             } catch (e: Exception) {
                 appLogger.logException(e)
                 ""
