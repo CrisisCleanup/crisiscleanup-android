@@ -319,13 +319,26 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
                 worksitesCoreStatsUpdater.setDeterminate()
 
-                val shortResult = cacheShortWorksites(
+                // TODO If not preloaded and times out try caching around coordinates
+                val shortResult = cacheWorksitesCore(
                     incidentId,
                     isPaused,
                     syncStats,
                     worksitesCoreStatsUpdater,
                 )
-                isSlowDownload = shortResult.isSlowDownload
+                isSlowDownload = shortResult.isSlow == true
+
+                if (shortResult.isSlow == false &&
+                    isPaused &&
+                    !syncStats.syncDataMeasures.core.isDeltaSync
+                ) {
+                    cacheWorksitesCore(
+                        incidentId,
+                        false,
+                        syncStats,
+                        worksitesCoreStatsUpdater,
+                    )
+                }
             }
 
             ensureActive()
@@ -333,11 +346,9 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
             // TODO Alert elsewhere by subscribing to DataDownloadSpeedMonitor and IncidentWorksitesCachePreferences distinctUntilChanged (speed and isPaused)
 
-            if (isPaused) {
-                if (isSlowDownload) {
-                    partialSyncReasons.add("Worksite downloads are paused")
-                    skipWorksiteCaching = true
-                }
+            if (isPaused && isSlowDownload) {
+                partialSyncReasons.add("Worksite downloads are paused")
+                skipWorksiteCaching = true
             }
 
             if (syncPlan.syncSelectedIncident) {
@@ -377,12 +388,24 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     )
                 }
 
-                cacheAdditionalWorksiteData(
+                val additionalResult = cacheAdditionalWorksiteData(
                     incidentId,
                     isPaused,
                     syncStats,
                     worksitesAdditionalStatsUpdater,
                 )
+
+                if (additionalResult.isSlow == false &&
+                    isPaused &&
+                    !syncStats.syncDataMeasures.additional.isDeltaSync
+                ) {
+                    cacheAdditionalWorksiteData(
+                        incidentId,
+                        false,
+                        syncStats,
+                        worksitesCoreStatsUpdater,
+                    )
+                }
 
                 ensureActive()
                 worksitesAdditionalStatsUpdater.endPull()
@@ -520,7 +543,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 syncedAt
             }
             // TODO Adjust strategy according to save count and speed
-            val savedCount = cacheBounded(
+            val countSpeed = cacheBounded(
                 incidentId,
                 isPaused,
                 boundedRegion,
@@ -528,7 +551,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 queryAfter,
                 ::log,
             )
-            if (!isPaused && savedCount == 0) {
+            if (!isPaused && countSpeed.count == 0) {
                 // TODO Alert no Cases were found in the specified region
             }
         }
@@ -609,6 +632,8 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         var liveRegion = boundedRegion
         var liveQueryAfter = queryAfter
 
+        var isSlowDownload: Boolean? = null
+
         do {
             ensureActive()
 
@@ -639,7 +664,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     break
                 }
             } else {
-                val isSlowDownload = downloadSpeedTracker.averageSpeed() < slowSpeedDownload
+                isSlowDownload = downloadSpeedTracker.averageSpeed() < slowSpeedDownload
                 speedMonitor.onSpeedChange(isSlowDownload)
 
                 statsUpdater.addQueryCount(networkData.size)
@@ -708,7 +733,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             }
 
             if (isPaused) {
-                return@coroutineScope savedCount
+                return@coroutineScope DownloadCountSpeed(savedCount, isSlowDownload)
             }
         } while (networkData.isNotEmpty() && !isOuterRegionReached)
 
@@ -726,11 +751,11 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             )
         }
 
-        savedCount
+        DownloadCountSpeed(savedCount, isSlowDownload)
     }
 
-    // ~50000 Cases longer than 10 mins is a reasonable threshold
-    private val slowSpeedDownload = 250f / 3
+    // ~40000 Cases longer than 10 mins is reasonably slow
+    private val slowSpeedDownload = 200f / 3
 
     private fun getMaxQueryCount(isAdditionalData: Boolean) = if (isAdditionalData) {
         if (deviceInspector.isLimitedDevice) 2000 else 6000
@@ -738,19 +763,20 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         if (deviceInspector.isLimitedDevice) 3000 else 10000
     }
 
-    private suspend fun cacheShortWorksites(
+    private suspend fun cacheWorksitesCore(
         incidentId: Long,
         isPaused: Boolean,
         syncParameters: IncidentDataSyncParameters,
         statsUpdater: IncidentDataPullStatsUpdater,
     ) = coroutineScope {
-        var isSlowDownload: Boolean?
+        var isSlowDownload: Boolean? = null
+        var savedCount = 0
 
         val downloadSpeedTracker = CountTimeTracker()
 
         val timeMarkers = syncParameters.syncDataMeasures.core
         if (!timeMarkers.isDeltaSync) {
-            isSlowDownload = cacheWorksitesBefore(
+            val beforeResult = cacheWorksitesBefore(
                 IncidentCacheStage.WorksitesCore,
                 incidentId,
                 isPaused,
@@ -767,19 +793,19 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 },
             )
 
-            if (isPaused && isSlowDownload == true) {
-                return@coroutineScope SyncStageResult(
-                    isSuccess = false,
-                    isSlowDownload = true,
-                )
+            if (isPaused) {
+                return@coroutineScope beforeResult
             }
+
+            isSlowDownload = beforeResult.isSlow
+            savedCount = beforeResult.count
         }
 
         ensureActive()
 
         // TODO Deltas should account for deleted and/or reclassified
 
-        isSlowDownload = cacheWorksitesAfter(
+        val afterResult = cacheWorksitesAfter(
             IncidentCacheStage.WorksitesCore,
             incidentId,
             isPaused,
@@ -795,7 +821,10 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             },
         )
 
-        SyncStageResult(!isPaused, isSlowDownload = isSlowDownload == true)
+        DownloadCountSpeed(
+            savedCount + afterResult.count,
+            isSlowDownload == true || afterResult.isSlow == true,
+        )
     }
 
     private suspend fun <T, U> cacheWorksitesBefore(
@@ -891,16 +920,16 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             }
 
             if (isPaused) {
-                return@coroutineScope isSlowDownload == true
+                return@coroutineScope DownloadCountSpeed(savedCount, isSlowDownload)
             }
 
             // TODO Account for low battery
             if (initialCount > unmeteredDataCountThreshold && !isNetworkUnmetered) {
-                return@coroutineScope isSlowDownload
+                return@coroutineScope DownloadCountSpeed(savedCount, isSlowDownload)
             }
         } while (networkData.isNotEmpty())
 
-        isSlowDownload
+        DownloadCountSpeed(savedCount, isSlowDownload)
     }
 
     private suspend fun <T, U> cacheWorksitesAfter(
@@ -979,16 +1008,16 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             }
 
             if (isPaused) {
-                return@coroutineScope isSlowDownload == true
+                return@coroutineScope DownloadCountSpeed(savedCount, isSlowDownload)
             }
 
             // TODO Account for low battery
             if (initialCount > unmeteredDataCountThreshold && !isNetworkUnmetered) {
-                return@coroutineScope isSlowDownload
+                return@coroutineScope DownloadCountSpeed(savedCount, isSlowDownload)
             }
         } while (networkData.isNotEmpty())
 
-        isSlowDownload
+        DownloadCountSpeed(savedCount, isSlowDownload)
     }
 
     private suspend fun saveWorksites(
@@ -1043,13 +1072,14 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         syncParameters: IncidentDataSyncParameters,
         statsUpdater: IncidentDataPullStatsUpdater,
     ) = coroutineScope {
-        var isSlowDownload: Boolean?
+        var isSlowDownload: Boolean? = null
+        var savedCount = 0
 
         val downloadSpeedTracker = CountTimeTracker()
 
         val timeMarkers = syncParameters.syncDataMeasures.additional
         if (!timeMarkers.isDeltaSync) {
-            isSlowDownload = cacheWorksitesBefore(
+            val beforeResult = cacheWorksitesBefore(
                 IncidentCacheStage.WorksitesAdditional,
                 incidentId,
                 isPaused,
@@ -1069,19 +1099,20 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     saveAdditional(worksites, statsUpdater)
                 },
             )
-            if (isPaused && isSlowDownload == true) {
-                return@coroutineScope SyncStageResult(
-                    isSuccess = false,
-                    isSlowDownload = true,
-                )
+
+            if (isPaused) {
+                return@coroutineScope beforeResult
             }
+
+            isSlowDownload = beforeResult.isSlow
+            savedCount = beforeResult.count
         }
 
         ensureActive()
 
         // TODO Deltas should account for deleted and/or reclassified
 
-        isSlowDownload = cacheWorksitesAfter(
+        val afterResult = cacheWorksitesAfter(
             IncidentCacheStage.WorksitesAdditional,
             incidentId,
             isPaused,
@@ -1101,7 +1132,10 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             },
         )
 
-        SyncStageResult(!isPaused, isSlowDownload = isSlowDownload == true)
+        DownloadCountSpeed(
+            savedCount + afterResult.count,
+            isSlowDownload == true || afterResult.isSlow == true,
+        )
     }
 
     private suspend fun saveAdditional(
@@ -1151,9 +1185,9 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         incidentCachePreferences.setPreferences(preferences)
     }
 
-    private data class SyncStageResult(
-        val isSuccess: Boolean = false,
-        val isSlowDownload: Boolean = false,
+    private data class DownloadCountSpeed(
+        val count: Int,
+        val isSlow: Boolean? = null,
     )
 }
 
