@@ -39,7 +39,7 @@ class CrisisCleanupAppLogger @Inject constructor(
 
     override fun logCapture(message: String) {
         if (isDebuggable) {
-            Log.w(tag, message)
+            Log.i(tag, message)
         } else {
             crashlytics.log(message)
         }

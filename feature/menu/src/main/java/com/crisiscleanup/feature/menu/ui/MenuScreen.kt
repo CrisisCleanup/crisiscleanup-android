@@ -183,6 +183,8 @@ private fun MenuScreen(
     }
 
     val incidentCachePreferences by viewModel.incidentCachePreferences.collectAsStateWithLifecycle()
+    val incidentDataCacheMetrics by viewModel.incidentDataCacheMetrics.collectAsStateWithLifecycle()
+    val hasSpeedNotAdaptive = incidentDataCacheMetrics.hasSpeedNotAdaptive
 
     Column {
         AppTopBar(
@@ -275,6 +277,7 @@ private fun MenuScreen(
             item {
                 IncidentCacheView(
                     incidentCachePreferences,
+                    hasSpeedNotAdaptive,
                     openIncidentCache,
                     listItemModifier,
                 )
@@ -673,42 +676,44 @@ private fun TermsPrivacyView(
 @Composable
 private fun IncidentCacheView(
     incidentCachePreferences: IncidentWorksitesCachePreferences,
+    hasSpeedNotAdaptive: Boolean,
     onOpenIncidentCache: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val t = LocalAppTranslator.current
 
-    // TODO Show warning when
-    //      - Paused and speed is fast
-    //      - Not paused and speed is slow
-    Row(
-        modifier,
-        horizontalArrangement = listItemSpacedBy,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        val syncingPolicy = if (incidentCachePreferences.isPaused) {
-            t("~~Pause downloading Cases")
-        } else if (incidentCachePreferences.isBoundedNearMe) {
-            t("~~Download Cases near me")
-        } else if (incidentCachePreferences.isBoundedByCoordinates) {
-            t("~~Download Cases in specific area")
-        } else {
-            t("~~Adaptively download Cases")
+    Column(modifier) {
+        if (hasSpeedNotAdaptive) {
+            Text(t("~~It seems you have a good internet connection. Changing the sync strategy to adaptive ensures you'll get Incident updates reliably."))
         }
-        Text(
-            syncingPolicy,
-            Modifier.weight(1f),
-        )
+        Row(
+            horizontalArrangement = listItemSpacedBy,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            val syncingPolicy = if (incidentCachePreferences.isPaused) {
+                t("~~Pause downloading Cases")
+            } else if (incidentCachePreferences.isBoundedNearMe) {
+                t("~~Download Cases near me")
+            } else if (incidentCachePreferences.isBoundedByCoordinates) {
+                t("~~Download Cases in specific area")
+            } else {
+                t("~~Adaptively download Cases")
+            }
+            Text(
+                syncingPolicy,
+                Modifier.weight(1f),
+            )
 
-        Text(
-            text = t("~~Change"),
-            modifier = Modifier
-                .clickable(
-                    onClick = onOpenIncidentCache,
-                )
-                .listItemPadding(),
-            style = LocalFontStyles.current.header4,
-            color = primaryBlueColor,
-        )
+            Text(
+                text = t("~~Change"),
+                modifier = Modifier
+                    .clickable(
+                        onClick = onOpenIncidentCache,
+                    )
+                    .listItemPadding(),
+                style = LocalFontStyles.current.header4,
+                color = primaryBlueColor,
+            )
+        }
     }
 }

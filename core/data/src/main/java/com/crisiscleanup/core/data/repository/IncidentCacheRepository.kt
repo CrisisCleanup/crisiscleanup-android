@@ -344,8 +344,6 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             ensureActive()
             worksitesCoreStatsUpdater.endPull()
 
-            // TODO Alert elsewhere by subscribing to DataDownloadSpeedMonitor and IncidentWorksitesCachePreferences distinctUntilChanged (speed and isPaused)
-
             if (isPaused && isSlowDownload) {
                 partialSyncReasons.add("Worksite downloads are paused")
                 skipWorksiteCaching = true
@@ -542,7 +540,6 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             } else {
                 syncedAt
             }
-            // TODO Adjust strategy according to save count and speed
             val countSpeed = cacheBounded(
                 incidentId,
                 isPaused,
