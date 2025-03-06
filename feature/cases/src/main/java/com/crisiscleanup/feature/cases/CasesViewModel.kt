@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppMemoryStats
+import com.crisiscleanup.core.common.IncidentMapTracker
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.PermissionManager
@@ -117,6 +118,7 @@ class CasesViewModel @Inject constructor(
     accountDataRepository: AccountDataRepository,
     organizationsRepository: OrganizationsRepository,
     val transferWorkTypeProvider: TransferWorkTypeProvider,
+    private val incidentMapTracker: IncidentMapTracker,
     private val translator: KeyResourceTranslator,
     private val syncPuller: SyncPuller,
     val visualAlertManager: VisualAlertManager,
@@ -604,6 +606,15 @@ class CasesViewModel @Inject constructor(
                     visibleBounds.northeast,
                 )
                 mapBoundsManager.cacheBounds(visibleBounds)
+
+                if (isActiveChange) {
+                    with(visibleBounds.center) {
+                        incidentMapTracker.track(
+                            latitude = latitude,
+                            longitude = longitude,
+                        )
+                    }
+                }
             }
         }
     }

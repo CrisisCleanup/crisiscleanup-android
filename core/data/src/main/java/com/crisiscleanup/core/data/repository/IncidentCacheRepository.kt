@@ -3,6 +3,7 @@ package com.crisiscleanup.core.data.repository
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities.NET_CAPABILITY_NOT_METERED
 import com.crisiscleanup.core.common.AppEnv
+import com.crisiscleanup.core.common.IncidentMapTracker
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.haversineDistance
 import com.crisiscleanup.core.common.kmToMiles
@@ -34,6 +35,7 @@ import com.crisiscleanup.core.datastore.IncidentCachePreferencesDataSource
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
+import com.crisiscleanup.core.model.data.IncidentLocationBounder
 import com.crisiscleanup.core.model.data.IncidentWorksitesCachePreferences
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.KeyDynamicValuePair
@@ -97,6 +99,8 @@ class IncidentWorksitesCacheRepository @Inject constructor(
     private val incidentCachePreferences: IncidentCachePreferencesDataSource,
     incidentSelector: IncidentSelector,
     private val locationProvider: LocationProvider,
+    private val locationBounder: IncidentLocationBounder,
+    private val incidentMapTracker: IncidentMapTracker,
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val worksitesRepository: WorksitesRepository,
     private val worksiteDaoPlus: WorksiteDaoPlus,
@@ -407,7 +411,63 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         }
     }
 
-    private suspend fun getLocation() = locationProvider.getLocation(10.seconds)
+    // TODO Refactor and write tests, remove exception guard
+    /**
+     * @return latitude, longitude
+     */
+    private suspend fun getLocation(incidentId: Long): Pair<Double, Double>? {
+        locationProvider.getLocation(10.seconds)?.let {
+            return it
+        }
+
+        try {
+            val recentWorksites = worksitesRepository.getRecentWorksites(incidentId, limit = 3)
+            if (recentWorksites.isNotEmpty()) {
+                var totalLatitude = 0.0
+                var totalLongitude = 0.0
+                recentWorksites.forEach {
+                    totalLatitude += it.latitude
+                    totalLongitude += it.longitude
+                }
+                val averageLatitude = totalLatitude / recentWorksites.size
+                val averageLongitude = totalLongitude / recentWorksites.size
+                if (locationBounder.isInBounds(
+                        incidentId,
+                        latitude = averageLatitude,
+                        longitude = averageLongitude,
+                    )
+                ) {
+                    return Pair(averageLatitude, averageLongitude)
+                }
+            }
+
+            incidentMapTracker.lastLocation?.let {
+                if (locationBounder.isInBounds(
+                        incidentId,
+                        latitude = it.first,
+                        longitude = it.second,
+                    )
+                ) {
+                    return it
+                }
+            }
+
+            locationBounder.getBoundsCenter(incidentId)?.let {
+                if (locationBounder.isInBounds(
+                        incidentId,
+                        latitude = it.first,
+                        longitude = it.second,
+                    )
+                ) {
+                    return it
+                }
+            }
+        } catch (e: Exception) {
+            appLogger.logException(e)
+        }
+
+        return null
+    }
 
     private suspend fun cacheBoundedWorksites(
         incidentId: Long,
@@ -426,7 +486,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         var boundedRegion = preferencesBoundedRegion
 
         if (isMyLocationBounded) {
-            val locationCoordinates = getLocation()
+            val locationCoordinates = getLocation(incidentId)
             locationCoordinates?.let {
                 boundedRegion = boundedRegion.copy(
                     latitude = it.first,
@@ -485,7 +545,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             return
         }
 
-        getLocation()?.let {
+        getLocation(incidentId)?.let {
             val boundedRegion = IncidentDataSyncParameters.BoundedRegion(
                 latitude = it.first,
                 longitude = it.second,

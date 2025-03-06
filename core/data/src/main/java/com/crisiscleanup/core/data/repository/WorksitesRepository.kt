@@ -62,6 +62,11 @@ interface WorksitesRepository {
         viewStart: Instant,
     )
 
+    suspend fun getRecentWorksites(
+        incidentId: Long,
+        limit: Int = 3,
+    ): List<Worksite>
+
     fun getUnsyncedCounts(worksiteId: Long): List<Int>
 
     suspend fun shareWorksite(
