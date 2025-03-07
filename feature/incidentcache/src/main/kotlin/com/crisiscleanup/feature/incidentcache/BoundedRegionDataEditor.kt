@@ -87,12 +87,7 @@ internal class IncidentCacheBoundedRegionDataEditor(
     }
 
     init {
-        // TODO Common dimensions
-        val pinMarkerSize = Pair(32f, 48f)
-        mapMarkerIcon = drawableResourceBitmapProvider.getIcon(
-            R.drawable.cc_foreground_pin,
-            pinMarkerSize,
-        )
+        mapMarkerIcon = drawableResourceBitmapProvider.getIcon(R.drawable.cc_foreground_pin)
 
         permissionManager.permissionChanges
             .onEach {

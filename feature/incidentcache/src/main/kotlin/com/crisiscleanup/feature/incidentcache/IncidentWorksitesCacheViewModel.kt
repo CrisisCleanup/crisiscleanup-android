@@ -166,7 +166,6 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
                     return@onEach
                 }
 
-                // TODO Update consistently
                 isUpdatingCachePreferences.value = true
                 try {
                     incidentCacheRepository.updateCachePreferences(it)

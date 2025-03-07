@@ -266,15 +266,12 @@ class ViewCaseViewModel @Inject constructor(
             }
             .launchIn(viewModelScope)
 
-        val pinMarkerSize = Pair(32f, 48f)
         viewModelScope.launch {
             inBoundsPinIcon = drawableResourceBitmapProvider.getIcon(
                 com.crisiscleanup.core.common.R.drawable.cc_foreground_pin,
-                pinMarkerSize,
             )
             outOfBoundsPinIcon = drawableResourceBitmapProvider.getIcon(
                 com.crisiscleanup.core.mapmarker.R.drawable.cc_pin_location_out_of_bounds,
-                pinMarkerSize,
             )
             mapMarkerIcon.value = inBoundsPinIcon
         }
