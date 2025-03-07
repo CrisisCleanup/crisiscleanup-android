@@ -27,3 +27,13 @@ enum class LocationShape {
     Polygon,
     MultiPolygon,
 }
+
+interface IncidentLocationBounder {
+    suspend fun isInBounds(
+        incidentId: Long,
+        latitude: Double,
+        longitude: Double,
+    ): Boolean
+
+    suspend fun getBoundsCenter(incidentId: Long): Pair<Double, Double>?
+}

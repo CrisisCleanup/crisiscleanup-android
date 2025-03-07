@@ -22,6 +22,7 @@ import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.IncidentIdWorksiteCount
 import com.crisiscleanup.core.model.data.OrganizationLocationAreaBounds
 import com.crisiscleanup.core.model.data.TableDataWorksite
+import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteSortBy
 import com.crisiscleanup.core.model.data.getClaimStatus
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
@@ -260,6 +261,15 @@ class OfflineFirstWorksitesRepository @Inject constructor(
                 viewedAt = viewStart,
             ),
         )
+    }
+
+    override suspend fun getRecentWorksites(incidentId: Long, limit: Int): List<Worksite> {
+        val orgId = orgId.first()
+        return recentWorksiteDao.getRecents(incidentId, limit)
+            .map {
+                it.asExternalModel(orgId, languageTranslationsRepository)
+                    .worksite
+            }
     }
 
     override fun getUnsyncedCounts(worksiteId: Long) =

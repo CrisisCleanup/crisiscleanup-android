@@ -3,6 +3,7 @@ package com.crisiscleanup.core.data.repository
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities.NET_CAPABILITY_NOT_METERED
 import com.crisiscleanup.core.common.AppEnv
+import com.crisiscleanup.core.common.IncidentMapTracker
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.haversineDistance
 import com.crisiscleanup.core.common.kmToMiles
@@ -34,6 +35,7 @@ import com.crisiscleanup.core.datastore.IncidentCachePreferencesDataSource
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
+import com.crisiscleanup.core.model.data.IncidentLocationBounder
 import com.crisiscleanup.core.model.data.IncidentWorksitesCachePreferences
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.KeyDynamicValuePair
@@ -62,6 +64,7 @@ import kotlin.time.Duration.Companion.seconds
 
 interface IncidentCacheRepository {
     val isSyncingActiveIncident: Flow<Boolean>
+    val cacheStage: Flow<IncidentCacheStage>
 
     val cachePreferences: Flow<IncidentWorksitesCachePreferences>
 
@@ -96,7 +99,10 @@ class IncidentWorksitesCacheRepository @Inject constructor(
     private val incidentCachePreferences: IncidentCachePreferencesDataSource,
     incidentSelector: IncidentSelector,
     private val locationProvider: LocationProvider,
+    private val locationBounder: IncidentLocationBounder,
+    private val incidentMapTracker: IncidentMapTracker,
     private val networkDataSource: CrisisCleanupNetworkDataSource,
+    private val worksitesRepository: WorksitesRepository,
     private val worksiteDaoPlus: WorksiteDaoPlus,
     private val deviceInspector: SyncCacheDeviceInspector,
     private val speedMonitor: DataDownloadSpeedMonitor,
@@ -124,6 +130,8 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             incidentId == syncingId
         }
 
+    override val cacheStage = MutableStateFlow(IncidentCacheStage.Start)
+
     override val cachePreferences = incidentCachePreferences.preferences
 
     override fun streamSyncStats(incidentId: Long) =
@@ -145,6 +153,15 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             .toSet()
         val selectedIncident = appPreferences.userData.first().selectedIncidentId
         val isIncidentCached = incidentIds.contains(selectedIncident)
+
+        if (incidentIds.isNotEmpty() &&
+            !isIncidentCached &&
+            selectedIncident == EmptyIncident.id &&
+            !forcePullIncidents
+        ) {
+            return false
+        }
+
         val submittedPlan = IncidentDataSyncPlan(
             selectedIncident,
             syncIncidents = forcePullIncidents || !isIncidentCached,
@@ -181,6 +198,8 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         stage: IncidentCacheStage,
         details: String = "",
     ) {
+        cacheStage.value = stage
+
         if (appEnv.isProduction) {
             return
         }
@@ -216,6 +235,8 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             }
 
             val syncPreferences = cachePreferences.first()
+
+            val isPaused = syncPreferences.isPaused
 
             val incidents = incidentsRepository.incidents.first()
             if (incidents.isEmpty()) {
@@ -281,7 +302,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 if (preferencesBoundedRegion.isDefined) {
                     cacheBoundedWorksites(
                         incidentId,
-                        isPaused = syncPreferences.isPaused,
+                        isPaused = isPaused,
                         isMyLocationBounded = regionParameters.isRegionMyLocation,
                         preferencesBoundedRegion = preferencesBoundedRegion,
                         savedBoundedRegion = syncStats.boundedRegion,
@@ -292,25 +313,40 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     partialSyncReasons.add("Incomplete bounded region. Skipping Worksites sync.")
                 }
             } else {
-                val shortResult = cacheShortWorksites(
+                if (!isPaused) {
+                    preloadBounded(incidentId, worksitesCoreStatsUpdater)
+                }
+
+                worksitesCoreStatsUpdater.setDeterminate()
+
+                // TODO If not preloaded and times out try caching around coordinates
+                val shortResult = cacheWorksitesCore(
                     incidentId,
-                    syncPreferences.isPaused,
+                    isPaused,
                     syncStats,
                     worksitesCoreStatsUpdater,
                 )
-                isSlowDownload = shortResult.isSlowDownload
+                isSlowDownload = shortResult.isSlow == true
+
+                if (shortResult.isSlow == false &&
+                    isPaused &&
+                    !syncStats.syncDataMeasures.core.isDeltaSync
+                ) {
+                    cacheWorksitesCore(
+                        incidentId,
+                        false,
+                        syncStats,
+                        worksitesCoreStatsUpdater,
+                    )
+                }
             }
 
             ensureActive()
             worksitesCoreStatsUpdater.endPull()
 
-            // TODO Alert elsewhere by subscribing to DataDownloadSpeedMonitor and IncidentWorksitesCachePreferences distinctUntilChanged (speed and isPaused)
-
-            if (syncPreferences.isPaused) {
-                if (isSlowDownload) {
-                    partialSyncReasons.add("Worksite downloads are paused")
-                    skipWorksiteCaching = true
-                }
+            if (isPaused && isSlowDownload) {
+                partialSyncReasons.add("Worksite downloads are paused")
+                skipWorksiteCaching = true
             }
 
             if (syncPlan.syncSelectedIncident) {
@@ -350,12 +386,24 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     )
                 }
 
-                cacheAdditionalWorksiteData(
+                val additionalResult = cacheAdditionalWorksiteData(
                     incidentId,
-                    syncPreferences.isPaused,
+                    isPaused,
                     syncStats,
                     worksitesAdditionalStatsUpdater,
                 )
+
+                if (additionalResult.isSlow == false &&
+                    isPaused &&
+                    !syncStats.syncDataMeasures.additional.isDeltaSync
+                ) {
+                    cacheAdditionalWorksiteData(
+                        incidentId,
+                        false,
+                        syncStats,
+                        worksitesCoreStatsUpdater,
+                    )
+                }
 
                 ensureActive()
                 worksitesAdditionalStatsUpdater.endPull()
@@ -370,6 +418,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         } finally {
             if (syncPlanReference.compareAndSet(syncPlan, EmptySyncPlan)) {
                 incidentDataPullStats.value = IncidentDataPullStats(isEnded = true)
+                cacheStage.value = IncidentCacheStage.End
             }
 
             if (syncingIncidentId.compareAndSet(incidentId, EmptyIncident.id)) {
@@ -386,6 +435,64 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         }
     }
 
+    // TODO Refactor and write tests, remove exception guard
+    /**
+     * @return latitude, longitude
+     */
+    private suspend fun getLocation(incidentId: Long): Pair<Double, Double>? {
+        locationProvider.getLocation(10.seconds)?.let {
+            return it
+        }
+
+        try {
+            val recentWorksites = worksitesRepository.getRecentWorksites(incidentId, limit = 3)
+            if (recentWorksites.isNotEmpty()) {
+                var totalLatitude = 0.0
+                var totalLongitude = 0.0
+                recentWorksites.forEach {
+                    totalLatitude += it.latitude
+                    totalLongitude += it.longitude
+                }
+                val averageLatitude = totalLatitude / recentWorksites.size
+                val averageLongitude = totalLongitude / recentWorksites.size
+                if (locationBounder.isInBounds(
+                        incidentId,
+                        latitude = averageLatitude,
+                        longitude = averageLongitude,
+                    )
+                ) {
+                    return Pair(averageLatitude, averageLongitude)
+                }
+            }
+
+            incidentMapTracker.lastLocation?.let {
+                if (locationBounder.isInBounds(
+                        incidentId,
+                        latitude = it.first,
+                        longitude = it.second,
+                    )
+                ) {
+                    return it
+                }
+            }
+
+            locationBounder.getBoundsCenter(incidentId)?.let {
+                if (locationBounder.isInBounds(
+                        incidentId,
+                        latitude = it.first,
+                        longitude = it.second,
+                    )
+                ) {
+                    return it
+                }
+            }
+        } catch (e: Exception) {
+            appLogger.logException(e)
+        }
+
+        return null
+    }
+
     private suspend fun cacheBoundedWorksites(
         incidentId: Long,
         isPaused: Boolean,
@@ -396,23 +503,20 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         statsUpdater: IncidentDataPullStatsUpdater,
         boundsCacheTimeout: Duration = 1.minutes,
     ) = coroutineScope {
-        val stage = IncidentCacheStage.WorksitesCore
+        val stage = IncidentCacheStage.WorksitesBounded
 
         fun log(message: String) = logStage(incidentId, stage, message)
 
         var boundedRegion = preferencesBoundedRegion
 
         if (isMyLocationBounded) {
-            val locationCoordinates = locationProvider.coordinates
-
-            // TODO Query current coordinates, with timeout, rather than using cached
+            val locationCoordinates = getLocation(incidentId)
             locationCoordinates?.let {
                 boundedRegion = boundedRegion.copy(
                     latitude = it.first,
                     longitude = it.second,
                 )
             }
-
             if (locationCoordinates == null) {
                 log(
                     "Current user location is not cached. Falling back to last set location.",
@@ -431,108 +535,224 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         } else {
             log("Caching bounded Worksites")
 
-            statsUpdater.setIndeterminate()
-
-            val downloadSpeedTracker = CountTimeTracker()
-
-            val queryCount = if (isPaused) 10 else 60
-            var queryPage = 1
-            var savedWorksiteIds = emptySet<Long>()
-            var initialCount = -1
-            var savedCount = 0
-            var isOuterRegionReached = false
-            val queryBoundedRegionAfter: Instant? =
-                if (savedBoundedRegion?.isSignificantChange(boundedRegion) == true) null else syncedAt
-            val syncStart = Clock.System.now()
-
-            do {
-                ensureActive()
-
-                val networkData = downloadSpeedTracker.time {
-                    val result = networkDataSource.getWorksitesPage(
-                        incidentId,
-                        pageCount = queryCount,
-                        pageOffset = queryPage,
-                        latitude = boundedRegion.latitude,
-                        longitude = boundedRegion.longitude,
-                        updatedAtAfter = queryBoundedRegionAfter,
-                    )
-                    if (initialCount < 0) {
-                        initialCount = result.count ?: 0
-                        statsUpdater.setDataCount(initialCount)
-                    }
-                    result.data ?: emptyList()
-                }
-
-                if (networkData.isEmpty()) {
-                    isOuterRegionReached = true
-
-                    if (savedCount == 0) {
-                        // TODO Alert 0 Worksites were in the bounded region
-                    }
-
-                    log("Cached ($savedCount/$initialCount) Worksites around ${boundedRegion.latitude},${boundedRegion.longitude}.")
-                } else {
-                    val isSlowDownload =
-                        downloadSpeedTracker.averageSpeed() < slowSpeedDownload
-                    speedMonitor.onSpeedChange(isSlowDownload)
-
-                    statsUpdater.addQueryCount(networkData.size)
-
-                    queryPage += 1
-
-                    val deduplicateWorksites = networkData.filter {
-                        !savedWorksiteIds.contains(it.id)
-                    }
-                    if (deduplicateWorksites.isEmpty()) {
-                        val duplicateCount = networkData.size - deduplicateWorksites.size
-                        log("$duplicateCount duplicate(s), before")
-                        break
-                    }
-
-                    saveWorksites(
-                        deduplicateWorksites,
-                        statsUpdater,
-                    )
-                    savedCount += deduplicateWorksites.size
-
-                    savedWorksiteIds = networkData.map { it.id }.toSet()
-
-                    ensureActive()
-
-                    val maxRadius = boundedRegion.radius
-
-                    val lastCoordinates = networkData.last().location.coordinates
-                    val furthestWorksiteRadius =
-                        lastCoordinates.radiusMiles(boundedRegion) ?: maxRadius
-                    isOuterRegionReached = furthestWorksiteRadius >= maxRadius
-
-                    log("Cached ${deduplicateWorksites.size} (${if (isOuterRegionReached) "all within $furthestWorksiteRadius/$maxRadius mi., $queryCount/$initialCount" else "$savedCount/$initialCount"}) around ${boundedRegion.latitude},${boundedRegion.longitude}.")
-                }
-
-                if (isPaused) {
-                    return@coroutineScope
-                }
-            } while (networkData.isNotEmpty() && !isOuterRegionReached)
-
-            if (isOuterRegionReached) {
-                val boundedRegionEncoded = try {
-                    Json.encodeToString(boundedRegion)
-                } catch (e: Exception) {
-                    appLogger.logException(e)
-                    ""
-                }
-                syncParameterDao.updatedBoundedParameters(
-                    incidentId,
-                    boundedRegionEncoded,
-                    syncStart,
-                )
+            val queryAfter = if (savedBoundedRegion?.isSignificantChange(boundedRegion) == true) {
+                null
+            } else {
+                syncedAt
+            }
+            val countSpeed = cacheBounded(
+                incidentId,
+                isPaused,
+                boundedRegion,
+                statsUpdater,
+                queryAfter,
+                ::log,
+            )
+            if (!isPaused && countSpeed.count == 0) {
+                // TODO Alert no Cases were found in the specified region
             }
         }
     }
 
-    // ~50000 Cases longer than 10 mins is a reasonable threshold
-    private val slowSpeedDownload = 250f / 3
+    private suspend fun preloadBounded(
+        incidentId: Long,
+        statsUpdater: IncidentDataPullStatsUpdater,
+    ) {
+        val localCount = worksitesRepository.getWorksitesCount(incidentId)
+        if (localCount > 600) {
+            return
+        }
+
+        val networkCount = networkDataSource.getWorksitesCount(incidentId)
+        if (networkCount < 3000) {
+            return
+        }
+
+        getLocation(incidentId)?.let {
+            val boundedRegion = IncidentDataSyncParameters.BoundedRegion(
+                latitude = it.first,
+                longitude = it.second,
+                radius = 15.0,
+            )
+            if (boundedRegion.isDefined) {
+                fun log(message: String) {
+                    logStage(
+                        incidentId,
+                        IncidentCacheStage.WorksitesPreload,
+                        message,
+                    )
+                }
+
+                try {
+                    cacheBounded(
+                        incidentId,
+                        false,
+                        boundedRegion,
+                        statsUpdater,
+                        log = ::log,
+                        maxCount = 300,
+                    )
+                } catch (e: Exception) {
+                    appLogger.logException(e)
+                }
+            }
+        }
+    }
+
+    private suspend fun cacheBounded(
+        incidentId: Long,
+        isPaused: Boolean,
+        boundedRegion: IncidentDataSyncParameters.BoundedRegion,
+        statsUpdater: IncidentDataPullStatsUpdater,
+        queryAfter: Instant? = null,
+        log: (String) -> Unit,
+        maxCount: Int = 5000,
+    ) = coroutineScope {
+        statsUpdater.setIndeterminate()
+
+        val downloadSpeedTracker = CountTimeTracker()
+
+        val queryCount = if (isPaused) {
+            10
+        } else if (appEnv.isProduction) {
+            60
+        } else {
+            40
+        }
+        var queryPage = 1
+        var savedWorksiteIds = emptySet<Long>()
+        var initialCount = -1
+        var savedCount = 0
+        var isOuterRegionReached = false
+        val syncStart = Clock.System.now()
+
+        var liveRegion = boundedRegion
+        var liveQueryAfter = queryAfter
+
+        var isSlowDownload: Boolean? = null
+
+        do {
+            ensureActive()
+
+            val locationDetails = "${liveRegion.latitude},${liveRegion.longitude}"
+
+            val networkData = downloadSpeedTracker.time {
+                val result = networkDataSource.getWorksitesPage(
+                    incidentId,
+                    pageCount = queryCount,
+                    pageOffset = queryPage,
+                    latitude = liveRegion.latitude,
+                    longitude = liveRegion.longitude,
+                    updatedAtAfter = liveQueryAfter,
+                )
+                if (initialCount < 0) {
+                    initialCount = result.count ?: 0
+                    statsUpdater.setDataCount(initialCount)
+                }
+                result.data ?: emptyList()
+            }
+
+            if (networkData.isEmpty()) {
+                isOuterRegionReached = true
+
+                log("Cached ($savedCount/$initialCount) Worksites around $locationDetails.")
+
+                if (savedCount == 0) {
+                    break
+                }
+            } else {
+                isSlowDownload = downloadSpeedTracker.averageSpeed() < slowSpeedDownload
+                speedMonitor.onSpeedChange(isSlowDownload)
+
+                statsUpdater.addQueryCount(networkData.size)
+
+                queryPage += 1
+
+                val deduplicateWorksites = networkData.filter {
+                    !savedWorksiteIds.contains(it.id)
+                }
+                if (deduplicateWorksites.isEmpty()) {
+                    val duplicateCount = networkData.size - deduplicateWorksites.size
+                    log("$duplicateCount duplicate(s), before")
+                    break
+                }
+
+                saveWorksites(
+                    deduplicateWorksites,
+                    statsUpdater,
+                )
+                savedCount += deduplicateWorksites.size
+
+                savedWorksiteIds = networkData.map { it.id }.toSet()
+
+                if (savedWorksiteIds.isNotEmpty()) {
+                    ensureActive()
+
+                    try {
+                        val networkWorksites =
+                            networkDataSource.getWorksitesFlagsFormData(savedWorksiteIds)
+                        saveAdditional(networkWorksites, statsUpdater)
+                    } catch (e: Exception) {
+                        appLogger.logDebug(e)
+                    }
+                }
+
+                ensureActive()
+
+                val maxRadius = liveRegion.radius
+
+                val lastCoordinates = networkData.last().location.coordinates
+                val furthestWorksiteRadius = lastCoordinates.radiusMiles(liveRegion) ?: maxRadius
+                isOuterRegionReached = furthestWorksiteRadius >= maxRadius
+
+                val distanceDetails = if (isOuterRegionReached) {
+                    "all within $furthestWorksiteRadius/$maxRadius mi."
+                } else {
+                    "up to $furthestWorksiteRadius mi."
+                }
+                log("Cached ${deduplicateWorksites.size} ($savedCount/$initialCount) $distanceDetails around $locationDetails.")
+
+                if (savedCount > maxCount) {
+                    break
+                }
+
+                getLocation(incidentId)?.let {
+                    val updatedRegion = liveRegion.copy(
+                        latitude = it.first,
+                        longitude = it.second,
+                    )
+                    if (liveRegion.isSignificantChange(updatedRegion)) {
+                        liveRegion = updatedRegion
+                        queryPage = 1
+                        liveQueryAfter = null
+                    }
+                }
+            }
+
+            if (isPaused) {
+                return@coroutineScope DownloadCountSpeed(savedCount, isSlowDownload)
+            }
+        } while (networkData.isNotEmpty() && !isOuterRegionReached)
+
+        if (isOuterRegionReached) {
+            val boundedRegionEncoded = try {
+                Json.encodeToString(liveRegion)
+            } catch (e: Exception) {
+                appLogger.logException(e)
+                ""
+            }
+            syncParameterDao.updatedBoundedParameters(
+                incidentId,
+                boundedRegionEncoded,
+                syncStart,
+            )
+        }
+
+        DownloadCountSpeed(savedCount, isSlowDownload)
+    }
+
+    // ~40000 Cases longer than 10 mins is reasonably slow
+    private val slowSpeedDownload = 200f / 3
 
     private fun getMaxQueryCount(isAdditionalData: Boolean) = if (isAdditionalData) {
         if (deviceInspector.isLimitedDevice) 2000 else 6000
@@ -540,19 +760,20 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         if (deviceInspector.isLimitedDevice) 3000 else 10000
     }
 
-    private suspend fun cacheShortWorksites(
+    private suspend fun cacheWorksitesCore(
         incidentId: Long,
         isPaused: Boolean,
         syncParameters: IncidentDataSyncParameters,
         statsUpdater: IncidentDataPullStatsUpdater,
     ) = coroutineScope {
-        var isSlowDownload: Boolean?
+        var isSlowDownload: Boolean? = null
+        var savedCount = 0
 
         val downloadSpeedTracker = CountTimeTracker()
 
         val timeMarkers = syncParameters.syncDataMeasures.core
         if (!timeMarkers.isDeltaSync) {
-            isSlowDownload = cacheWorksitesBefore(
+            val beforeResult = cacheWorksitesBefore(
                 IncidentCacheStage.WorksitesCore,
                 incidentId,
                 isPaused,
@@ -569,19 +790,19 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 },
             )
 
-            if (isPaused && isSlowDownload == true) {
-                return@coroutineScope SyncStageResult(
-                    isSuccess = false,
-                    isSlowDownload = true,
-                )
+            if (isPaused) {
+                return@coroutineScope beforeResult
             }
+
+            isSlowDownload = beforeResult.isSlow
+            savedCount = beforeResult.count
         }
 
         ensureActive()
 
         // TODO Deltas should account for deleted and/or reclassified
 
-        isSlowDownload = cacheWorksitesAfter(
+        val afterResult = cacheWorksitesAfter(
             IncidentCacheStage.WorksitesCore,
             incidentId,
             isPaused,
@@ -597,7 +818,10 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             },
         )
 
-        SyncStageResult(!isPaused, isSlowDownload = isSlowDownload == true)
+        DownloadCountSpeed(
+            savedCount + afterResult.count,
+            isSlowDownload == true || afterResult.isSlow == true,
+        )
     }
 
     private suspend fun <T, U> cacheWorksitesBefore(
@@ -693,16 +917,16 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             }
 
             if (isPaused) {
-                return@coroutineScope isSlowDownload == true
+                return@coroutineScope DownloadCountSpeed(savedCount, isSlowDownload)
             }
 
             // TODO Account for low battery
             if (initialCount > unmeteredDataCountThreshold && !isNetworkUnmetered) {
-                return@coroutineScope isSlowDownload
+                return@coroutineScope DownloadCountSpeed(savedCount, isSlowDownload)
             }
         } while (networkData.isNotEmpty())
 
-        isSlowDownload
+        DownloadCountSpeed(savedCount, isSlowDownload)
     }
 
     private suspend fun <T, U> cacheWorksitesAfter(
@@ -781,16 +1005,16 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             }
 
             if (isPaused) {
-                return@coroutineScope isSlowDownload == true
+                return@coroutineScope DownloadCountSpeed(savedCount, isSlowDownload)
             }
 
             // TODO Account for low battery
             if (initialCount > unmeteredDataCountThreshold && !isNetworkUnmetered) {
-                return@coroutineScope isSlowDownload
+                return@coroutineScope DownloadCountSpeed(savedCount, isSlowDownload)
             }
         } while (networkData.isNotEmpty())
 
-        isSlowDownload
+        DownloadCountSpeed(savedCount, isSlowDownload)
     }
 
     private suspend fun saveWorksites(
@@ -845,13 +1069,14 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         syncParameters: IncidentDataSyncParameters,
         statsUpdater: IncidentDataPullStatsUpdater,
     ) = coroutineScope {
-        var isSlowDownload: Boolean?
+        var isSlowDownload: Boolean? = null
+        var savedCount = 0
 
         val downloadSpeedTracker = CountTimeTracker()
 
         val timeMarkers = syncParameters.syncDataMeasures.additional
         if (!timeMarkers.isDeltaSync) {
-            isSlowDownload = cacheWorksitesBefore(
+            val beforeResult = cacheWorksitesBefore(
                 IncidentCacheStage.WorksitesAdditional,
                 incidentId,
                 isPaused,
@@ -871,19 +1096,20 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     saveAdditional(worksites, statsUpdater)
                 },
             )
-            if (isPaused && isSlowDownload == true) {
-                return@coroutineScope SyncStageResult(
-                    isSuccess = false,
-                    isSlowDownload = true,
-                )
+
+            if (isPaused) {
+                return@coroutineScope beforeResult
             }
+
+            isSlowDownload = beforeResult.isSlow
+            savedCount = beforeResult.count
         }
 
         ensureActive()
 
         // TODO Deltas should account for deleted and/or reclassified
 
-        isSlowDownload = cacheWorksitesAfter(
+        val afterResult = cacheWorksitesAfter(
             IncidentCacheStage.WorksitesAdditional,
             incidentId,
             isPaused,
@@ -903,7 +1129,10 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             },
         )
 
-        SyncStageResult(!isPaused, isSlowDownload = isSlowDownload == true)
+        DownloadCountSpeed(
+            savedCount + afterResult.count,
+            isSlowDownload == true || afterResult.isSlow == true,
+        )
     }
 
     private suspend fun saveAdditional(
@@ -945,18 +1174,6 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         }
     }
 
-    private suspend fun saveFullWorksites(
-        worksiteIds: List<Long>,
-        syncStart: Instant,
-        interval: Int = 20,
-    ) {
-        // TODO Save full worksites iterating by interval
-//        networkDataSource.getWorksites()?.let { networkWorksites ->
-//            val entities = networkWorksites.map(NetworkWorksiteFull::asEntities)
-//            worksiteDaoPlus.syncWorksites(entities, syncStart)
-//        }
-    }
-
     override suspend fun resetIncidentSyncStats(incidentId: Long) {
         syncParameterDao.deleteSyncParameters(incidentId)
     }
@@ -965,20 +1182,22 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         incidentCachePreferences.setPreferences(preferences)
     }
 
-    private enum class IncidentCacheStage {
-        Start,
-        Incidents,
-        WorksitesCore,
-        WorksitesAdditional,
-        ActiveIncident,
-        ActiveIncidentOrganization,
-        End,
-    }
-
-    private data class SyncStageResult(
-        val isSuccess: Boolean = false,
-        val isSlowDownload: Boolean = false,
+    private data class DownloadCountSpeed(
+        val count: Int,
+        val isSlow: Boolean? = null,
     )
+}
+
+enum class IncidentCacheStage {
+    Start,
+    Incidents,
+    WorksitesBounded,
+    WorksitesPreload,
+    WorksitesCore,
+    WorksitesAdditional,
+    ActiveIncident,
+    ActiveIncidentOrganization,
+    End,
 }
 
 private data class IncidentDataSyncPlan(

@@ -32,6 +32,7 @@ import okhttp3.Interceptor
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Duration
 
 @HiltAndroidApp
 class SandboxApplication : Application()
@@ -164,9 +165,9 @@ class AppAccountEventBus @Inject constructor() : AccountEventBus {
 
 @Singleton
 class AppLocationProvider @Inject constructor() : LocationProvider {
-    override val coordinates: Pair<Double, Double> = Pair(0.0, 0.0)
+    override val coordinates = Pair(0.0, 0.0)
 
-    override suspend fun getLocation() = coordinates
+    override suspend fun getLocation(timeout: Duration) = coordinates
 }
 
 @Singleton

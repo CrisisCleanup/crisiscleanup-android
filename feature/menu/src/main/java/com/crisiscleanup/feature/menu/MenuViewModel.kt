@@ -17,6 +17,7 @@ import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.subscribedReplay
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.data.IncidentSelector
+import com.crisiscleanup.core.data.incidentcache.DataDownloadSpeedMonitor
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AppPreferencesRepository
@@ -29,6 +30,8 @@ import com.crisiscleanup.core.ui.TutorialViewTracker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -45,6 +48,7 @@ class MenuViewModel @Inject constructor(
     private val appVersionProvider: AppVersionProvider,
     private val appPreferencesRepository: AppPreferencesRepository,
     appSettingsProvider: AppSettingsProvider,
+    dataDownloadSpeedMonitor: DataDownloadSpeedMonitor,
     private val appEnv: AppEnv,
     private val syncPuller: SyncPuller,
     @Tutorials(Menu) val menuTutorialDirector: TutorialDirector,
@@ -123,6 +127,25 @@ class MenuViewModel @Inject constructor(
             started = subscribedReplay(),
         )
 
+    val incidentDataCacheMetrics = combine(
+        incidentCachePreferences,
+        dataDownloadSpeedMonitor.isSlowSpeed.distinctUntilChanged(),
+        ::Pair,
+    )
+        .map { (preferences, isSlow) ->
+            IncidentDataCacheMetrics(
+                isSlow = isSlow,
+                isPaused = preferences.isPaused,
+                isRegionBound = preferences.isRegionBounded,
+            )
+        }
+        .distinctUntilChanged()
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = IncidentDataCacheMetrics(),
+            started = subscribedReplay(),
+        )
+
     init {
         externalScope.launch(ioDispatcher) {
             syncLogRepository.trimOldLogs()
@@ -190,3 +213,13 @@ data class MenuItemVisibility(
     val showOnboarding: Boolean = false,
     val showGettingStartedVideo: Boolean = false,
 )
+
+data class IncidentDataCacheMetrics(
+    val isSlow: Boolean? = null,
+    val isPaused: Boolean = false,
+    val isRegionBound: Boolean = false,
+) {
+    val hasSpeedNotAdaptive by lazy {
+        isSlow == false && (isPaused || isRegionBound)
+    }
+}

@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppMemoryStats
+import com.crisiscleanup.core.common.IncidentMapTracker
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.PermissionManager
@@ -93,6 +94,7 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 import com.crisiscleanup.core.commonassets.R as commonAssetsR
 
 @OptIn(FlowPreview::class)
@@ -120,6 +122,7 @@ class CasesViewModel @Inject constructor(
     accountDataRepository: AccountDataRepository,
     organizationsRepository: OrganizationsRepository,
     val transferWorkTypeProvider: TransferWorkTypeProvider,
+    private val incidentMapTracker: IncidentMapTracker,
     private val translator: KeyResourceTranslator,
     private val syncPuller: SyncPuller,
     val visualAlertManager: VisualAlertManager,
@@ -520,6 +523,15 @@ class CasesViewModel @Inject constructor(
                     visibleBounds.northeast,
                 )
                 mapBoundsManager.cacheBounds(visibleBounds)
+
+                if (isActiveChange) {
+                    with(visibleBounds.center) {
+                        incidentMapTracker.track(
+                            latitude = latitude,
+                            longitude = longitude,
+                        )
+                    }
+                }
             }
         }
     }
@@ -545,7 +557,7 @@ class CasesViewModel @Inject constructor(
 
     private fun setMapToMyCoordinates() {
         viewModelScope.launch {
-            locationProvider.getLocation()?.let { myLocation ->
+            locationProvider.getLocation(10.seconds)?.let { myLocation ->
                 mapCameraZoomInternal.value = MapViewCameraZoom(
                     myLocation.toLatLng(),
                     (11f + Math.random() * 1e-3).toFloat(),
@@ -567,7 +579,7 @@ class CasesViewModel @Inject constructor(
             PermissionStatus.Requesting,
             PermissionStatus.Denied,
             PermissionStatus.Undefined,
-            -> {
+                -> {
                 // Ignore these statuses as they're not important
             }
         }
@@ -602,7 +614,7 @@ class CasesViewModel @Inject constructor(
 
                 PermissionStatus.Denied,
                 PermissionStatus.Undefined,
-                -> {
+                    -> {
                     // Ignorable
                 }
             }

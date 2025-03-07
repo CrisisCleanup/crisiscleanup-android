@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.common.milesToMeters
+import com.crisiscleanup.core.data.repository.IncidentCacheStage
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.AnimatedBusyIndicator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
@@ -79,7 +80,7 @@ fun IncidentWorksitesCacheRoute(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun IncidentWorksitesCacheScreen(
     onBack: () -> Unit,
@@ -89,6 +90,8 @@ private fun IncidentWorksitesCacheScreen(
 
     val incident by viewModel.incident.collectAsStateWithLifecycle()
     val isSyncingIncident by viewModel.isSyncing.collectAsStateWithLifecycle()
+
+    val syncStage by viewModel.syncStage.collectAsStateWithLifecycle()
 
     val isNotProduction = viewModel.isNotProduction
 
@@ -121,7 +124,7 @@ private fun IncidentWorksitesCacheScreen(
 
     Column(Modifier.fillMaxSize()) {
         TopAppBarBackAction(
-            title = incident.shortName,
+            title = t("~~Sync strategy"),
             onAction = onBack,
         )
 
@@ -134,18 +137,40 @@ private fun IncidentWorksitesCacheScreen(
             scrollState,
             userScrollEnabled = !isMapMoving,
         ) {
-            item {
+            item(
+                key = "last-synced-info",
+                contentType = "text-item",
+            ) {
                 val syncedText = lastSynced?.let {
-                    t("~~Synced {sync_date}")
+                    t("~~Synced {incident_name} {sync_date}")
+                        .replace("{incident_name}", incident.shortName)
                         .replace("{sync_date}", it)
                 } ?: t("~~Awaiting sync of {incident_name}")
                     .replace("{incident_name}", incident.shortName)
+                Text(
+                    syncedText,
+                    listItemModifier,
+                )
+            }
+
+            item {
                 Row(
                     listItemModifier,
                     horizontalArrangement = listItemSpacedBy,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(syncedText)
+                    val syncStageMessage = when (syncStage) {
+                        IncidentCacheStage.Start -> t("~~Ready to sync")
+                        IncidentCacheStage.Incidents -> t("~~Syncing Incidents...")
+                        IncidentCacheStage.WorksitesBounded -> t("~~Syncing Cases nearby/in area...")
+                        IncidentCacheStage.WorksitesPreload -> t("~~Syncing Cases nearby...")
+                        IncidentCacheStage.WorksitesCore -> t("~~Syncing Cases...")
+                        IncidentCacheStage.WorksitesAdditional -> t("~~Syncing additional Case data...")
+                        IncidentCacheStage.ActiveIncident -> t("~~Syncing active Incident...")
+                        IncidentCacheStage.ActiveIncidentOrganization -> t("~~Syncing organizations in Incident...")
+                        IncidentCacheStage.End -> t("~~Sync finished")
+                    }
+                    Text(syncStageMessage)
 
                     AnimatedBusyIndicator(
                         isSyncingIncident,
@@ -155,10 +180,22 @@ private fun IncidentWorksitesCacheScreen(
             }
 
             item {
-                Text(
-                    "~~Cases are downloaded according to the selected strategy",
+                Row(
                     listItemModifier,
-                )
+                    horizontalArrangement = listItemSpacedBy,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        "~~Cases are downloaded according to the selected strategy",
+                        Modifier.weight(1f),
+                    )
+
+                    CrisisCleanupTextButton(
+                        text = t("~~Resync"),
+                        onClick = viewModel::resync,
+                        enabled = !editingParameters.isPaused,
+                    )
+                }
             }
 
             synChoiceItem(

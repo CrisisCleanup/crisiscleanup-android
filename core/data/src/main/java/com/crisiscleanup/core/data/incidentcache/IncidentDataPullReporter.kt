@@ -44,6 +44,10 @@ internal class IncidentDataPullStatsUpdater(
         reportChange(pullStats.copy(isIndeterminate = true))
     }
 
+    fun setDeterminate() {
+        reportChange(pullStats.copy(isIndeterminate = false))
+    }
+
     fun setDataCount(count: Int) {
         reportChange(pullStats.copy(dataCount = count))
     }

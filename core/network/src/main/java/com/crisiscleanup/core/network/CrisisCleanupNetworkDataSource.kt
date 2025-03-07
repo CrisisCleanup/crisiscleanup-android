@@ -4,6 +4,7 @@ import com.crisiscleanup.core.network.model.NetworkAccountProfileResult
 import com.crisiscleanup.core.network.model.NetworkCaseHistoryEvent
 import com.crisiscleanup.core.network.model.NetworkCountResult
 import com.crisiscleanup.core.network.model.NetworkEquipmentListResult
+import com.crisiscleanup.core.network.model.NetworkFlagsFormData
 import com.crisiscleanup.core.network.model.NetworkFlagsFormDataResult
 import com.crisiscleanup.core.network.model.NetworkIncident
 import com.crisiscleanup.core.network.model.NetworkIncidentOrganization
@@ -156,6 +157,10 @@ interface CrisisCleanupNetworkDataSource {
         updatedAfter,
         false,
     )
+
+    suspend fun getWorksitesFlagsFormData(
+        ids: Collection<Long>,
+    ): List<NetworkFlagsFormData>
 
     suspend fun getLocationSearchWorksites(
         incidentId: Long,

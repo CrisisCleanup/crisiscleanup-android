@@ -60,7 +60,7 @@ private interface DataSourceApi {
     @TokenAuthenticationHeader
     @GET("organizations")
     suspend fun getOrganizations(
-        @Query("id__in")
+        @Query("id__in", encoded = true)
         ids: String,
     ): NetworkOrganizationsResult
 
@@ -107,7 +107,7 @@ private interface DataSourceApi {
     @TokenAuthenticationHeader
     @GET("locations")
     suspend fun getLocations(
-        @Query("id__in")
+        @Query("id__in", encoded = true)
         ids: String,
         @Query("limit")
         limit: Int,
@@ -280,7 +280,7 @@ private interface DataSourceApi {
     @TokenAuthenticationHeader
     @GET("users")
     suspend fun getUsers(
-        @Query("id__in")
+        @Query("id__in", encoded = true)
         ids: String,
     ): NetworkUsersResult
 
@@ -318,6 +318,13 @@ private interface DataSourceApi {
         updatedAfter: Instant,
         @Query("sort")
         sort: String,
+    ): NetworkFlagsFormDataResult
+
+    @TokenAuthenticationHeader
+    @GET("worksites_data_flags")
+    suspend fun getWorksitesFlagsFormData(
+        @Query("id__in", encoded = true)
+        ids: String,
     ): NetworkFlagsFormDataResult
 
     @TokenAuthenticationHeader
@@ -586,6 +593,13 @@ class DataApiClient @Inject constructor(
             it.errors?.tryThrowException()
         }
     }
+
+    override suspend fun getWorksitesFlagsFormData(ids: Collection<Long>) =
+        networkApi.getWorksitesFlagsFormData(ids.joinToString(","))
+            .let {
+                it.errors?.tryThrowException()
+                it.results ?: emptyList()
+            }
 
     private val locationSearchFields = listOf(
         "id",
