@@ -264,16 +264,12 @@ internal class EditableLocationDataEditor(
 
         addressSearchRepository.startSearchSession()
 
-        // TODO Common dimensions
-        val pinMarkerSize = Pair(32f, 48f)
         coroutineScope.launch {
             inBoundsPinIcon = drawableResourceBitmapProvider.getIcon(
                 commonR.drawable.cc_foreground_pin,
-                pinMarkerSize,
             )
             outOfBoundsPinIcon = drawableResourceBitmapProvider.getIcon(
                 mapMarkerR.drawable.cc_pin_location_out_of_bounds,
-                pinMarkerSize,
             )
         }
 
