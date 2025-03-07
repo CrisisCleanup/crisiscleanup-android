@@ -53,7 +53,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
@@ -661,8 +660,11 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     break
                 }
             } else {
-                isSlowDownload = downloadSpeedTracker.averageSpeed() < slowSpeedDownload
-                speedMonitor.onSpeedChange(isSlowDownload)
+                downloadSpeedTracker.averageSpeed()?.let {
+                    val isSlow = it < slowDownloadSpeed
+                    isSlowDownload = isSlow
+                    speedMonitor.onSpeedChange(isSlow)
+                }
 
                 statsUpdater.addQueryCount(networkData.size)
 
@@ -751,8 +753,8 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         DownloadCountSpeed(savedCount, isSlowDownload)
     }
 
-    // ~40000 Cases longer than 10 mins is reasonably slow
-    private val slowSpeedDownload = 200f / 3
+    // ~60000 Cases longer than 10 mins is reasonably slow
+    private val slowDownloadSpeed = 100f
 
     private fun getMaxQueryCount(isAdditionalData: Boolean) = if (isAdditionalData) {
         if (deviceInspector.isLimitedDevice) 2000 else 6000
@@ -885,8 +887,11 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
                 log("Cached ($savedCount/$initialCount) Worksites before.")
             } else {
-                isSlowDownload = downloadSpeedTracker.averageSpeed() < slowSpeedDownload
-                speedMonitor.onSpeedChange(isSlowDownload)
+                downloadSpeedTracker.averageSpeed()?.let {
+                    val isSlow = it < slowDownloadSpeed
+                    isSlowDownload = isSlow
+                    speedMonitor.onSpeedChange(isSlow)
+                }
 
                 statsUpdater.addQueryCount(networkData.size)
 
@@ -973,8 +978,11 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             if (networkData.isEmpty()) {
                 log("Cached $savedCount/$initialCount after. No Cases after $afterTimeMarker")
             } else {
-                isSlowDownload = downloadSpeedTracker.averageSpeed() < slowSpeedDownload
-                speedMonitor.onSpeedChange(isSlowDownload)
+                downloadSpeedTracker.averageSpeed()?.let {
+                    val isSlow = it < slowDownloadSpeed
+                    isSlowDownload = isSlow
+                    speedMonitor.onSpeedChange(isSlow)
+                }
 
                 statsUpdater.addQueryCount(networkData.size)
 

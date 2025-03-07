@@ -24,6 +24,10 @@ interface IncidentDataSyncParameterDao {
     )
     fun getSyncStats(incidentId: Long): IncidentDataSyncParametersEntity?
 
+    @Transaction
+    @Query("SELECT COUNT(*) FROM incident_data_sync_parameters")
+    fun getSyncStatCount(): Int
+
     @Insert
     fun insertSyncStats(entity: IncidentDataSyncParametersEntity)
 

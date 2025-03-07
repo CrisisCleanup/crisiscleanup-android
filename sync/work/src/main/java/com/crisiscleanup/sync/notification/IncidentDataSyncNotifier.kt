@@ -6,7 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import com.crisiscleanup.core.common.di.ApplicationScope
+import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.data.incidentcache.IncidentDataPullReporter
 import com.crisiscleanup.core.data.model.IncidentPullDataType
@@ -20,16 +20,15 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
-import javax.inject.Singleton
 
 private const val STOP_SYNCING_ACTION = "com.crisiscleanup.STOP_SYNCING"
 
-@Singleton
 internal class IncidentDataSyncNotifier @Inject constructor(
     private val appContext: Context,
     incidentDataPullReporter: IncidentDataPullReporter,
     private val syncPuller: SyncPuller,
-    @ApplicationScope coroutineScope: CoroutineScope,
+    private val logger: AppLogger,
+    coroutineScope: CoroutineScope,
 ) {
     private val syncCounter = AtomicInteger(0)
 
@@ -106,6 +105,9 @@ internal class IncidentDataSyncNotifier @Inject constructor(
                     IntentFilter(STOP_SYNCING_ACTION),
                 )
             }
+
+            // TODO Delete after hanging notification is solved
+            logger.logDebug("Sync notification start ${syncCounter.get()}")
         }
 
         try {
@@ -118,6 +120,9 @@ internal class IncidentDataSyncNotifier @Inject constructor(
                     appContext.channelNotificationManager()?.cancel(SYNC_NOTIFICATION_ID)
                 }
             }
+
+            // TODO Delete after hanging notification is solved
+            logger.logDebug("Sync notification out ${syncCounter.get()}")
         }
     }
 }
