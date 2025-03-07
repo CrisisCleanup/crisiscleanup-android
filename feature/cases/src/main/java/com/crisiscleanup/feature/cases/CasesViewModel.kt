@@ -579,7 +579,7 @@ class CasesViewModel @Inject constructor(
             PermissionStatus.Requesting,
             PermissionStatus.Denied,
             PermissionStatus.Undefined,
-                -> {
+            -> {
                 // Ignore these statuses as they're not important
             }
         }
@@ -614,7 +614,7 @@ class CasesViewModel @Inject constructor(
 
                 PermissionStatus.Denied,
                 PermissionStatus.Undefined,
-                    -> {
+                -> {
                     // Ignorable
                 }
             }
