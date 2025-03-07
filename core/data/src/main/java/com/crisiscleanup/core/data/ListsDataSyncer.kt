@@ -13,17 +13,17 @@ import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import kotlin.coroutines.cancellation.CancellationException
 
-interface ListsSyncer {
+interface ListsDataSyncer {
     suspend fun sync()
 }
 
 // TODO Test coverage
 
-class AccountListsSyncer @Inject constructor(
+class AccountListsDataSyncer @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val listsRepository: ListsRepository,
     @Logger(CrisisCleanupLoggers.Lists) private val logger: AppLogger,
-) : ListsSyncer {
+) : ListsDataSyncer {
     private val syncGuard = AtomicBoolean(false)
 
     override suspend fun sync() = coroutineScope {

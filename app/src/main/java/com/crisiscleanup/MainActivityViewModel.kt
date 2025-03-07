@@ -34,8 +34,6 @@ import com.crisiscleanup.core.data.repository.ShareLocationRepository
 import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.AppMetricsData
 import com.crisiscleanup.core.model.data.AppOpenInstant
-import com.crisiscleanup.core.model.data.BuildEndOfLife
-import com.crisiscleanup.core.model.data.EarlybirdEndOfLifeFallback
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.MinSupportedAppVersion
 import com.crisiscleanup.core.model.data.UserData
@@ -153,22 +151,6 @@ class MainActivityViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val buildEndOfLife: BuildEndOfLife?
-        get() {
-            if (appEnv.isEarlybird) {
-                (viewState.value as? MainActivityViewState.Success)?.let {
-                    var eol = it.appMetrics.earlybirdEndOfLife
-                    if (!eol.isEndOfLife) {
-                        eol = EarlybirdEndOfLifeFallback
-                    }
-                    if (eol.isEndOfLife) {
-                        return eol
-                    }
-                }
-            }
-            return null
-        }
-
     val supportedApp: MinSupportedAppVersion?
         get() {
             if (appEnv.isProduction) {
@@ -197,8 +179,10 @@ class MainActivityViewModel @Inject constructor(
         accountDataRepository.accountData
             .onEach {
                 if (it.areTokensValid) {
-                    sync(false)
-                    syncPuller.appPullIncident(incidentSelector.incidentId.first())
+                    sync(
+                        forcePullIncidents = true,
+                        syncFullWorksites = false,
+                    )
                     accountDataRefresher.updateMyOrganization(true)
                     accountDataRefresher.updateApprovedIncidents()
 
@@ -215,9 +199,10 @@ class MainActivityViewModel @Inject constructor(
         incidentSelector.incidentId
             .filter { it != EmptyIncident.id }
             .onEach {
-                syncPuller.stopSyncPullWorksitesFull()
-                sync(true)
-                syncPuller.appPullIncident(it)
+                sync(
+                    forcePullIncidents = false,
+                    syncFullWorksites = true,
+                )
             }
             .flowOn(ioDispatcher)
             .launchIn(viewModelScope)
@@ -261,8 +246,15 @@ class MainActivityViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    private fun sync(cancelOngoing: Boolean) {
-        syncPuller.appPull(false, cancelOngoing)
+    private fun sync(
+        forcePullIncidents: Boolean,
+        syncFullWorksites: Boolean,
+    ) {
+        syncPuller.appPullIncidentData(
+            forcePullIncidents = forcePullIncidents,
+            cacheSelectedIncident = true,
+            cacheFullWorksites = syncFullWorksites,
+        )
     }
 
     fun onAppOpen() {

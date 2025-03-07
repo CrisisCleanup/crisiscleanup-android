@@ -4,11 +4,12 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import com.crisiscleanup.core.model.data.IncidentDataSyncStats
-import com.crisiscleanup.core.model.data.SyncAttempt
 import kotlinx.datetime.Instant
 
-// Should have been named incident_worksites_sync_stats
+// These entities are obsolete
+// Not removing for database consistency
+// Not marking as deprecated because warnings will issue when building
+
 @Entity(
     "worksite_sync_stats",
 )
@@ -91,69 +92,4 @@ data class IncidentWorksitesSecondarySyncStatsEntity(
     val attemptedCounter: Int,
     @ColumnInfo("app_build_version_code", defaultValue = "0")
     val appBuildVersionCode: Long,
-)
-
-fun WorksiteSyncStatsEntity.asExternalModel() = IncidentDataSyncStats(
-    incidentId = incidentId,
-    syncStart = syncStart,
-    dataCount = targetCount,
-    pagedCount = pagedCount,
-    syncAttempt = SyncAttempt(
-        successfulSync?.epochSeconds ?: 0,
-        attemptedSync?.epochSeconds ?: 0,
-        attemptedCounter,
-    ),
-    appBuildVersionCode = appBuildVersionCode,
-)
-
-fun IncidentDataSyncStats.asWorksiteSyncStatsEntity() = WorksiteSyncStatsEntity(
-    incidentId = incidentId,
-    syncStart = syncStart,
-    targetCount = dataCount,
-    pagedCount = pagedCount,
-    successfulSync = if (syncAttempt.successfulSeconds <= 0) {
-        null
-    } else {
-        Instant.fromEpochSeconds(syncAttempt.successfulSeconds)
-    },
-    attemptedSync = if (syncAttempt.attemptedSeconds <= 0) {
-        null
-    } else {
-        Instant.fromEpochSeconds(syncAttempt.attemptedSeconds)
-    },
-    attemptedCounter = syncAttempt.attemptedCounter,
-    appBuildVersionCode = appBuildVersionCode,
-)
-
-fun IncidentDataSyncStats.asSecondaryWorksiteSyncStatsEntity() =
-    IncidentWorksitesSecondarySyncStatsEntity(
-        incidentId = incidentId,
-        syncStart = syncStart,
-        targetCount = dataCount,
-        pagedCount = pagedCount,
-        successfulSync = if (syncAttempt.successfulSeconds <= 0) {
-            null
-        } else {
-            Instant.fromEpochSeconds(syncAttempt.successfulSeconds)
-        },
-        attemptedSync = if (syncAttempt.attemptedSeconds <= 0) {
-            null
-        } else {
-            Instant.fromEpochSeconds(syncAttempt.attemptedSeconds)
-        },
-        attemptedCounter = syncAttempt.attemptedCounter,
-        appBuildVersionCode = appBuildVersionCode,
-    )
-
-fun IncidentWorksitesSecondarySyncStatsEntity.asExternalModel() = IncidentDataSyncStats(
-    incidentId = incidentId,
-    syncStart = syncStart,
-    dataCount = targetCount,
-    pagedCount = pagedCount,
-    syncAttempt = SyncAttempt(
-        successfulSync?.epochSeconds ?: 0,
-        attemptedSync?.epochSeconds ?: 0,
-        attemptedCounter,
-    ),
-    appBuildVersionCode = appBuildVersionCode,
 )

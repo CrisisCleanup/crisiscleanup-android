@@ -66,6 +66,7 @@ import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.neutralFontColor
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.model.data.Incident
+import com.crisiscleanup.core.model.data.IncidentWorksitesCachePreferences
 import com.crisiscleanup.core.model.data.TutorialViewId
 import com.crisiscleanup.core.selectincident.SelectIncidentDialog
 import com.crisiscleanup.core.ui.sizePosition
@@ -83,6 +84,7 @@ internal fun MenuRoute(
     openRequestRedeploy: () -> Unit = {},
     openUserFeedback: () -> Unit = {},
     openLists: () -> Unit = {},
+    openIncidentCache: () -> Unit = {},
     openSyncLogs: () -> Unit = {},
 ) {
     MenuScreen(
@@ -91,6 +93,7 @@ internal fun MenuRoute(
         openRequestRedeploy = openRequestRedeploy,
         openUserFeedback = openUserFeedback,
         openLists = openLists,
+        openIncidentCache = openIncidentCache,
         openSyncLogs = openSyncLogs,
     )
 }
@@ -103,10 +106,12 @@ private fun MenuScreen(
     openRequestRedeploy: () -> Unit = {},
     openUserFeedback: () -> Unit = {},
     openLists: () -> Unit = {},
+    openIncidentCache: () -> Unit = {},
     openSyncLogs: () -> Unit = {},
     viewModel: MenuViewModel = hiltViewModel(),
 ) {
     val t = LocalAppTranslator.current
+    val translationCount by t.translationCount.collectAsStateWithLifecycle()
 
     val incidentsData by viewModel.incidentsData.collectAsStateWithLifecycle()
 
@@ -176,6 +181,10 @@ private fun MenuScreen(
         }
         incidentRows + headerSpacerCount
     }
+
+    val incidentCachePreferences by viewModel.incidentCachePreferences.collectAsStateWithLifecycle()
+    val incidentDataCacheMetrics by viewModel.incidentDataCacheMetrics.collectAsStateWithLifecycle()
+    val hasSpeedNotAdaptive = incidentDataCacheMetrics.hasSpeedNotAdaptive
 
     Column {
         AppTopBar(
@@ -265,6 +274,15 @@ private fun MenuScreen(
                 }
             }
 
+            item {
+                IncidentCacheView(
+                    incidentCachePreferences,
+                    hasSpeedNotAdaptive,
+                    openIncidentCache,
+                    listItemModifier,
+                )
+            }
+
             item(
                 key = "lists-item",
                 contentType = "outline-button",
@@ -281,11 +299,14 @@ private fun MenuScreen(
                 key = "invite-teammate-item",
                 contentType = "primary-button",
             ) {
+                val inviteUserText = remember(translationCount) {
+                    t("usersVue.invite_new_user")
+                }
                 CrisisCleanupButton(
                     modifier = inviteTeammateModifier
                         .fillMaxWidth()
                         .listItemPadding(),
-                    text = t("usersVue.invite_new_user"),
+                    text = inviteUserText,
                     onClick = openInviteTeammate,
                 )
             }
@@ -413,7 +434,6 @@ private fun LazyListScope.toggleItem(
     isToggledOn: Boolean,
     onToggle: (Boolean) -> Unit,
 ) {
-
     item(
         key = "toggle-$translateKey",
         contentType = "toggle-item",
@@ -625,11 +645,6 @@ internal fun MenuScreenNonProductionView(
             text = "Expire token",
         )
     }
-
-    CrisisCleanupTextButton(
-        onClick = { viewModel.syncWorksitesFull() },
-        text = "Sync full",
-    )
 }
 
 @Composable
@@ -654,6 +669,51 @@ private fun TermsPrivacyView(
             text = t("nav.privacy"),
         ) {
             uriHandler.openUri(privacyPolicyUrl)
+        }
+    }
+}
+
+@Composable
+private fun IncidentCacheView(
+    incidentCachePreferences: IncidentWorksitesCachePreferences,
+    hasSpeedNotAdaptive: Boolean,
+    onOpenIncidentCache: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val t = LocalAppTranslator.current
+
+    Column(modifier) {
+        if (hasSpeedNotAdaptive) {
+            Text(t("~~It seems you have a good internet connection. Changing the sync strategy to adaptive ensures you'll get Incident updates reliably."))
+        }
+        Row(
+            horizontalArrangement = listItemSpacedBy,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            val syncingPolicy = if (incidentCachePreferences.isPaused) {
+                t("~~Pause downloading Cases")
+            } else if (incidentCachePreferences.isBoundedNearMe) {
+                t("~~Download Cases near me")
+            } else if (incidentCachePreferences.isBoundedByCoordinates) {
+                t("~~Download Cases in specific area")
+            } else {
+                t("~~Adaptively download Cases")
+            }
+            Text(
+                syncingPolicy,
+                Modifier.weight(1f),
+            )
+
+            Text(
+                text = t("~~Change"),
+                modifier = Modifier
+                    .clickable(
+                        onClick = onOpenIncidentCache,
+                    )
+                    .listItemPadding(),
+                style = LocalFontStyles.current.header4,
+                color = primaryBlueColor,
+            )
         }
     }
 }

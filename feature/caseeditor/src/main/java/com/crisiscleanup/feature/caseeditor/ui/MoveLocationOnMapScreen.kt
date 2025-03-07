@@ -26,6 +26,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
+import com.crisiscleanup.core.designsystem.component.ExplainLocationPermissionDialog
 import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_DETAIL_WEIGHT
 import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_LIST_WEIGHT
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
@@ -39,7 +40,6 @@ import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
 import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
 import com.crisiscleanup.core.ui.MapOverlayMessage
 import com.crisiscleanup.feature.caseeditor.CaseLocationDataEditor
-import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
 import com.crisiscleanup.feature.caseeditor.EditCaseLocationViewModel
 import com.crisiscleanup.feature.caseeditor.R
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -79,13 +79,12 @@ internal fun EditCaseMapMoveLocationRoute(
 
         val locationQuery by editor.locationInputData.locationQuery.collectAsStateWithLifecycle()
 
-        val onUseMyLocation = remember(viewModel) { { editor.useMyLocation() } }
+        val onUseMyLocation = editor::useMyLocation
 
         if (isListDetailLayout) {
             ListDetailLayout(
                 title,
                 locationQuery,
-                viewModel,
                 editor,
                 isOnline,
                 onBack,
@@ -96,7 +95,6 @@ internal fun EditCaseMapMoveLocationRoute(
             PortraitLayout(
                 title,
                 locationQuery,
-                viewModel,
                 editor,
                 isOnline,
                 onBack,
@@ -106,6 +104,17 @@ internal fun EditCaseMapMoveLocationRoute(
         }
 
         LocationOutOfBoundsDialog(editor)
+
+        val closePermissionDialog = remember(editor) {
+            {
+                editor.showExplainPermissionLocation.value = false
+            }
+        }
+        val explainPermission by editor.showExplainPermissionLocation
+        ExplainLocationPermissionDialog(
+            showDialog = explainPermission,
+            closeDialog = closePermissionDialog,
+        )
     }
 }
 
@@ -135,7 +144,6 @@ private fun UseMyLocationAction(
 private fun PortraitLayout(
     title: String,
     locationQuery: String,
-    viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
     isOnline: Boolean,
     onBack: () -> Unit = {},
@@ -150,7 +158,6 @@ private fun PortraitLayout(
 
         if (isOnline) {
             FullAddressSearchInput(
-                viewModel,
                 editor,
                 locationQuery,
                 isEditable = isEditable,
@@ -159,7 +166,7 @@ private fun PortraitLayout(
 
         if (locationQuery.isBlank()) {
             Box(Modifier.weight(1f)) {
-                MoveMapUnderLocation(viewModel, editor, isEditable)
+                MoveMapUnderLocation(editor, isEditable)
             }
 
             UseMyLocationAction(
@@ -167,10 +174,10 @@ private fun PortraitLayout(
                 onUseMyLocation = onUseMyLocation,
             )
 
-            SaveActionBar(viewModel, editor, onBack, isEditable, horizontalLayout = true)
+            SaveActionBar(editor, onBack, isEditable, horizontalLayout = true)
         } else {
             editor.isMapLoaded = false
-            AddressSearchResults(viewModel, editor, locationQuery, isEditable = isEditable)
+            AddressSearchResults(editor, locationQuery, isEditable = isEditable)
         }
     }
 }
@@ -180,7 +187,6 @@ private fun PortraitLayout(
 private fun ListDetailLayout(
     title: String,
     locationQuery: String,
-    viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
     isOnline: Boolean,
     onBack: () -> Unit = {},
@@ -196,7 +202,6 @@ private fun ListDetailLayout(
 
             if (isOnline) {
                 FullAddressSearchInput(
-                    viewModel,
                     editor,
                     locationQuery,
                     isEditable = isEditable,
@@ -211,7 +216,7 @@ private fun ListDetailLayout(
                 onUseMyLocation = onUseMyLocation,
             )
 
-            SaveActionBar(viewModel, editor, onBack, isEditableListDetail)
+            SaveActionBar(editor, onBack, isEditableListDetail)
         }
         Column(
             Modifier
@@ -220,11 +225,11 @@ private fun ListDetailLayout(
         ) {
             if (locationQuery.isBlank()) {
                 Box(Modifier.weight(1f)) {
-                    MoveMapUnderLocation(viewModel, editor, isEditable)
+                    MoveMapUnderLocation(editor, isEditable)
                 }
             } else {
                 editor.isMapLoaded = false
-                AddressSearchResults(viewModel, editor, locationQuery, isEditable = isEditable)
+                AddressSearchResults(editor, locationQuery, isEditable = isEditable)
             }
         }
     }
@@ -232,13 +237,11 @@ private fun ListDetailLayout(
 
 @Composable
 private fun BoxScope.MoveMapUnderLocation(
-    viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
     isEditable: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val onMapLoaded = remember(viewModel) { { editor.onMapLoaded() } }
-    val onMapCameraChange = remember(viewModel) {
+    val onMapCameraChange = remember(editor) {
         {
                 position: CameraPosition,
                 projection: Projection?,
@@ -259,9 +262,7 @@ private fun BoxScope.MoveMapUnderLocation(
     var uiSettings by rememberMapUiSettings()
     if (uiSettings.scrollGesturesEnabled != isEditable) {
         uiSettings = uiSettings.copy(
-            rotationGesturesEnabled = isEditable,
             scrollGesturesEnabled = isEditable,
-            tiltGesturesEnabled = isEditable,
             zoomGesturesEnabled = isEditable,
         )
     }
@@ -272,7 +273,7 @@ private fun BoxScope.MoveMapUnderLocation(
         uiSettings = uiSettings,
         properties = mapProperties,
         cameraPositionState = cameraPositionState,
-        onMapLoaded = onMapLoaded,
+        onMapLoaded = editor::onMapLoaded,
     ) {
         Marker(
             markerState,
@@ -313,14 +314,13 @@ private fun BoxScope.MoveMapUnderLocation(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SaveActionBar(
-    viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
     onBack: () -> Unit = {},
     isEditable: Boolean = false,
     horizontalLayout: Boolean = false,
 ) {
     val translator = LocalAppTranslator.current
-    val onSave = remember(viewModel) {
+    val onSave = remember(editor) {
         {
             if (editor.onSaveMoveLocationCoordinates()) {
                 onBack()

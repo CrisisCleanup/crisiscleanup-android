@@ -12,9 +12,7 @@ import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.common.sync.SyncResult
-import com.crisiscleanup.sync.initializers.SYNC_NOTIFICATION_ID
 import com.crisiscleanup.sync.initializers.SyncConstraints
-import com.crisiscleanup.sync.initializers.channelNotificationManager
 import com.crisiscleanup.sync.initializers.syncForegroundInfo
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -40,22 +38,31 @@ internal class SyncWorker @AssistedInject constructor(
 
             val isSyncSuccess = awaitAll(
                 async {
-                    // TODO Observe progress and update notification
-                    syncPuller.syncPullAsync().await() !is SyncResult.Error
+                    val result = syncPuller.syncPullIncidentData(
+                        cacheFullWorksites = true,
+                    )
+
+                    val isSuccess = result is SyncResult.Success
+                    if (!isSuccess) {
+                        syncLogger.log("Sync incident data $result")
+                        if (result is SyncResult.InvalidAccountTokens) {
+                            // TODO Notify invalid tokens is preventing sync
+                        }
+                    }
+
+                    isSuccess
                 },
                 async {
-                    syncPuller.syncPullLanguage() !is SyncResult.Error
+                    syncPuller.syncPullLanguage() is SyncResult.Success
                 },
                 async {
-                    syncPuller.syncPullStatuses() !is SyncResult.Error
+                    syncPuller.syncPullStatuses() is SyncResult.Success
                 },
             ).all { it }
 
             syncLogger
                 .log("Sync end. success=$isSyncSuccess")
                 .flush()
-
-            appContext.channelNotificationManager()?.cancel(SYNC_NOTIFICATION_ID)
 
             if (isSyncSuccess) {
                 Result.success()

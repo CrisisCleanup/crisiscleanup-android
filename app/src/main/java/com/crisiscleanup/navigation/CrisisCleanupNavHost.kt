@@ -15,6 +15,7 @@ import com.crisiscleanup.core.appnav.RouteConstant.CASE_EDITOR_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_EDITOR_SEARCH_ADDRESS_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_HISTORY_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_SHARE_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.INCIDENT_WORKSITES_CACHE_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_CASE_TRANSFER_WORK_TYPES_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.WORKSITE_IMAGES_ROUTE
 import com.crisiscleanup.core.appnav.navigateToExistingCase
@@ -46,6 +47,8 @@ import com.crisiscleanup.feature.crisiscleanuplists.navigation.navigateToLists
 import com.crisiscleanup.feature.crisiscleanuplists.navigation.navigateToViewList
 import com.crisiscleanup.feature.crisiscleanuplists.navigation.viewListScreen
 import com.crisiscleanup.feature.dashboard.navigation.dashboardScreen
+import com.crisiscleanup.feature.incidentcache.navigation.incidentWorksitesCache
+import com.crisiscleanup.feature.incidentcache.navigation.navigateToIncidentWorksitesCache
 import com.crisiscleanup.feature.mediamanage.navigation.viewSingleImageScreen
 import com.crisiscleanup.feature.mediamanage.navigation.viewWorksiteImagesScreen
 import com.crisiscleanup.feature.menu.navigation.menuScreen
@@ -64,6 +67,32 @@ import com.crisiscleanup.feature.userfeedback.navigation.userFeedbackScreen
 private fun NavController.matchesRoute(route: String) = currentDestination?.route == route
 private fun NavController.startsWithRoute(route: String) =
     currentDestination?.route?.startsWith(route) == true
+
+@Composable
+private fun rememberBackOnRoute(
+    navController: NavController,
+    onBack: () -> Unit,
+    route: String,
+) = remember(onBack, navController) {
+    {
+        if (navController.matchesRoute(route)) {
+            onBack()
+        }
+    }
+}
+
+@Composable
+private fun rememberBackStartingRoute(
+    navController: NavController,
+    onBack: () -> Unit,
+    route: String,
+) = remember(onBack, navController) {
+    {
+        if (navController.startsWithRoute(route)) {
+            onBack()
+        }
+    }
+}
 
 /**
  * Top-level navigation graph. Navigation is organized as explained at
@@ -129,76 +158,30 @@ fun CrisisCleanupNavHost(
     val navToTransferWorkTypeNonEditing =
         remember(navController) { { navController.navigateToTransferWorkType(false) } }
 
-    val searchCasesOnBack = remember(onBack, navController) {
-        {
-            if (navController.matchesRoute(CASES_SEARCH_ROUTE)) {
-                onBack()
-            }
-        }
-    }
+    val searchCasesOnBack = rememberBackOnRoute(navController, onBack, CASES_SEARCH_ROUTE)
 
-    val caseEditorOnBack = remember(onBack, navController) {
-        {
-            if (navController.startsWithRoute(CASE_EDITOR_ROUTE)) {
-                onBack()
-            }
-        }
-    }
+    val caseEditorOnBack = rememberBackStartingRoute(navController, onBack, CASE_EDITOR_ROUTE)
 
-    val searchAddressOnBack = remember(onBack, navController) {
-        {
-            if (navController.matchesRoute(CASE_EDITOR_SEARCH_ADDRESS_ROUTE)) {
-                onBack()
-            }
-        }
-    }
-    val moveLocationOnBack = remember(onBack, navController) {
-        {
-            if (navController.matchesRoute(CASE_EDITOR_MAP_MOVE_LOCATION_ROUTE)) {
-                onBack()
-            }
-        }
-    }
+    val searchAddressOnBack =
+        rememberBackOnRoute(navController, onBack, CASE_EDITOR_SEARCH_ADDRESS_ROUTE)
+    val moveLocationOnBack =
+        rememberBackOnRoute(navController, onBack, CASE_EDITOR_MAP_MOVE_LOCATION_ROUTE)
 
-    val transferOnBack = remember(onBack, navController) {
-        {
-            if (navController.startsWithRoute(VIEW_CASE_TRANSFER_WORK_TYPES_ROUTE)) {
-                onBack()
-            }
-        }
-    }
+    val transferOnBack =
+        rememberBackStartingRoute(navController, onBack, VIEW_CASE_TRANSFER_WORK_TYPES_ROUTE)
 
-    val addFlagOnBack = remember(onBack, navController) {
-        {
-            if (navController.startsWithRoute(CASE_ADD_FLAG_ROUTE)) {
-                onBack()
-            }
-        }
-    }
+    val addFlagOnBack = rememberBackStartingRoute(navController, onBack, CASE_ADD_FLAG_ROUTE)
 
-    val shareOnBack = remember(onBack, navController) {
-        {
-            if (navController.matchesRoute(CASE_SHARE_ROUTE)) {
-                onBack()
-            }
-        }
-    }
+    val shareOnBack = rememberBackOnRoute(navController, onBack, CASE_SHARE_ROUTE)
 
-    val historyOnBack = remember(onBack, navController) {
-        {
-            if (navController.matchesRoute(CASE_HISTORY_ROUTE)) {
-                onBack()
-            }
-        }
-    }
+    val historyOnBack = rememberBackOnRoute(navController, onBack, CASE_HISTORY_ROUTE)
 
-    val worksiteImagesOnBack = remember(onBack, navController) {
-        {
-            if (navController.startsWithRoute(WORKSITE_IMAGES_ROUTE)) {
-                onBack()
-            }
-        }
-    }
+    val worksiteImagesOnBack =
+        rememberBackStartingRoute(navController, onBack, WORKSITE_IMAGES_ROUTE)
+
+    val incidentWorksitesCacheOnBack =
+        rememberBackOnRoute(navController, onBack, INCIDENT_WORKSITES_CACHE_ROUTE)
+    val openIncidentCache = navController::navigateToIncidentWorksitesCache
 
     NavHost(
         navController = navController,
@@ -235,12 +218,14 @@ fun CrisisCleanupNavHost(
         )
         menuScreen(
             openAuthentication = openAuthentication,
+            openIncidentCache = openIncidentCache,
             openLists = openLists,
             openInviteTeammate = openInviteTeammate,
             openRequestRedeploy = openRequestRedeploy,
             openUserFeedback = openUserFeedback,
             openSyncLogs = navController::navigateToSyncInsights,
         )
+        incidentWorksitesCache(incidentWorksitesCacheOnBack)
         viewSingleImageScreen(onBack)
         viewWorksiteImagesScreen(worksiteImagesOnBack)
         inviteTeammateScreen(onBack)

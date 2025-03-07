@@ -13,6 +13,7 @@ import com.crisiscleanup.core.database.DatabaseMigrations.Schema35To36
 import com.crisiscleanup.core.database.DatabaseMigrations.Schema3to4
 import com.crisiscleanup.core.database.dao.CaseHistoryDao
 import com.crisiscleanup.core.database.dao.IncidentDao
+import com.crisiscleanup.core.database.dao.IncidentDataSyncParameterDao
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDao
 import com.crisiscleanup.core.database.dao.LanguageDao
 import com.crisiscleanup.core.database.dao.ListDao
@@ -37,6 +38,7 @@ import com.crisiscleanup.core.database.dao.fts.IncidentOrganizationFtsEntity
 import com.crisiscleanup.core.database.dao.fts.WorksiteTextFtsEntity
 import com.crisiscleanup.core.database.model.CaseHistoryEventAttrEntity
 import com.crisiscleanup.core.database.model.CaseHistoryEventEntity
+import com.crisiscleanup.core.database.model.IncidentDataSyncParametersEntity
 import com.crisiscleanup.core.database.model.IncidentEntity
 import com.crisiscleanup.core.database.model.IncidentFormFieldEntity
 import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
@@ -114,8 +116,9 @@ import com.crisiscleanup.core.database.util.InstantConverter
         TeamRootEntity::class,
         TeamEntity::class,
         TeamMemberCrossRef::class,
+        IncidentDataSyncParametersEntity::class,
     ],
-    version = 43,
+    version = 44,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -159,6 +162,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 40, to = 41),
         AutoMigration(from = 41, to = 42),
         AutoMigration(from = 42, to = 43),
+        AutoMigration(from = 43, to = 44),
     ],
     exportSchema = true,
 )
@@ -197,4 +201,5 @@ abstract class CrisisCleanupDatabase :
     abstract fun caseHistoryDao(): CaseHistoryDao
     abstract fun listDao(): ListDao
     abstract fun teamDao(): TeamDao
+    abstract fun incidentDataSyncParametersDao(): IncidentDataSyncParameterDao
 }

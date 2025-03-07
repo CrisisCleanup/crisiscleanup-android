@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppMemoryStats
+import com.crisiscleanup.core.common.IncidentMapTracker
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.PermissionManager
@@ -32,6 +33,9 @@ import com.crisiscleanup.core.commoncase.TransferWorkTypeProvider
 import com.crisiscleanup.core.commoncase.WorksiteProvider
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.WorksiteInteractor
+import com.crisiscleanup.core.data.incidentcache.IncidentDataPullReporter
+import com.crisiscleanup.core.data.model.IncidentDataPullStats
+import com.crisiscleanup.core.data.model.IncidentPullDataType
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
@@ -39,8 +43,6 @@ import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
-import com.crisiscleanup.core.data.util.IncidentDataPullReporter
-import com.crisiscleanup.core.data.util.IncidentDataPullStats
 import com.crisiscleanup.core.domain.LoadSelectIncidents
 import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
@@ -94,6 +96,7 @@ import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 import com.crisiscleanup.core.commonassets.R as commonAssetsR
 
+@OptIn(FlowPreview::class)
 @HiltViewModel
 class CasesViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
@@ -115,6 +118,7 @@ class CasesViewModel @Inject constructor(
     accountDataRepository: AccountDataRepository,
     organizationsRepository: OrganizationsRepository,
     val transferWorkTypeProvider: TransferWorkTypeProvider,
+    private val incidentMapTracker: IncidentMapTracker,
     private val translator: KeyResourceTranslator,
     private val syncPuller: SyncPuller,
     val visualAlertManager: VisualAlertManager,
@@ -210,15 +214,11 @@ class CasesViewModel @Inject constructor(
 
     val isIncidentLoading = incidentsRepository.isLoading
 
-    val dataProgress = combine(
-        dataPullReporter.incidentDataPullStats,
-        dataPullReporter.incidentSecondaryDataPullStats,
-        ::Pair,
-    )
-        .map { (primary, secondary) ->
-            val showProgress = primary.isOngoing || secondary.isOngoing
-            val isSecondary = secondary.isOngoing
-            val progress = if (primary.isOngoing) primary.progress else secondary.progress
+    val dataProgress = dataPullReporter.incidentDataPullStats
+        .map {
+            val showProgress = it.isOngoing && it.isPullingWorksites
+            val isSecondary = it.pullType == IncidentPullDataType.WorksitesAdditional
+            val progress = it.progress
             DataProgressMetrics(
                 isSecondary,
                 showProgress,
@@ -244,9 +244,10 @@ class CasesViewModel @Inject constructor(
     val mapCameraZoom = _mapCameraZoom.asStateFlow()
 
     private val mapBoundsManager = CasesMapBoundsManager(
-        viewModelScope,
         incidentSelector,
         incidentBoundsProvider,
+        appPreferencesRepository,
+        viewModelScope,
         ioDispatcher,
         logger,
     )
@@ -344,7 +345,7 @@ class CasesViewModel @Inject constructor(
         get() = casesMapTileManager.clearTileLayer
 
     private val tileClearRefreshInterval = 5.seconds
-    private var tileRefreshedInstant: Instant = Instant.fromEpochSeconds(0)
+    private var tileRefreshedInstant = Instant.fromEpochSeconds(0)
     private var tileClearWorksitesCount = 0
 
     private val totalCasesCount = combine(
@@ -444,13 +445,12 @@ class CasesViewModel @Inject constructor(
             filterRepository.casesFiltersLocation,
             ::Triple,
         )
-            .debounce(16)
-            .throttleLatest(1_000)
+            .throttleLatest(600)
             .onEach { refreshTiles(it.first, it.second) }
             .launchIn(viewModelScope)
 
         permissionManager.permissionChanges
-            .map {
+            .onEach {
                 if (it == locationPermissionGranted) {
                     setTileRendererLocation()
 
@@ -472,6 +472,7 @@ class CasesViewModel @Inject constructor(
             .launchIn(viewModelScope)
 
         dataPullReporter.onIncidentDataPullComplete
+            .throttleLatest(600)
             .onEach {
                 filterRepository.reapplyFilters()
             }
@@ -479,7 +480,10 @@ class CasesViewModel @Inject constructor(
     }
 
     fun syncWorksitesDelta(forceRefreshAll: Boolean = false) {
-        syncPuller.appPullIncidentWorksitesDelta(forceRefreshAll)
+        syncPuller.appPullIncidentData(
+            cacheFullWorksites = true,
+            restartCacheCheckpoint = forceRefreshAll,
+        )
     }
 
     private suspend fun setTileRendererLocation() {
@@ -487,11 +491,11 @@ class CasesViewModel @Inject constructor(
     }
 
     fun refreshIncidentsData() {
-        syncPuller.appPull(true, cancelOngoing = true)
+        syncPuller.appPullIncidents()
     }
 
     suspend fun refreshIncidentsAsync() {
-        syncPuller.pullIncidents()
+        syncPuller.syncPullIncidents()
     }
 
     fun overviewMapTileProvider(): TileProvider {
@@ -602,6 +606,15 @@ class CasesViewModel @Inject constructor(
                     visibleBounds.northeast,
                 )
                 mapBoundsManager.cacheBounds(visibleBounds)
+
+                if (isActiveChange) {
+                    with(visibleBounds.center) {
+                        incidentMapTracker.track(
+                            latitude = latitude,
+                            longitude = longitude,
+                        )
+                    }
+                }
             }
         }
     }
@@ -629,7 +642,7 @@ class CasesViewModel @Inject constructor(
 
     private fun setMapToMyCoordinates() {
         viewModelScope.launch {
-            locationProvider.getLocation()?.let { myLocation ->
+            locationProvider.getLocation(10.seconds)?.let { myLocation ->
                 _mapCameraZoom.value = MapViewCameraZoom(
                     myLocation.toLatLng(),
                     (11f + Math.random() * 1e-3).toFloat(),
@@ -664,7 +677,7 @@ class CasesViewModel @Inject constructor(
         var refreshTiles = true
         var clearCache = false
 
-        pullStats.run {
+        pullStats.apply {
             val isIncidentChange = idCount.id != incidentId
 
             // TODO Stale tiles will flash in certain cases.
@@ -677,30 +690,45 @@ class CasesViewModel @Inject constructor(
             }
 
             if (!isStarted || isIncidentChange) {
-                return@run
+                return@apply
             }
 
             refreshTiles = isEnded
             clearCache = isEnded
 
-            if (this.dataCount < 3000) {
-                return@run
-            }
-
             val now = Clock.System.now()
-            if (!refreshTiles && progress > saveStartedAmount) {
-                val sinceLastRefresh = now - tileRefreshedInstant
-                val projectedDelta = projectedFinish - now
-                refreshTiles = now - pullStart > tileClearRefreshInterval &&
-                    sinceLastRefresh > tileClearRefreshInterval &&
-                    projectedDelta > tileClearRefreshInterval
-                if (idCount.totalCount - tileClearWorksitesCount >= 6000 &&
-                    dataCount - tileClearWorksitesCount > 3000
-                ) {
-                    clearCache = true
-                    refreshTiles = true
+
+            if (isIndeterminate) {
+                if (!refreshTiles) {
+                    val sinceLastRefresh = now - tileRefreshedInstant
+
+                    refreshTiles = now - startTime > tileClearRefreshInterval &&
+                        sinceLastRefresh > tileClearRefreshInterval
+                    if (refreshTiles) {
+                        clearCache = true
+                    }
+                }
+            } else {
+                if (dataCount < 3000) {
+                    return@apply
+                }
+
+                if (!refreshTiles && savedCount > 600) {
+                    val sinceLastRefresh = now - tileRefreshedInstant
+                    val projectedDelta = projectedFinish - now
+                    refreshTiles = now - startTime > tileClearRefreshInterval &&
+                        sinceLastRefresh > tileClearRefreshInterval &&
+                        projectedDelta > tileClearRefreshInterval
+
+                    if (idCount.totalCount - tileClearWorksitesCount >= 6000 &&
+                        dataCount - tileClearWorksitesCount > 3000
+                    ) {
+                        clearCache = true
+                        refreshTiles = true
+                    }
                 }
             }
+
             if (refreshTiles) {
                 tileRefreshedInstant = now
             }

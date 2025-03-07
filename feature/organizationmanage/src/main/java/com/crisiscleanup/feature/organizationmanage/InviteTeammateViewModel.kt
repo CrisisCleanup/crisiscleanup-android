@@ -523,7 +523,7 @@ class InviteTeammateViewModel @Inject constructor(
     }
 
     fun refreshIncidents() {
-        syncPuller.appPull(true, cancelOngoing = false)
+        syncPuller.appPullIncidents()
     }
 
     fun onSelectOrganization(organization: OrganizationIdName) {

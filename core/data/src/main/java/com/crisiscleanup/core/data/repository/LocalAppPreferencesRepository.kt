@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.model.data.DarkThemeConfig
+import com.crisiscleanup.core.model.data.IncidentCoordinateBounds
 import com.crisiscleanup.core.model.data.UserData
 import com.crisiscleanup.core.model.data.WorksiteSortBy
 import kotlinx.coroutines.flow.Flow
@@ -34,4 +35,7 @@ interface LocalAppPreferencesRepository {
     suspend fun setAnalytics(allowAll: Boolean)
 
     suspend fun setShareLocationWithOrg(share: Boolean)
+
+    suspend fun setCasesMapBounds(bounds: IncidentCoordinateBounds)
+    suspend fun setTeamMapBounds(bounds: IncidentCoordinateBounds)
 }

@@ -3,26 +3,52 @@ package com.crisiscleanup.core.common.sync
 import kotlinx.coroutines.Deferred
 
 interface SyncPuller {
-    fun appPull(force: Boolean, cancelOngoing: Boolean)
-    suspend fun syncPullAsync(): Deferred<SyncResult>
-    fun stopPull()
+    /**
+     * Cache all incidents and active incident worksites as directed
+     *
+     * @param cacheActiveIncidentWorksites Cache worksites data of the active incident
+     * @param cacheFullWorksites Cache the full dataset of all worksites (after caching subset)
+     * @param restartCacheCheckpoint Cache all worksites again rather than starting from last checkpoint
+     */
+    fun appPullIncidentData(
+        cancelOngoing: Boolean = false,
+        forcePullIncidents: Boolean = false,
+        cacheSelectedIncident: Boolean = false,
+        cacheActiveIncidentWorksites: Boolean = true,
+        cacheFullWorksites: Boolean = false,
+        restartCacheCheckpoint: Boolean = false,
+    )
 
-    suspend fun syncPullWorksitesFullAsync(): Deferred<SyncResult>
-    fun stopSyncPullWorksitesFull()
-    fun scheduleSyncWorksitesFull()
+    suspend fun syncPullIncidentData(
+        cancelOngoing: Boolean = false,
+        forcePullIncidents: Boolean = false,
+        cacheSelectedIncident: Boolean = false,
+        cacheActiveIncidentWorksites: Boolean = true,
+        cacheFullWorksites: Boolean = false,
+        restartCacheCheckpoint: Boolean = false,
+    ): SyncResult
 
-    suspend fun pullIncidents()
-    fun appPullIncident(id: Long)
-    suspend fun syncPullIncidentAsync(id: Long): Deferred<SyncResult>
-    fun stopPullIncident()
-
-    fun appPullIncidentWorksitesDelta(forceRefreshAll: Boolean = false)
+    fun stopPullWorksites()
 
     fun appPullLanguage()
     suspend fun syncPullLanguage(): SyncResult
 
     fun appPullStatuses()
     suspend fun syncPullStatuses(): SyncResult
+
+    fun appPullIncidents() = appPullIncidentData(
+        cancelOngoing = true,
+        forcePullIncidents = true,
+        cacheSelectedIncident = true,
+        cacheActiveIncidentWorksites = false,
+    )
+
+    suspend fun syncPullIncidents() = syncPullIncidentData(
+        cancelOngoing = true,
+        forcePullIncidents = true,
+        cacheSelectedIncident = true,
+        cacheActiveIncidentWorksites = false,
+    )
 }
 
 interface SyncPusher {
@@ -41,5 +67,5 @@ sealed interface SyncResult {
     data class Success(val notes: String) : SyncResult
     data class Partial(val notes: String) : SyncResult
     data class Error(val message: String) : SyncResult
-    data object PreconditionsNotMet : SyncResult
+    data object InvalidAccountTokens : SyncResult
 }

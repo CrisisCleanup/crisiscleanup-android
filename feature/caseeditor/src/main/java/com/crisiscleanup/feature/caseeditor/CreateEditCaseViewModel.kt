@@ -67,7 +67,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
@@ -387,12 +386,14 @@ class CreateEditCaseViewModel @Inject constructor(
             }
             .launchIn(viewModelScope)
 
-        permissionManager.permissionChanges.map {
-            if (it == cameraPermissionGranted) {
-                caseMediaManager.continueTakePhotoGate.set(true)
-                isCameraPermissionGranted = true
+        permissionManager.permissionChanges
+            .onEach {
+                if (it == cameraPermissionGranted) {
+                    caseMediaManager.continueTakePhotoGate.set(true)
+                    isCameraPermissionGranted = true
+                }
             }
-        }.launchIn(viewModelScope)
+            .launchIn(viewModelScope)
     }
 
     val viewState = dataLoader.viewState

@@ -20,11 +20,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.R
+import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 
 @Composable
 fun CrisisCleanupElevatedIconButton(
     modifier: Modifier = Modifier,
+    iconModifier: Modifier = Modifier,
     @DrawableRes iconResId: Int = 0,
     imageVector: ImageVector? = null,
     contentDescriptionResId: Int = 0,
@@ -53,14 +55,16 @@ fun CrisisCleanupElevatedIconButton(
         }
         if (iconResId != 0) {
             Icon(
-                painter = painterResource(iconResId),
-                contentDescription = cd,
+                painterResource(iconResId),
+                cd,
+                iconModifier,
             )
         } else {
             imageVector?.let {
                 Icon(
-                    imageVector = it,
-                    contentDescription = cd,
+                    it,
+                    cd,
+                    iconModifier,
                 )
             }
         }
@@ -70,6 +74,7 @@ fun CrisisCleanupElevatedIconButton(
 @Composable
 fun CrisisCleanupIconButton(
     modifier: Modifier = Modifier,
+    iconModifier: Modifier = Modifier,
     @DrawableRes iconResId: Int = 0,
     imageVector: ImageVector? = null,
     contentDescriptionResId: Int = 0,
@@ -91,27 +96,38 @@ fun CrisisCleanupIconButton(
         val iconTint = if (enabled) tint else tint.disabledAlpha()
         if (iconResId != 0) {
             Icon(
-                painter = painterResource(iconResId),
-                contentDescription = cd,
-                tint = iconTint,
+                painterResource(iconResId),
+                cd,
+                iconModifier,
+                iconTint,
             )
         } else {
             imageVector?.let {
                 Icon(
-                    imageVector = it,
-                    contentDescription = cd,
-                    tint = iconTint,
+                    it,
+                    cd,
+                    iconModifier,
+                    iconTint,
                 )
             }
         }
     }
 }
 
-@Preview(name = "square")
+@Preview(name = "drawable")
 @Composable
-fun CrisisCleanupIconButtonPreview() {
+fun CrisisCleanupDrawableIconButtonPreview() {
     CrisisCleanupElevatedIconButton(
         modifier = Modifier.size(48.dp),
         iconResId = R.drawable.ic_cases,
+    )
+}
+
+@Preview(name = "vector")
+@Composable
+fun CrisisCleanupVectorIconButtonPreview() {
+    CrisisCleanupElevatedIconButton(
+        iconModifier = Modifier.size(96.dp),
+        imageVector = CrisisCleanupIcons.Delete,
     )
 }

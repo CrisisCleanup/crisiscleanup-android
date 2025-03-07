@@ -41,6 +41,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -50,6 +51,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicBoolean
@@ -69,8 +71,6 @@ interface CaseLocationDataEditor {
     val isLocationCommitted: StateFlow<Boolean>
 
     val takeClearSearchInputFocus: Boolean
-
-    var isMoveLocationOnMapMode: MutableState<Boolean>
 
     val defaultMapZoom: Float
 
@@ -111,7 +111,6 @@ interface CaseLocationDataEditor {
         isActiveChange: Boolean,
     )
 
-    fun toggleMoveLocationOnMap()
     fun setMoveLocationOnMap(moveOnMap: Boolean)
     fun onSaveMoveLocationCoordinates(): Boolean
 
@@ -189,14 +188,14 @@ internal class EditableLocationDataEditor(
     override val takeClearSearchInputFocus: Boolean
         get() = clearSearchInputFocus.getAndSet(false)
 
-    override var isMoveLocationOnMapMode = mutableStateOf(false)
+    private val isMoveLocationOnMapMode = AtomicBoolean(false)
     private var hasEnteredMoveLocationMapMode = false
 
     override val defaultMapZoom: Float
         get() {
             val zoom = if (worksiteProvider.editableWorksite.value.address.isBlank()) {
                 7
-            } else if (isMoveLocationOnMapMode.value) {
+            } else if (isMoveLocationOnMapMode.get()) {
                 19
             } else {
                 13
@@ -217,7 +216,7 @@ internal class EditableLocationDataEditor(
 
     override val showExplainPermissionLocation = mutableStateOf(false)
 
-    override var isMapLoaded: Boolean = false
+    override var isMapLoaded = false
 
     override val isSearchSuggested: Boolean
         get() = with(locationInputData) {
@@ -255,23 +254,22 @@ internal class EditableLocationDataEditor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-        permissionManager.permissionChanges.map {
-            if (it == locationPermissionGranted && !isMapMoved.getAndSet(false)) {
-                setMyLocationCoordinates()
+        permissionManager.permissionChanges
+            .onEach {
+                if (it == locationPermissionGranted && !isMapMoved.getAndSet(false)) {
+                    setMyLocationCoordinates()
+                }
             }
-        }.launchIn(coroutineScope)
+            .launchIn(coroutineScope)
 
         addressSearchRepository.startSearchSession()
 
-        val pinMarkerSize = Pair(32f, 48f)
         coroutineScope.launch {
             inBoundsPinIcon = drawableResourceBitmapProvider.getIcon(
                 commonR.drawable.cc_foreground_pin,
-                pinMarkerSize,
             )
             outOfBoundsPinIcon = drawableResourceBitmapProvider.getIcon(
                 mapMarkerR.drawable.cc_pin_location_out_of_bounds,
-                pinMarkerSize,
             )
         }
 
@@ -288,6 +286,7 @@ internal class EditableLocationDataEditor(
             started = SharingStarted.WhileSubscribed(),
         )
 
+    @OptIn(FlowPreview::class)
     private val isLocationInBounds = locationInputData.coordinates
         .debounce(100)
         .map {
@@ -411,7 +410,7 @@ internal class EditableLocationDataEditor(
     ) {
         zoomCache = cameraPosition.zoom
 
-        if (isMoveLocationOnMapMode.value) {
+        if (isMoveLocationOnMapMode.get()) {
             projection?.let {
                 if (hasEnteredMoveLocationMapMode) {
                     if (isMapLoaded) {
@@ -430,16 +429,17 @@ internal class EditableLocationDataEditor(
         }
     }
 
-    override fun toggleMoveLocationOnMap() {
+    private fun toggleMoveLocationOnMap() {
         _mapCameraZoom.value = centerCoordinatesZoom()
-        if (!isMoveLocationOnMapMode.value) {
+        val isMoveMode = isMoveLocationOnMapMode.get()
+        if (!isMoveMode) {
             hasEnteredMoveLocationMapMode = false
         }
-        isMoveLocationOnMapMode.value = !isMoveLocationOnMapMode.value
+        isMoveLocationOnMapMode.set(!isMoveMode)
     }
 
     override fun setMoveLocationOnMap(moveOnMap: Boolean) {
-        if (isMoveLocationOnMapMode.value == moveOnMap) {
+        if (isMoveLocationOnMapMode.get() == moveOnMap) {
             return
         }
         toggleMoveLocationOnMap()
@@ -593,8 +593,7 @@ internal class EditableLocationDataEditor(
     }
 
     override fun onBackValidateSaveWorksite(): Boolean {
-        if (isMoveLocationOnMapMode.value) {
-            isMoveLocationOnMapMode.value = false
+        if (isMoveLocationOnMapMode.compareAndSet(true, false)) {
             return false
         }
 

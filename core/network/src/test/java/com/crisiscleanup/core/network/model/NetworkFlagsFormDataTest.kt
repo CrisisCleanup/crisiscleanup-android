@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.network.model
 
+import kotlinx.datetime.Instant
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -59,6 +60,7 @@ class NetworkFlagsFormDataTest {
             flags = emptyList(),
             phone1 = "1234567890",
             reportedBy = 861,
+            updatedAt = Instant.parse("2021-09-09T01:25:21.968327+00:00"),
         )
         assertEquals(expected, entry)
     }

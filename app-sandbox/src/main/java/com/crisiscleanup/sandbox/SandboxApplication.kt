@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.ContentResolver
 import android.content.Context
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
 import android.util.Log
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.LocationProvider
@@ -31,6 +32,7 @@ import okhttp3.Interceptor
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Duration
 
 @HiltAndroidApp
 class SandboxApplication : Application()
@@ -99,30 +101,26 @@ class AppAuthInterceptProvider @Inject constructor() : AuthInterceptorProvider {
 
 @Singleton
 class AppSyncer @Inject constructor() : SyncPuller, SyncPusher {
-    override fun appPull(force: Boolean, cancelOngoing: Boolean) {}
+    override fun appPullIncidentData(
+        cancelOngoing: Boolean,
+        forcePullIncidents: Boolean,
+        cacheSelectedIncident: Boolean,
+        cacheActiveIncidentWorksites: Boolean,
+        cacheFullWorksites: Boolean,
+        restartCacheCheckpoint: Boolean,
+    ) {
+    }
 
-    override suspend fun syncPullAsync() =
-        CompletableDeferred(SyncResult.NotAttempted(""))
+    override suspend fun syncPullIncidentData(
+        cancelOngoing: Boolean,
+        forcePullIncidents: Boolean,
+        cacheSelectedIncident: Boolean,
+        cacheActiveIncidentWorksites: Boolean,
+        cacheFullWorksites: Boolean,
+        restartCacheCheckpoint: Boolean,
+    ) = SyncResult.NotAttempted("")
 
-    override fun stopPull() {}
-
-    override suspend fun syncPullWorksitesFullAsync() =
-        CompletableDeferred(SyncResult.NotAttempted(""))
-
-    override fun stopSyncPullWorksitesFull() {}
-
-    override fun scheduleSyncWorksitesFull() {}
-
-    override suspend fun pullIncidents() {}
-
-    override fun appPullIncident(id: Long) {}
-
-    override suspend fun syncPullIncidentAsync(id: Long) =
-        CompletableDeferred(SyncResult.NotAttempted(""))
-
-    override fun stopPullIncident() {}
-
-    override fun appPullIncidentWorksitesDelta(forceRefreshAll: Boolean) {}
+    override fun stopPullWorksites() {}
 
     override fun appPullLanguage() {}
 
@@ -163,9 +161,9 @@ class AppAccountEventBus @Inject constructor() : AccountEventBus {
 
 @Singleton
 class AppLocationProvider @Inject constructor() : LocationProvider {
-    override val coordinates: Pair<Double, Double> = Pair(0.0, 0.0)
+    override val coordinates = Pair(0.0, 0.0)
 
-    override suspend fun getLocation() = coordinates
+    override suspend fun getLocation(timeout: Duration) = coordinates
 }
 
 @Singleton
@@ -232,4 +230,9 @@ object AppObjectModule {
     @Provides
     fun providesContentResolver(@ApplicationContext context: Context): ContentResolver =
         context.contentResolver
+
+    @Provides
+    fun providesConnectivityManager(
+        @ApplicationContext context: Context,
+    ): ConnectivityManager = context.getSystemService(ConnectivityManager::class.java)
 }

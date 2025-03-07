@@ -25,7 +25,6 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
@@ -43,11 +42,13 @@ class ScanQrCodeViewModel @Inject constructor(
     val qrCodeAnalyzer: ImageAnalysis.Analyzer = QrCodeAnalyzer(this)
 
     init {
-        permissionManager.permissionChanges.map {
-            if (it == cameraPermissionGranted) {
-                isCameraPermissionGranted = true
+        permissionManager.permissionChanges
+            .onEach {
+                if (it == cameraPermissionGranted) {
+                    isCameraPermissionGranted = true
+                }
             }
-        }.launchIn(viewModelScope)
+            .launchIn(viewModelScope)
 
         if (requestCameraPermission()) {
             isCameraPermissionGranted = true

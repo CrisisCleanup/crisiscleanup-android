@@ -14,20 +14,24 @@ import com.crisiscleanup.core.common.Tutorials
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.common.subscribedReplay
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.data.IncidentSelector
+import com.crisiscleanup.core.data.incidentcache.DataDownloadSpeedMonitor
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupAccountDataRepository
+import com.crisiscleanup.core.data.repository.IncidentCacheRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.SyncLogRepository
-import com.crisiscleanup.core.data.repository.WorksitesRepository
+import com.crisiscleanup.core.model.data.InitialIncidentWorksitesCachePreferences
 import com.crisiscleanup.core.ui.TutorialViewTracker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -36,7 +40,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MenuViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
-    worksitesRepository: WorksitesRepository,
+    incidentCacheRepository: IncidentCacheRepository,
     val incidentSelector: IncidentSelector,
     syncLogRepository: SyncLogRepository,
     private val accountDataRepository: AccountDataRepository,
@@ -44,6 +48,7 @@ class MenuViewModel @Inject constructor(
     private val appVersionProvider: AppVersionProvider,
     private val appPreferencesRepository: LocalAppPreferencesRepository,
     appSettingsProvider: AppSettingsProvider,
+    dataDownloadSpeedMonitor: DataDownloadSpeedMonitor,
     private val appEnv: AppEnv,
     private val syncPuller: SyncPuller,
     @Tutorials(Menu) val menuTutorialDirector: TutorialDirector,
@@ -63,7 +68,7 @@ class MenuViewModel @Inject constructor(
     val appTopBarDataProvider = AppTopBarDataProvider(
         "nav.menu",
         incidentsRepository,
-        worksitesRepository,
+        incidentCacheRepository,
         incidentSelector,
         translator,
         accountDataRepository,
@@ -78,7 +83,7 @@ class MenuViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = emptyList(),
-            started = SharingStarted.WhileSubscribed(),
+            started = subscribedReplay(),
         )
 
     val versionText: String
@@ -108,12 +113,38 @@ class MenuViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = MenuItemVisibility(),
-            started = SharingStarted.WhileSubscribed(),
+            started = subscribedReplay(),
         )
 
     val isMenuTutorialDone = appPreferencesRepository.userPreferences.map {
         it.isMenuTutorialDone
     }
+
+    val incidentCachePreferences = incidentCacheRepository.cachePreferences
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = InitialIncidentWorksitesCachePreferences,
+            started = subscribedReplay(),
+        )
+
+    val incidentDataCacheMetrics = combine(
+        incidentCachePreferences,
+        dataDownloadSpeedMonitor.isSlowSpeed.distinctUntilChanged(),
+        ::Pair,
+    )
+        .map { (preferences, isSlow) ->
+            IncidentDataCacheMetrics(
+                isSlow = isSlow,
+                isPaused = preferences.isPaused,
+                isRegionBound = preferences.isRegionBounded,
+            )
+        }
+        .distinctUntilChanged()
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = IncidentDataCacheMetrics(),
+            started = subscribedReplay(),
+        )
 
     init {
         externalScope.launch(ioDispatcher) {
@@ -128,11 +159,11 @@ class MenuViewModel @Inject constructor(
     }
 
     suspend fun refreshIncidentsAsync() {
-        syncPuller.pullIncidents()
+        syncPuller.syncPullIncidents()
     }
 
     fun refreshIncidents() {
-        syncPuller.appPull(true, cancelOngoing = true)
+        syncPuller.appPullIncidents()
     }
 
     fun shareAnalytics(share: Boolean) {
@@ -161,12 +192,6 @@ class MenuViewModel @Inject constructor(
         }
     }
 
-    fun syncWorksitesFull() {
-        if (isDebuggable) {
-            syncPuller.scheduleSyncWorksitesFull()
-        }
-    }
-
     fun showGettingStartedVideo(show: Boolean) {
         val hide = !show
         viewModelScope.launch(ioDispatcher) {
@@ -188,3 +213,13 @@ data class MenuItemVisibility(
     val showOnboarding: Boolean = false,
     val showGettingStartedVideo: Boolean = false,
 )
+
+data class IncidentDataCacheMetrics(
+    val isSlow: Boolean? = null,
+    val isPaused: Boolean = false,
+    val isRegionBound: Boolean = false,
+) {
+    val hasSpeedNotAdaptive by lazy {
+        isSlow == false && (isPaused || isRegionBound)
+    }
+}

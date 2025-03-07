@@ -19,6 +19,9 @@ private const val EARTH_RADIUS_KM = 6_371
 val Double.kmToMiles: Double
     get() = this * 0.621371
 
+val Double.milesToMeters: Double
+    get() = this * 1609.344
+
 // Formula from https://scikit-learn.org/stable/modules/generated/sklearn.metrics.pairwise.haversine_distances.html#:~:text=The%20Haversine%20(or%20great%20circle,the%20data%20must%20be%202.
 /**
  * Distance in km

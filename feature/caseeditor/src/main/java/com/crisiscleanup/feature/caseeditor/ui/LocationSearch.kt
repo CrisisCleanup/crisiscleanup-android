@@ -14,7 +14,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -30,12 +29,10 @@ import com.crisiscleanup.core.designsystem.theme.textMessagePadding
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseLocationDataEditor
-import com.crisiscleanup.feature.caseeditor.EditCaseBaseViewModel
 import com.crisiscleanup.feature.caseeditor.LocationSearchResults
 
 @Composable
 internal fun ColumnScope.SearchContents(
-    viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
     query: String = "",
     isEditable: Boolean = false,
@@ -61,17 +58,9 @@ internal fun ColumnScope.SearchContents(
                 )
             }
         } else {
-            val onCaseSelect = remember(viewModel) {
-                { caseLocation: CaseSummaryResult ->
-                    editor.onExistingWorksiteSelected(caseLocation)
-                }
-            }
-            val onAddress = remember(viewModel) {
-                { address: KeySearchAddress ->
-                    editor.onGeocodeAddressSelected(address)
-                }
-            }
-            val closeKeyboard = rememberCloseKeyboard(viewModel)
+            val onCaseSelect = editor::onExistingWorksiteSelected
+            val onAddress = editor::onGeocodeAddressSelected
+            val closeKeyboard = rememberCloseKeyboard(editor)
             ListSearchResults(
                 locationSearchResults,
                 onCaseSelect = onCaseSelect,

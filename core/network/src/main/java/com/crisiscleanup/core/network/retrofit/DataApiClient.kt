@@ -4,7 +4,6 @@ import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkAccountProfileResult
 import com.crisiscleanup.core.network.model.NetworkCaseHistoryResult
 import com.crisiscleanup.core.network.model.NetworkCountResult
-import com.crisiscleanup.core.network.model.NetworkFlagsFormData
 import com.crisiscleanup.core.network.model.NetworkFlagsFormDataResult
 import com.crisiscleanup.core.network.model.NetworkIncidentResult
 import com.crisiscleanup.core.network.model.NetworkIncidentsListResult
@@ -24,7 +23,6 @@ import com.crisiscleanup.core.network.model.NetworkUsersResult
 import com.crisiscleanup.core.network.model.NetworkWorkTypeRequestResult
 import com.crisiscleanup.core.network.model.NetworkWorkTypeStatusResult
 import com.crisiscleanup.core.network.model.NetworkWorksiteLocationSearchResult
-import com.crisiscleanup.core.network.model.NetworkWorksitePage
 import com.crisiscleanup.core.network.model.NetworkWorksitesCoreDataResult
 import com.crisiscleanup.core.network.model.NetworkWorksitesFullResult
 import com.crisiscleanup.core.network.model.NetworkWorksitesPageResult
@@ -57,7 +55,7 @@ private interface DataSourceApi {
     @TokenAuthenticationHeader
     @GET("organizations")
     suspend fun getOrganizations(
-        @Query("id__in")
+        @Query("id__in", encoded = true)
         ids: String,
     ): NetworkOrganizationsResult
 
@@ -106,7 +104,7 @@ private interface DataSourceApi {
     @TokenAuthenticationHeader
     @GET("locations")
     suspend fun getLocations(
-        @Query("id__in")
+        @Query("id__in", encoded = true)
         ids: String,
         @Query("limit")
         limit: Int,
@@ -173,7 +171,7 @@ private interface DataSourceApi {
     @TokenAuthenticationHeader
     @GET("worksites")
     suspend fun getWorksites(
-        @Query("id__in")
+        @Query("id__in", encoded = true)
         worksiteIds: String,
     ): NetworkWorksitesFullResult
 
@@ -195,10 +193,36 @@ private interface DataSourceApi {
         pageCount: Int,
         @Query("page")
         pageOffset: Int?,
-        @Query("center_coordinates")
-        centerCoordinates: List<Double>?,
+        @Query("center_coordinates", encoded = true)
+        centerCoordinates: String?,
         @Query("updated_at__gt")
         updatedAtAfter: Instant?,
+    ): NetworkWorksitesPageResult
+
+    @TokenAuthenticationHeader
+    @GET("worksites_page")
+    suspend fun getWorksitesPageUpdatedBefore(
+        @Query("incident")
+        incidentId: Long,
+        @Query("limit")
+        pageCount: Int,
+        @Query("updated_at__lt")
+        updatedBefore: Instant,
+        @Query("sort")
+        sort: String,
+    ): NetworkWorksitesPageResult
+
+    @TokenAuthenticationHeader
+    @GET("worksites_page")
+    suspend fun getWorksitesPageUpdatedAfter(
+        @Query("incident")
+        incidentId: Long,
+        @Query("limit")
+        pageCount: Int,
+        @Query("updated_at__gt")
+        updatedAfter: Instant,
+        @Query("sort")
+        sort: String,
     ): NetworkWorksitesPageResult
 
     @GET("languages")
@@ -253,7 +277,7 @@ private interface DataSourceApi {
     @TokenAuthenticationHeader
     @GET("users")
     suspend fun getUsers(
-        @Query("id__in")
+        @Query("id__in", encoded = true)
         ids: String,
     ): NetworkUsersResult
 
@@ -269,11 +293,35 @@ private interface DataSourceApi {
 
     @TokenAuthenticationHeader
     @GET("worksites_data_flags")
+    suspend fun getWorksitesFlagsFormDataBefore(
+        @Query("incident")
+        incidentId: Long,
+        @Query("limit")
+        limit: Int,
+        @Query("updated_at__lt")
+        updatedAtBefore: Instant?,
+        @Query("sort")
+        sort: String,
+    ): NetworkFlagsFormDataResult
+
+    @TokenAuthenticationHeader
+    @GET("worksites_data_flags")
+    suspend fun getWorksitesFlagsFormDataAfter(
+        @Query("incident")
+        incidentId: Long,
+        @Query("limit")
+        limit: Int,
+        @Query("updated_at__gt")
+        updatedAfter: Instant,
+        @Query("sort")
+        sort: String,
+    ): NetworkFlagsFormDataResult
+
+    @TokenAuthenticationHeader
+    @GET("worksites_data_flags")
     suspend fun getWorksitesFlagsFormData(
-        @Query("incident") incidentId: Long,
-        @Query("limit") limit: Int,
-        @Query("offset") offset: Int?,
-        @Query("updated_at__gt") updatedAtAfter: Instant?,
+        @Query("id__in", encoded = true)
+        ids: String,
     ): NetworkFlagsFormDataResult
 
     @TokenAuthenticationHeader
@@ -425,38 +473,81 @@ class DataApiClient @Inject constructor(
         latitude: Double?,
         longitude: Double?,
         updatedAtAfter: Instant?,
-    ): List<NetworkWorksitePage> {
-        val centerCoordinates: List<Double>? = if (latitude == null && longitude == null) {
+    ): NetworkWorksitesPageResult {
+        val centerCoordinates = if (latitude == null && longitude == null) {
             null
         } else {
-            listOf(latitude!!, longitude!!)
+            "$longitude,$latitude"
         }
-        val result = networkApi.getWorksitesPage(
+        return networkApi.getWorksitesPage(
             incidentId,
             pageCount,
             if ((pageOffset ?: 0) <= 1) null else pageOffset,
             centerCoordinates,
             updatedAtAfter,
-        )
-        result.errors?.tryThrowException()
-        return result.results ?: emptyList()
+        ).apply {
+            errors?.tryThrowException()
+        }
+    }
+
+    override suspend fun getWorksitesPageUpdatedAt(
+        incidentId: Long,
+        pageCount: Int,
+        updatedAt: Instant,
+        isPagingBackwards: Boolean,
+    ): NetworkWorksitesPageResult {
+        val result = if (isPagingBackwards) {
+            networkApi.getWorksitesPageUpdatedBefore(
+                incidentId,
+                pageCount,
+                updatedAt,
+                "-updated_at",
+            )
+        } else {
+            networkApi.getWorksitesPageUpdatedAfter(
+                incidentId,
+                pageCount,
+                updatedAt,
+                "updated_at",
+            )
+        }
+        return result.also {
+            it.errors?.tryThrowException()
+        }
     }
 
     override suspend fun getWorksitesFlagsFormDataPage(
         incidentId: Long,
         pageCount: Int,
-        pageOffset: Int?,
-        updatedAtAfter: Instant?,
-    ): List<NetworkFlagsFormData> {
-        val result = networkApi.getWorksitesFlagsFormData(
-            incidentId,
-            limit = pageCount,
-            offset = if ((pageOffset ?: 0) <= 1) null else pageOffset!! * pageCount,
-            updatedAtAfter,
-        )
-        result.errors?.tryThrowException()
-        return result.results ?: emptyList()
+        updatedAt: Instant,
+        isPagingBackwards: Boolean,
+    ): NetworkFlagsFormDataResult {
+        val result = if (isPagingBackwards) {
+            networkApi.getWorksitesFlagsFormDataBefore(
+                incidentId,
+                pageCount,
+                updatedAt,
+                "-updated_at",
+            )
+        } else {
+            networkApi.getWorksitesFlagsFormDataAfter(
+                incidentId,
+                pageCount,
+                updatedAt,
+                "updated_at",
+            )
+        }
+        return result.also {
+            it.errors?.tryThrowException()
+        }
     }
+
+    override suspend fun getWorksitesFlagsFormData(ids: Collection<Long>) =
+        networkApi.getWorksitesFlagsFormData(ids.joinToString(","))
+            .let {
+                it.errors?.tryThrowException()
+                it.results ?: emptyList()
+            }
 
     private val locationSearchFields = listOf(
         "id",
