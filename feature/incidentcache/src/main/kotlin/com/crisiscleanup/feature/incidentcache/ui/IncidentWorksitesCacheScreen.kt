@@ -124,7 +124,7 @@ private fun IncidentWorksitesCacheScreen(
 
     Column(Modifier.fillMaxSize()) {
         TopAppBarBackAction(
-            title = t("~~Sync strategy"),
+            title = t("appCache.sync_strategy"),
             onAction = onBack,
         )
 
@@ -142,10 +142,10 @@ private fun IncidentWorksitesCacheScreen(
                 contentType = "text-item",
             ) {
                 val syncedText = lastSynced?.let {
-                    t("~~Synced {incident_name} {sync_date}")
+                    t("appCache.synced_incident_as_of_date")
                         .replace("{incident_name}", incident.shortName)
                         .replace("{sync_date}", it)
-                } ?: t("~~Awaiting sync of {incident_name}")
+                } ?: t("appCache.awaiting_sync_of_incident_name")
                     .replace("{incident_name}", incident.shortName)
                 Text(
                     syncedText,
@@ -160,15 +160,15 @@ private fun IncidentWorksitesCacheScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     val syncStageMessage = when (syncStage) {
-                        IncidentCacheStage.Start -> t("~~Ready to sync")
-                        IncidentCacheStage.Incidents -> t("~~Syncing Incidents...")
-                        IncidentCacheStage.WorksitesBounded -> t("~~Syncing Cases nearby/in area...")
-                        IncidentCacheStage.WorksitesPreload -> t("~~Syncing Cases nearby...")
-                        IncidentCacheStage.WorksitesCore -> t("~~Syncing Cases...")
-                        IncidentCacheStage.WorksitesAdditional -> t("~~Syncing additional Case data...")
-                        IncidentCacheStage.ActiveIncident -> t("~~Syncing active Incident...")
-                        IncidentCacheStage.ActiveIncidentOrganization -> t("~~Syncing organizations in Incident...")
-                        IncidentCacheStage.End -> t("~~Sync finished")
+                        IncidentCacheStage.Start -> t("appCache.ready_to_sync")
+                        IncidentCacheStage.Incidents -> t("appCache.syncing_incidents")
+                        IncidentCacheStage.WorksitesBounded -> t("appCache.syncing_cases_in_designated_area")
+                        IncidentCacheStage.WorksitesPreload -> t("appCache.syncing_nearby_cases")
+                        IncidentCacheStage.WorksitesCore -> t("appCache.syncing_all_cases")
+                        IncidentCacheStage.WorksitesAdditional -> t("appCache.syncing_additional_case_data")
+                        IncidentCacheStage.ActiveIncident -> t("appCache.syncing_active_incident")
+                        IncidentCacheStage.ActiveIncidentOrganization -> t("appCache.syncing_organizations_in_incident")
+                        IncidentCacheStage.End -> t("appCache.sync_finished")
                     }
                     Text(syncStageMessage)
 
@@ -186,12 +186,12 @@ private fun IncidentWorksitesCacheScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        "~~Cases are downloaded according to the selected strategy",
+                        t("appCache.choose_download_strategy"),
                         Modifier.weight(1f),
                     )
 
                     CrisisCleanupTextButton(
-                        text = t("~~Resync"),
+                        text = t("actions.sync_now"),
                         onClick = viewModel::resync,
                         enabled = !editingParameters.isPaused,
                     )
@@ -201,24 +201,24 @@ private fun IncidentWorksitesCacheScreen(
             synChoiceItem(
                 itemKey = "sync-auto-download",
                 editingParameters.isAutoCache,
-                textKey = "~~Adaptive",
-                subTextKey = "~~Changes the strategy and amount of Cases downloaded relative to network speed.",
+                textKey = "appCache.adaptive",
+                subTextKey = "appCache.adaptive_description",
                 onSelect = viewModel::resumeCachingCases,
             )
 
             synChoiceItem(
                 itemKey = "sync-pause",
                 editingParameters.isPaused,
-                textKey = "~~Paused",
-                subTextKey = "~~Pause downloading Cases until network speed is sufficient to resume.",
+                textKey = "appCache.pause",
+                subTextKey = "appCache.pause_description",
                 onSelect = viewModel::pauseCachingCases,
             )
 
             synChoiceItem(
                 itemKey = "sync-near-me",
                 editingParameters.isBoundedNearMe,
-                textKey = "~~Near me",
-                subTextKey = "~~Download Cases around my current location.",
+                textKey = "appCache.near_me",
+                subTextKey = "appCache.near_me_description",
                 onSelect = {
                     viewModel.boundCachingCases(true, isUserAction = true)
                     scrollToNearMeSection()
@@ -228,8 +228,8 @@ private fun IncidentWorksitesCacheScreen(
             synChoiceItem(
                 itemKey = "sync-bounded-region",
                 editingParameters.isBoundedByCoordinates,
-                textKey = "~~Specify area",
-                subTextKey = "~~Drag the map to download Cases surrounding the pin.",
+                textKey = "appCache.choose_area",
+                subTextKey = "appCache.choose_area_description",
                 onSelect = {
                     viewModel.boundCachingCases(false)
                     scrollToBoundedSection()
@@ -264,7 +264,7 @@ private fun IncidentWorksitesCacheScreen(
             if (isNotProduction) {
                 item {
                     CrisisCleanupTextButton(
-                        text = "Reset Incident Cases cache",
+                        text = t("appCache.reset_incident_cases_cache"),
                         onClick = viewModel::resetCaching,
                     )
                 }
@@ -424,7 +424,7 @@ private fun BoundedRegionSection(
     ) {
         val fixedRadius = "%.1f".format(regionParameters.regionRadiusMiles)
         Text(
-            t("~~Radius {magnitude} mi.")
+            t("appCache.radius")
                 .replace("{magnitude}", fixedRadius),
             Modifier.weight(1f),
         )
