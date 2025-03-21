@@ -69,7 +69,7 @@ class CasesFilterViewModel @Inject constructor(
 
     val workTypeStatuses = workTypeStatusRepository.workTypeStatusFilterOptions
 
-    val worksiteFlags = WorksiteFlagType.values().sortedBy { it.literal }
+    val worksiteFlags = WorksiteFlagType.entries.sortedBy { it.literal }
 
     val workTypes = incidentSelector.incidentId
         .flatMapLatest { id ->
@@ -181,6 +181,8 @@ class CasesFilterViewModel @Inject constructor(
     fun applyFilters(filters: CasesFilter) {
         casesFilterRepository.changeFilters(filters)
     }
+
+    fun isFiltersChanged() = casesFilters.value != casesFilterRepository.casesFilters
 }
 
 enum class CollapsibleFilterSection {
