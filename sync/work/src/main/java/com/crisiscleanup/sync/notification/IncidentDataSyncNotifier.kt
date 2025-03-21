@@ -55,22 +55,28 @@ internal class IncidentDataSyncNotifier @Inject constructor(
                         isSyncing
                     ) {
                         val title = appContext.getString(R.string.syncing_text, incidentName)
-                        val text = if (isIndeterminate) {
-                            appContext.getString(
-                                R.string.saving_indeterminate_data,
-                            )
-                        } else if (pullType == IncidentPullDataType.WorksitesCore) {
-                            appContext.getString(
-                                R.string.saved_cases_out_of,
-                                savedCount,
-                                dataCount,
-                            )
-                        } else {
-                            appContext.getString(
-                                R.string.saved_full_cases_out_of,
-                                savedCount,
-                                dataCount,
-                            )
+                        val text = notificationMessage.ifBlank {
+                            var message = if (isIndeterminate) {
+                                appContext.getString(
+                                    R.string.saving_indeterminate_data,
+                                )
+                            } else if (pullType == IncidentPullDataType.WorksitesCore) {
+                                appContext.getString(
+                                    R.string.saved_cases_out_of,
+                                    savedCount,
+                                    dataCount,
+                                )
+                            } else {
+                                appContext.getString(
+                                    R.string.saved_full_cases_out_of,
+                                    savedCount,
+                                    dataCount,
+                                )
+                            }
+                            if (currentStep in 1..stepTotal) {
+                                message = "($currentStep/$stepTotal) $message"
+                            }
+                            message
                         }
                         val stopSyncIntent = PendingIntent.getBroadcast(
                             appContext,
@@ -90,6 +96,8 @@ internal class IncidentDataSyncNotifier @Inject constructor(
                                 .setOnlyAlertOnce(true)
                                 .build(),
                         )
+                    } else if (isEnded) {
+                        appContext.channelNotificationManager()?.cancel(SYNC_NOTIFICATION_ID)
                     }
                 }
             }
