@@ -32,6 +32,7 @@ import com.crisiscleanup.core.model.data.WorkTypeType.Favorite
 import com.crisiscleanup.core.model.data.WorkTypeType.Fence
 import com.crisiscleanup.core.model.data.WorkTypeType.Fire
 import com.crisiscleanup.core.model.data.WorkTypeType.Food
+import com.crisiscleanup.core.model.data.WorkTypeType.Heating
 import com.crisiscleanup.core.model.data.WorkTypeType.Important
 import com.crisiscleanup.core.model.data.WorkTypeType.Landslide
 import com.crisiscleanup.core.model.data.WorkTypeType.Leak
@@ -288,6 +289,7 @@ class WorkTypeIconProvider @Inject constructor(
         Fence to R.drawable.ic_work_type_fence,
         Fire to R.drawable.ic_work_type_fire,
         Food to R.drawable.ic_work_type_food,
+        Heating to R.drawable.ic_work_type_heat,
         Important to R.drawable.ic_work_type_important,
         Landslide to R.drawable.ic_work_type_landslide,
         Leak to R.drawable.ic_work_type_leak,

@@ -96,6 +96,7 @@ private fun typeFromLiteral(type: String) = when (type.lowercase()) {
     "fence" -> WorkTypeType.Fence
     "fire" -> WorkTypeType.Fire
     "food" -> WorkTypeType.Food
+    "heating" -> WorkTypeType.Heating
     "landslide" -> WorkTypeType.Landslide
     "leak" -> WorkTypeType.Leak
     "meals" -> WorkTypeType.Meals
@@ -143,6 +144,7 @@ enum class WorkTypeType {
     Fence,
     Fire,
     Food,
+    Heating,
     Important,
     Landslide,
     Leak,
