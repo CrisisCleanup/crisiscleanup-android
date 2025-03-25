@@ -63,6 +63,7 @@ import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.caseeditor.CaseEditorViewState
 import com.crisiscleanup.feature.caseeditor.CasePropertyDataEditor
 import com.crisiscleanup.feature.caseeditor.CreateEditCaseViewModel
+import com.crisiscleanup.feature.caseeditor.IncidentCreation
 import com.crisiscleanup.feature.caseeditor.WorksiteSection
 import com.crisiscleanup.feature.caseeditor.model.FormFieldsInputData
 import com.crisiscleanup.core.common.R as commonR
@@ -148,6 +149,8 @@ private fun ArrangeLayout(
         isEditable = areEditorsReady && caseData.isNetworkLoadFinished && !isSaving
     }
 
+    val incidentCreation by viewModel.incidentCreation.collectAsStateWithLifecycle()
+
     val isListDetailLayout = LocalDimensions.current.isListDetailWidth
     val screenModifier = Modifier.background(color = Color.White)
     if (isListDetailLayout) {
@@ -175,6 +178,8 @@ private fun ArrangeLayout(
             ) {
                 CreateEditCaseContent(
                     viewState,
+                    onBack = onBack,
+                    incidentCreation = incidentCreation,
                     isEditable = isEditable,
                     onEditSearchAddress = onEditSearchAddress,
                     onEditMoveLocationOnMap = onEditMoveLocationOnMap,
@@ -191,6 +196,8 @@ private fun ArrangeLayout(
 
             CreateEditCaseContent(
                 viewState,
+                onBack = onBack,
+                incidentCreation = incidentCreation,
                 isEditable = isEditable,
                 onEditSearchAddress = onEditSearchAddress,
                 onEditMoveLocationOnMap = onEditMoveLocationOnMap,
@@ -210,6 +217,8 @@ private fun ArrangeLayout(
 @Composable
 private fun ColumnScope.CreateEditCaseContent(
     viewState: CaseEditorViewState,
+    onBack: () -> Unit,
+    incidentCreation: IncidentCreation,
     isEditable: Boolean,
     modifier: Modifier = Modifier,
     onEditSearchAddress: () -> Unit = {},
@@ -231,6 +240,8 @@ private fun ColumnScope.CreateEditCaseContent(
         is CaseEditorViewState.CaseData -> {
             FullEditView(
                 viewState,
+                onBack = onBack,
+                incidentCreation = incidentCreation,
                 isEditable = isEditable,
                 onSearchAddress = onEditSearchAddress,
                 onMoveLocation = onEditMoveLocationOnMap,
@@ -261,6 +272,8 @@ private fun ColumnScope.CreateEditCaseContent(
 @Composable
 private fun ColumnScope.FullEditView(
     caseData: CaseEditorViewState.CaseData,
+    onBack: () -> Unit,
+    incidentCreation: IncidentCreation,
     isEditable: Boolean,
     modifier: Modifier = Modifier,
     viewModel: CreateEditCaseViewModel = hiltViewModel(),
@@ -316,6 +329,8 @@ private fun ColumnScope.FullEditView(
         }
     }
 
+    var hasConfirmedDormantIncident by remember { mutableStateOf(false) }
+
     Box(Modifier.weight(1f)) {
         val closeKeyboard = rememberCloseKeyboard(viewModel)
         val onScrollFling = remember(viewModel) {
@@ -359,6 +374,27 @@ private fun ColumnScope.FullEditView(
 
         val isLoadingWorksite by viewModel.isLoading.collectAsStateWithLifecycle()
         BusyIndicatorFloatingTopCenter(isLoadingWorksite)
+
+        if (incidentCreation.isOldIncident && !hasConfirmedDormantIncident) {
+            val t = LocalAppTranslator.current
+            CrisisCleanupAlertDialog(
+                title = t("~~Old Incident"),
+                confirmButton = {
+                    CrisisCleanupTextButton(text = t("actions.yes")) {
+                        hasConfirmedDormantIncident = true
+                    }
+                },
+                dismissButton = {
+                    CrisisCleanupTextButton(
+                        text = t("actions.no"),
+                        onClick = onBack,
+                    )
+                },
+                text = t("~~{incident_name} was created {relative_time}. Continue creating a Case for {incident_name}?")
+                    .replace("{incident_name}", caseData.incident.shortName)
+                    .replace("{relative_time}", incidentCreation.relativeTime),
+            )
+        }
     }
 
     val showBackChangesDialog by viewModel.promptUnsavedChanges

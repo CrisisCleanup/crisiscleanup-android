@@ -21,6 +21,7 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.Default
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.common.relativeTime
 import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
@@ -68,12 +69,14 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
@@ -432,6 +435,21 @@ class CreateEditCaseViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             initialValue = emptyMap<ImageCategory, List<CaseImage>>(),
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    val incidentCreation = viewState
+        .mapNotNull {
+            it.asCaseData()?.incident?.startAt?.let { startAt ->
+                IncidentCreation(
+                    Clock.System.now() - startAt > 180.days,
+                    startAt.relativeTime,
+                )
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = incidentCreationNow,
             started = SharingStarted.WhileSubscribed(),
         )
 
@@ -945,3 +963,10 @@ internal data class CaseEditors(
         addAll(formData.map(FormDataEditor::inputData))
     }
 }
+
+data class IncidentCreation(
+    val isOldIncident: Boolean,
+    val relativeTime: String,
+)
+
+private val incidentCreationNow = IncidentCreation(false, "")
