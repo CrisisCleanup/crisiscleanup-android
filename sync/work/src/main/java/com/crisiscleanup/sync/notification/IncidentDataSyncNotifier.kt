@@ -6,7 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import com.crisiscleanup.core.common.di.ApplicationScope
+import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.data.incidentcache.IncidentDataPullReporter
 import com.crisiscleanup.core.data.model.IncidentPullDataType
@@ -20,16 +20,15 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
-import javax.inject.Singleton
 
 private const val STOP_SYNCING_ACTION = "com.crisiscleanup.STOP_SYNCING"
 
-@Singleton
 internal class IncidentDataSyncNotifier @Inject constructor(
     private val appContext: Context,
     incidentDataPullReporter: IncidentDataPullReporter,
     private val syncPuller: SyncPuller,
-    @ApplicationScope coroutineScope: CoroutineScope,
+    private val logger: AppLogger,
+    coroutineScope: CoroutineScope,
 ) {
     private val syncCounter = AtomicInteger(0)
 
@@ -56,22 +55,28 @@ internal class IncidentDataSyncNotifier @Inject constructor(
                         isSyncing
                     ) {
                         val title = appContext.getString(R.string.syncing_text, incidentName)
-                        val text = if (isIndeterminate) {
-                            appContext.getString(
-                                R.string.saving_indeterminate_data,
-                            )
-                        } else if (pullType == IncidentPullDataType.WorksitesCore) {
-                            appContext.getString(
-                                R.string.saved_cases_out_of,
-                                savedCount,
-                                dataCount,
-                            )
-                        } else {
-                            appContext.getString(
-                                R.string.saved_full_cases_out_of,
-                                savedCount,
-                                dataCount,
-                            )
+                        val text = notificationMessage.ifBlank {
+                            var message = if (isIndeterminate) {
+                                appContext.getString(
+                                    R.string.saving_indeterminate_data,
+                                )
+                            } else if (pullType == IncidentPullDataType.WorksitesCore) {
+                                appContext.getString(
+                                    R.string.saved_cases_out_of,
+                                    savedCount,
+                                    dataCount,
+                                )
+                            } else {
+                                appContext.getString(
+                                    R.string.saved_full_cases_out_of,
+                                    savedCount,
+                                    dataCount,
+                                )
+                            }
+                            if (currentStep in 1..stepTotal) {
+                                message = "($currentStep/$stepTotal) $message"
+                            }
+                            message
                         }
                         val stopSyncIntent = PendingIntent.getBroadcast(
                             appContext,
@@ -91,6 +96,8 @@ internal class IncidentDataSyncNotifier @Inject constructor(
                                 .setOnlyAlertOnce(true)
                                 .build(),
                         )
+                    } else if (isEnded) {
+                        appContext.channelNotificationManager()?.cancel(SYNC_NOTIFICATION_ID)
                     }
                 }
             }
@@ -106,6 +113,9 @@ internal class IncidentDataSyncNotifier @Inject constructor(
                     IntentFilter(STOP_SYNCING_ACTION),
                 )
             }
+
+            // TODO Delete after hanging notification is solved
+            logger.logDebug("Sync notification start ${syncCounter.get()}")
         }
 
         try {
@@ -118,6 +128,9 @@ internal class IncidentDataSyncNotifier @Inject constructor(
                     appContext.channelNotificationManager()?.cancel(SYNC_NOTIFICATION_ID)
                 }
             }
+
+            // TODO Delete after hanging notification is solved
+            logger.logDebug("Sync notification out ${syncCounter.get()}")
         }
     }
 }

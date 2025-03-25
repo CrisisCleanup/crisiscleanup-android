@@ -1,5 +1,7 @@
 package com.crisiscleanup.core.model.data
 
+import kotlinx.datetime.Instant
+
 data class Incident(
     val id: Long,
     val name: String,
@@ -12,6 +14,7 @@ data class Incident(
     val disasterLiteral: String = "",
     val disaster: Disaster = disasterFromLiteral(disasterLiteral),
     val displayLabel: String = if (caseLabel.isBlank()) name else "$caseLabel: $name",
+    val startAt: Instant? = null,
 ) {
     val formFieldLookup: Map<String, IncidentFormField> by lazy {
         formFields.associateBy { it.fieldKey }

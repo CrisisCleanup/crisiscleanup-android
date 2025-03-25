@@ -684,20 +684,20 @@ private fun IncidentCacheView(
 
     Column(modifier) {
         if (hasSpeedNotAdaptive) {
-            Text(t("~~It seems you have a good internet connection. Changing the sync strategy to adaptive ensures you'll get Incident updates reliably."))
+            Text(t("appMenu.good_internet_use_adaptive"))
         }
         Row(
             horizontalArrangement = listItemSpacedBy,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             val syncingPolicy = if (incidentCachePreferences.isPaused) {
-                t("~~Pause downloading Cases")
+                t("appMenu.pause_downloading_cases")
             } else if (incidentCachePreferences.isBoundedNearMe) {
-                t("~~Download Cases near me")
+                t("appMenu.download_cases_near_me")
             } else if (incidentCachePreferences.isBoundedByCoordinates) {
-                t("~~Download Cases in specific area")
+                t("appMenu.download_cases_specific_area")
             } else {
-                t("~~Adaptively download Cases")
+                t("appMenu.adaptively_download_cases")
             }
             Text(
                 syncingPolicy,
@@ -705,7 +705,7 @@ private fun IncidentCacheView(
             )
 
             Text(
-                text = t("~~Change"),
+                text = t("actions.change"),
                 modifier = Modifier
                     .clickable(
                         onClick = onOpenIncidentCache,

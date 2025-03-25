@@ -39,9 +39,11 @@ import com.crisiscleanup.core.common.noonTime
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.CollapsibleIcon
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupRadioButton
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextCheckbox
 import com.crisiscleanup.core.designsystem.component.ExplainLocationPermissionDialog
 import com.crisiscleanup.core.designsystem.component.FocusSectionSlider
@@ -90,6 +92,17 @@ internal fun CasesFilterRoute(
     onBack: () -> Unit = {},
     viewModel: CasesFilterViewModel = hiltViewModel(),
 ) {
+    var confirmAbandonFilterChange by remember { mutableStateOf(false) }
+    val checkChangeOnBack = remember(onBack, viewModel) {
+        {
+            if (viewModel.isFiltersChanged()) {
+                confirmAbandonFilterChange = true
+            } else {
+                onBack()
+            }
+        }
+    }
+
     val isListDetailLayout = LocalDimensions.current.isListDetailWidth
 
     val t = LocalAppTranslator.current
@@ -103,12 +116,12 @@ internal fun CasesFilterRoute(
     if (isListDetailLayout) {
         Row(screenModifier) {
             Column(Modifier.weight(LIST_DETAIL_LIST_WEIGHT)) {
-                TopBar(onBack)
+                TopBar(checkChangeOnBack)
 
                 Spacer(Modifier.weight(1f))
 
                 BottomActionBar(
-                    onBack = onBack,
+                    onBack = checkChangeOnBack,
                     filters = filters,
                 )
             }
@@ -125,7 +138,7 @@ internal fun CasesFilterRoute(
         }
     } else {
         Column(screenModifier) {
-            TopBar(onBack)
+            TopBar(checkChangeOnBack)
 
             FilterContent(
                 filters,
@@ -133,7 +146,7 @@ internal fun CasesFilterRoute(
             )
 
             BottomActionBar(
-                onBack = onBack,
+                onBack = checkChangeOnBack,
                 filters = filters,
                 horizontalLayout = true,
             )
@@ -148,6 +161,30 @@ internal fun CasesFilterRoute(
         closeDialog = closePermissionDialog,
         explanation = t("worksiteFilters.location_required_to_filter_by_distance"),
     )
+
+    if (confirmAbandonFilterChange) {
+        val closeDialog = { confirmAbandonFilterChange = false }
+        CrisisCleanupAlertDialog(
+            onDismissRequest = closeDialog,
+            title = t("~~Filter changes"),
+            confirmButton = {
+                CrisisCleanupTextButton(
+                    text = t("actions.apply_filters"),
+                    onClick = {
+                        viewModel.applyFilters(filters)
+                        onBack()
+                    },
+                )
+            },
+            dismissButton = {
+                CrisisCleanupTextButton(
+                    text = t("~~Abandon"),
+                    onClick = onBack,
+                )
+            },
+            text = t("~~Filters have changed. Would you like to apply or abandon the changes?"),
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

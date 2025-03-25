@@ -86,7 +86,7 @@ class CasesFilterViewModel @Inject constructor(
 
     val workTypeStatuses = workTypeStatusRepository.workTypeStatusFilterOptions
 
-    val worksiteFlags = WorksiteFlagType.values().sortedBy { it.literal }
+    val worksiteFlags = WorksiteFlagType.entries.sortedBy { it.literal }
 
     val workTypes = incidentSelector.incidentId
         .flatMapLatest { id ->
@@ -173,7 +173,7 @@ class CasesFilterViewModel @Inject constructor(
 
             PermissionStatus.Denied,
             PermissionStatus.Undefined,
-            -> {
+                -> {
                 // Ignore these statuses as they're not important
             }
         }
@@ -198,6 +198,8 @@ class CasesFilterViewModel @Inject constructor(
     fun applyFilters(filters: CasesFilter) {
         filterRepository.changeFilters(filters)
     }
+
+    fun isFiltersChanged() = casesFilters.value != filterRepository.casesFilters
 }
 
 enum class CollapsibleFilterSection {

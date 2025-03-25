@@ -35,6 +35,7 @@ fun PopulatedIncident.asExternalModel() = with(entity) {
         formFields = emptyList(),
         turnOnRelease = turnOnRelease,
         disasterLiteral = type,
+        startAt = startAt,
     )
 }
 

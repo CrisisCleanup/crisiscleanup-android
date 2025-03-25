@@ -10,11 +10,11 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.database.dao.IncidentDaoPlus
+import com.crisiscleanup.core.database.dao.IncidentDataSyncParameterDao
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDaoPlus
 import com.crisiscleanup.core.database.dao.PersonContactDaoPlus
 import com.crisiscleanup.core.database.dao.TeamDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
-import com.crisiscleanup.core.database.dao.WorksiteSyncStatDao
 import com.crisiscleanup.core.database.dao.fts.rebuildIncidentFts
 import com.crisiscleanup.core.database.dao.fts.rebuildOrganizationFts
 import com.crisiscleanup.core.database.dao.fts.rebuildPersonContactFts
@@ -26,6 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -64,7 +65,8 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
     private val databaseOperator: DatabaseOperator,
     private val incidentsRepository: IncidentsRepository,
     private val worksiteChangeRepository: WorksiteChangeRepository,
-    private val worksiteSyncStatDao: WorksiteSyncStatDao,
+    private val incidentDataSyncParameterDao: IncidentDataSyncParameterDao,
+    private val incidentCacheRepository: IncidentCacheRepository,
     private val languageTranslationsRepository: LanguageTranslationsRepository,
     private val workTypeStatusRepository: WorkTypeStatusRepository,
     private val accountEventBus: AccountEventBus,
@@ -108,21 +110,26 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
                 externalScope.launch(ioDispatcher) {
                     stopSyncPull()
                 }
-                // TODO Wait for at least as long as timeout, looping as necessary
                 withContext(Dispatchers.IO) {
-                    TimeUnit.SECONDS.sleep(5)
+                    for (i in 0..9) {
+                        TimeUnit.SECONDS.sleep(6)
+
+                        if (isSyncPullStopped()) {
+                            break
+                        }
+                    }
                 }
 
                 _clearingAppDataStep.value = ClearAppDataStep.ClearData
                 for (i in 0..<3) {
-                    databaseOperator.clearBackendDataTables()
-
-                    if (isAppDataCleared()) {
-                        break
-                    }
+                    clearPersistedAppData()
 
                     withContext(Dispatchers.IO) {
                         TimeUnit.SECONDS.sleep(2)
+                    }
+
+                    if (isPersistedAppDataCleared()) {
+                        break
                     }
                 }
 
@@ -134,7 +141,7 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
 
                 ensureActive()
 
-                if (!isAppDataCleared()) {
+                if (!isPersistedAppDataCleared()) {
                     clearAppDataError = ClearAppDataStep.DatabaseNotCleared
                     logger.logCapture("Unable to clear app data")
                     return@launch
@@ -157,14 +164,24 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
 
     private fun stopSyncPull() {
         // TODO Stop all including
-        //      - incident
-        //      - organizations
         //      - teams
         syncPuller.stopPullWorksites()
     }
 
-    private fun isAppDataCleared() = incidentsRepository.incidentCount == 0L &&
+    private suspend fun isSyncPullStopped(): Boolean {
+        val cacheStage = incidentCacheRepository.cacheStage.first()
+        return setOf(
+            IncidentCacheStage.Start,
+            IncidentCacheStage.End,
+        ).contains(cacheStage)
+    }
+
+    private suspend fun clearPersistedAppData() {
+        // TODO Clear/reset other persistent data sources relating to incidents
+        databaseOperator.clearBackendDataTables()
+    }
+
+    private fun isPersistedAppDataCleared() = incidentsRepository.incidentCount == 0L &&
         worksiteChangeRepository.worksiteChangeCount == 0L &&
-        // TODO Use updated tables
-        worksiteSyncStatDao.getWorksiteSyncStatCount() == 0L
+        incidentDataSyncParameterDao.getSyncStatCount() == 0
 }
