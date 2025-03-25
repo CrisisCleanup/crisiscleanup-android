@@ -316,6 +316,7 @@ class LoginWithPhoneViewModel @Inject constructor(
                             accountOptions.addAll(result.associatedAccounts)
                             selectedAccount.value = PhoneNumberAccountNone
                             isSelectAccount = true
+                            errorMessage = ""
                             return@launch
                         } else {
                             selectedAccount.value = result.associatedAccounts.first()
