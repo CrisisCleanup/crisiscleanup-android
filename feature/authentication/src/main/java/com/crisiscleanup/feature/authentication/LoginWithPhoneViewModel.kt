@@ -316,6 +316,7 @@ class LoginWithPhoneViewModel @Inject constructor(
                             accountOptions.addAll(result.associatedAccounts)
                             selectedAccount.value = PhoneNumberAccountNone
                             isSelectAccount = true
+                            return@launch
                         } else {
                             selectedAccount.value = result.associatedAccounts.first()
                             isSelectAccount = false
@@ -323,10 +324,9 @@ class LoginWithPhoneViewModel @Inject constructor(
                     }
                 }
 
-                val accountId = selectedAccount.value.userId
                 val accountData = accountDataRepository.accountData.first()
                 val authResult = attemptAuthentication(
-                    accountId,
+                    selectedUserId,
                     otpId = oneTimePasswordId,
                     accountData,
                 )
