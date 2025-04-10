@@ -44,7 +44,7 @@ internal class CasesMapTileLayerManager(
         private set(value) {
             if (value) {
                 if (incidentSelector.incidentId.value != EmptyIncident.id &&
-                    mapBoundsManager.isMapLoaded.value
+                    mapBoundsManager.isMapLoaded
                 ) {
                     _clearTileLayer = true
                 }

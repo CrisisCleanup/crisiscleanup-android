@@ -3,7 +3,6 @@ package com.crisiscleanup.core.data.repository
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities.NET_CAPABILITY_NOT_METERED
 import com.crisiscleanup.core.common.AppEnv
-import com.crisiscleanup.core.common.IncidentMapTracker
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.haversineDistance
@@ -14,6 +13,7 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.common.sync.SyncResult
+import com.crisiscleanup.core.data.IncidentMapTracker
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.incidentcache.CountTimeTracker
 import com.crisiscleanup.core.data.incidentcache.DataDownloadSpeedMonitor
@@ -494,14 +494,15 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 }
             }
 
-            incidentMapTracker.lastLocation?.let {
-                if (locationBounder.isInBounds(
+            incidentMapTracker.lastLocation.first().let {
+                if (it.incidentId == incidentId &&
+                    locationBounder.isInBounds(
                         incidentId,
-                        latitude = it.first,
-                        longitude = it.second,
+                        latitude = it.latitude,
+                        longitude = it.longitude,
                     )
                 ) {
-                    return it
+                    return Pair(it.latitude, it.longitude)
                 }
             }
 

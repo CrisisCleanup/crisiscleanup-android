@@ -67,6 +67,7 @@ import com.crisiscleanup.core.designsystem.component.actionSize
 import com.crisiscleanup.core.designsystem.component.roundedOutline
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContainerColor
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContentColor
@@ -824,7 +825,10 @@ private fun MapLayersView(
                 listItemModifier,
                 verticalArrangement = listItemSpacedByHalf,
             ) {
-                Text(t("~~Map type"))
+                Text(
+                    t("~~Map type"),
+                    style = LocalFontStyles.current.header3,
+                )
 
                 val selectedOutline = Modifier.roundedOutline(
                     width = 3.dp,

@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppMemoryStats
-import com.crisiscleanup.core.common.IncidentMapTracker
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.PermissionManager
@@ -31,6 +30,7 @@ import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.commoncase.TransferWorkTypeProvider
 import com.crisiscleanup.core.commoncase.WorksiteProvider
+import com.crisiscleanup.core.data.IncidentMapTracker
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.WorksiteInteractor
 import com.crisiscleanup.core.data.incidentcache.IncidentDataPullReporter
@@ -281,7 +281,7 @@ class CasesViewModel @Inject constructor(
     val worksitesMapMarkers = combine(
         incidentWorksitesCount,
         qsm.worksiteQueryState,
-        mapBoundsManager.isMapLoaded,
+        mapBoundsManager.isMapLoadedFlow,
         ::Triple,
     )
         // TODO Make delay a parameter
@@ -598,22 +598,16 @@ class CasesViewModel @Inject constructor(
     ) {
         qsm.mapZoom.value = cameraPosition.zoom
 
-        if (mapBoundsManager.isMapLoaded.value) {
+        if (mapBoundsManager.isMapLoaded) {
             projection?.let {
                 val visibleBounds = it.visibleRegion.latLngBounds
                 qsm.mapBounds.value = CoordinateBounds(
                     visibleBounds.southwest,
                     visibleBounds.northeast,
                 )
-                mapBoundsManager.cacheBounds(visibleBounds)
 
                 if (isActiveChange) {
-                    with(visibleBounds.center) {
-                        incidentMapTracker.track(
-                            latitude = latitude,
-                            longitude = longitude,
-                        )
-                    }
+                    mapBoundsManager.cacheBounds(visibleBounds)
                 }
             }
         }

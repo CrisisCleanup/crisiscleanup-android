@@ -95,7 +95,7 @@ internal fun CasesFilterRoute(
     var confirmAbandonFilterChange by remember { mutableStateOf(false) }
     val checkChangeOnBack = remember(onBack, viewModel) {
         {
-            if (viewModel.isFiltersChanged()) {
+            if (viewModel.isFiltersChanged) {
                 confirmAbandonFilterChange = true
             } else {
                 onBack()
