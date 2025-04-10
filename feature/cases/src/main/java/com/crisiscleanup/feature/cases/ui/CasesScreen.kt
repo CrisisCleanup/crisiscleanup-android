@@ -579,6 +579,7 @@ internal fun BoxScope.CasesMapView(
                 mapCameraZoom.center,
                 mapCameraZoom.zoom,
             )
+            // TODO Latitude is shifting off center both in animate and move
             if (mapCameraZoom.durationMs > 0) {
                 cameraPositionState.animate(update, mapCameraZoom.durationMs)
             } else {

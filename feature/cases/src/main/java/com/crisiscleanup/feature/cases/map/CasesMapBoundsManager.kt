@@ -9,7 +9,6 @@ import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBounds
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBoundsDefault
-import com.crisiscleanup.core.mapmarker.util.smallOffset
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.IncidentCoordinateBounds
 import com.crisiscleanup.core.model.data.IncidentCoordinateBoundsNone
@@ -130,7 +129,7 @@ internal class CasesMapBoundsManager(
                     }
                 }
                 if (bounds != zeroBounds) {
-                    cacheBounds(bounds, true)
+                    cacheBounds(bounds, false)
                     _mapCameraBounds.value = MapViewCameraBounds(bounds, 0)
                 }
             }
@@ -163,21 +162,21 @@ internal class CasesMapBoundsManager(
 
     private var mapBoundsCache = MapViewCameraBoundsDefault.bounds
 
-    private fun cacheBounds(bounds: LatLngBounds, isInternal: Boolean = true) {
+    private fun cacheBounds(bounds: LatLngBounds, cacheToDisk: Boolean) {
         if (bounds == mapBoundsCache) {
             return
         }
 
         mapBoundsCache = bounds
 
-        if (isMapLoaded && !isInternal) {
+        if (isMapLoaded && cacheToDisk) {
             val incidentId = incidentSelector.incidentId.value
             saveIncidentMapBounds.value = bounds.asIncidentCoordinateBounds(incidentId)
         }
     }
 
     fun cacheBounds(bounds: LatLngBounds) {
-        cacheBounds(bounds, false)
+        cacheBounds(bounds, isStarted)
     }
 
     /**
@@ -192,11 +191,7 @@ internal class CasesMapBoundsManager(
     fun restoreIncidentBounds() {
         val incidentId = incidentSelector.incidentId.value
         incidentBoundsProvider.getIncidentBounds(incidentId)?.let {
-            val bounds = it.bounds
-            val ne = bounds.northeast.smallOffset(1e-9)
-            val latLngBounds = LatLngBounds(bounds.southwest, ne)
-
-            _mapCameraBounds.value = MapViewCameraBounds(latLngBounds)
+            _mapCameraBounds.value = MapViewCameraBounds(it.bounds)
         }
     }
 }

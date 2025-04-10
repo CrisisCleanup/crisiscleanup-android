@@ -606,9 +606,7 @@ class CasesViewModel @Inject constructor(
                     visibleBounds.northeast,
                 )
 
-                if (isActiveChange) {
-                    mapBoundsManager.cacheBounds(visibleBounds)
-                }
+                mapBoundsManager.cacheBounds(visibleBounds)
             }
         }
     }
@@ -620,7 +618,7 @@ class CasesViewModel @Inject constructor(
 
         _mapCameraZoom.value = MapViewCameraZoom(
             mapBoundsManager.centerCache,
-            (zoomLevel + Math.random() * 1e-3).toFloat(),
+            zoomLevel,
         )
     }
 
@@ -639,7 +637,7 @@ class CasesViewModel @Inject constructor(
             locationProvider.getLocation(10.seconds)?.let { myLocation ->
                 _mapCameraZoom.value = MapViewCameraZoom(
                     myLocation.toLatLng(),
-                    (11f + Math.random() * 1e-3).toFloat(),
+                    11f,
                 )
             }
         }

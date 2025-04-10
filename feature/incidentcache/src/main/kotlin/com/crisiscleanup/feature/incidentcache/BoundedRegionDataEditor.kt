@@ -10,7 +10,6 @@ import com.crisiscleanup.core.common.locationPermissionGranted
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
-import com.crisiscleanup.core.mapmarker.util.smallOffset
 import com.crisiscleanup.core.mapmarker.util.toLatLng
 import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.BitmapDescriptor
@@ -59,6 +58,8 @@ internal class IncidentCacheBoundedRegionDataEditor(
 ) : BoundedRegionDataEditor {
     override val centerCoordinates = MutableStateFlow(LatLng(0.0, 0.0))
 
+    private val defaultMapZoom = 8f
+
     private var zoomCache = defaultMapZoom
     override val mapMarkerIcon: BitmapDescriptor?
 
@@ -74,12 +75,6 @@ internal class IncidentCacheBoundedRegionDataEditor(
         private set
 
     override val showExplainPermissionLocation = mutableStateOf(false)
-
-    private val defaultMapZoom: Float
-        get() {
-            val zoom = 8
-            return zoom + (Math.random() * 1e-3).toFloat()
-        }
 
     override fun onMapLoaded() {
         mapCameraZoom.value = centerCoordinatesZoom()
@@ -99,7 +94,7 @@ internal class IncidentCacheBoundedRegionDataEditor(
     }
 
     private fun centerCoordinatesZoom(durationMs: Int = 0) = MapViewCameraZoom(
-        centerCoordinates.value.smallOffset(),
+        centerCoordinates.value,
         defaultMapZoom,
         durationMs,
     )
@@ -129,7 +124,7 @@ internal class IncidentCacheBoundedRegionDataEditor(
     }
 
     override fun centerOnLocation() {
-        val coordinates = centerCoordinates.value.smallOffset()
+        val coordinates = centerCoordinates.value
         mapCameraZoom.value = MapViewCameraZoom(coordinates, zoomCache)
     }
 
@@ -141,7 +136,7 @@ internal class IncidentCacheBoundedRegionDataEditor(
         isUserActed = true
         coroutineScope.launch(coroutineDispatcher) {
             locationProvider.getLocation()?.let {
-                val coordinates = it.toLatLng().smallOffset()
+                val coordinates = it.toLatLng()
                 centerCoordinates.value = coordinates
                 mapCameraZoom.value = MapViewCameraZoom(coordinates, defaultMapZoom)
             }
