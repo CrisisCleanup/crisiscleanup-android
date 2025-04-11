@@ -89,8 +89,4 @@ internal class IncidentDataPullStatsUpdater(
     fun clearNotificationMessage() {
         setNotificationMessage()
     }
-
-    fun endPull() {
-        reportChange(pullStats.copy(isEnded = true))
-    }
 }

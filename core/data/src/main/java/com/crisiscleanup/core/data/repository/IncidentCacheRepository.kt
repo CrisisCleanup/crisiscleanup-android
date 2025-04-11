@@ -231,11 +231,23 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         clearNotificationMessage()
     }
 
+    private fun reportStats(plan: IncidentDataSyncPlan, stats: IncidentDataPullStats) {
+        synchronized(syncPlanReference) {
+            if (syncPlanReference.get() == plan) {
+                incidentDataPullStats.value = stats
+            }
+        }
+    }
+
     override suspend fun sync() = coroutineScope {
-        val syncPlan = syncPlanReference.get()
+        val syncPlan: IncidentDataSyncPlan
+        synchronized(syncPlanReference) {
+            syncPlan = syncPlanReference.get()
+        }
 
         val incidentId = syncPlan.incidentId
         syncingIncidentId.value = incidentId
+        var incidentName = ""
 
         logStage(incidentId, IncidentCacheStage.Start)
 
@@ -262,9 +274,9 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 return@coroutineScope SyncResult.Partial("Incident not found. Waiting for Incident select.")
             }
 
-            val incidentName = incidents.first { it.id == incidentId }.name
+            incidentName = incidents.first { it.id == incidentId }.name
             val worksitesCoreStatsUpdater = IncidentDataPullStatsUpdater {
-                incidentDataPullStats.value = it
+                reportStats(syncPlan, it)
             }.apply {
                 beginPull(
                     incidentId,
@@ -364,7 +376,6 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             }
 
             ensureActive()
-            worksitesCoreStatsUpdater.endPull()
 
             if (isPaused && isSlowDownload) {
                 partialSyncReasons.add("Worksite downloads are paused")
@@ -377,7 +388,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 logStage(incidentId, IncidentCacheStage.ActiveIncidentOrganization)
 
                 val organizationsStatsUpdater = IncidentDataPullStatsUpdater {
-                    incidentDataPullStats.value = it
+                    reportStats(syncPlan, it)
                 }.apply {
                     beginPull(
                         incidentId,
@@ -392,9 +403,6 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 ) {
                     incidentsRepository.pullIncidentOrganizations(incidentId)
                 }
-
-                ensureActive()
-                organizationsStatsUpdater.endPull()
             }
 
             if (!(skipWorksiteCaching || syncPreferences.isRegionBounded)) {
@@ -403,7 +411,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 logStage(incidentId, IncidentCacheStage.WorksitesAdditional)
 
                 val worksitesAdditionalStatsUpdater = IncidentDataPullStatsUpdater {
-                    incidentDataPullStats.value = it
+                    reportStats(syncPlan, it)
                 }.apply {
                     beginPull(
                         incidentId,
@@ -435,7 +443,6 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
                 ensureActive()
                 worksitesAdditionalStatsUpdater.clearStep()
-                worksitesAdditionalStatsUpdater.endPull()
             }
         } catch (e: Exception) {
             with(incidentDataPullStats.value) {
@@ -445,9 +452,19 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             }
             throw e
         } finally {
-            if (syncPlanReference.compareAndSet(syncPlan, EmptySyncPlan)) {
-                incidentDataPullStats.value = IncidentDataPullStats(isEnded = true)
-                cacheStage.value = IncidentCacheStage.End
+            reportStats(
+                syncPlan,
+                IncidentDataPullStats(
+                    incidentId = incidentId,
+                    incidentName = incidentName,
+                    isEnded = true,
+                ),
+            )
+
+            synchronized(syncPlanReference) {
+                if (syncPlanReference.compareAndSet(syncPlan, EmptySyncPlan)) {
+                    cacheStage.value = IncidentCacheStage.End
+                }
             }
 
             if (syncingIncidentId.compareAndSet(incidentId, EmptyIncident.id)) {

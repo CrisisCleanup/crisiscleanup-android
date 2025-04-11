@@ -147,7 +147,7 @@ internal fun CasesRoute(
         var showChangeIncident by rememberSaveable { mutableStateOf(false) }
         val onIncidentSelect = remember(viewModel) { { showChangeIncident = true } }
 
-        val rememberOnCasesAction = remember(onCasesAction, viewModel) {
+        val rememberOnCasesAction = remember(createNewCase, onCasesAction, viewModel) {
             { action: CasesAction ->
                 when (action) {
                     CasesAction.CreateNew -> {
@@ -177,12 +177,8 @@ internal fun CasesRoute(
         val mapCameraZoom by viewModel.mapCameraZoom.collectAsStateWithLifecycle()
         val tileOverlayState = rememberTileOverlayState()
         val tileChangeValue by viewModel.overviewTileDataChange
-        val clearTileLayer = remember(viewModel) { { viewModel.clearTileLayer } }
-        val onMapCameraChange = remember(viewModel) {
-            { position: CameraPosition, projection: Projection?, activeChange: Boolean ->
-                viewModel.onMapCameraChange(position, projection, activeChange)
-            }
-        }
+        val clearTileLayer = viewModel::clearTileLayer
+        val onMapCameraChange = viewModel::onMapCameraChange
         val dataProgressMetrics by viewModel.dataProgress.collectAsStateWithLifecycle()
         val onMapMarkerSelect = remember(viewModel) {
             { mark: WorksiteMapMark -> viewCase(viewModel.incidentId, mark.id) }

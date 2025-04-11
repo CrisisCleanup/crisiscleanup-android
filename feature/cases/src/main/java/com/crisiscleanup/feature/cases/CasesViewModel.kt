@@ -30,7 +30,6 @@ import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.commonassets.getDisasterIcon
 import com.crisiscleanup.core.commoncase.TransferWorkTypeProvider
 import com.crisiscleanup.core.commoncase.WorksiteProvider
-import com.crisiscleanup.core.data.IncidentMapTracker
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.WorksiteInteractor
 import com.crisiscleanup.core.data.incidentcache.IncidentDataPullReporter
@@ -118,7 +117,6 @@ class CasesViewModel @Inject constructor(
     accountDataRepository: AccountDataRepository,
     organizationsRepository: OrganizationsRepository,
     val transferWorkTypeProvider: TransferWorkTypeProvider,
-    private val incidentMapTracker: IncidentMapTracker,
     private val translator: KeyResourceTranslator,
     private val syncPuller: SyncPuller,
     val visualAlertManager: VisualAlertManager,
@@ -344,9 +342,9 @@ class CasesViewModel @Inject constructor(
     val clearTileLayer: Boolean
         get() = casesMapTileManager.clearTileLayer
 
+    private val epochZero = Instant.fromEpochSeconds(0)
     private val tileClearRefreshInterval = 5.seconds
-    private var tileRefreshedInstant = Instant.fromEpochSeconds(0)
-    private var tileClearWorksitesCount = 0
+    private var tileRefreshedInstant = epochZero
 
     private val totalCasesCount = combine(
         isLoadingData,
@@ -438,6 +436,14 @@ class CasesViewModel @Inject constructor(
         viewModelScope.launch {
             setTileRendererLocation()
         }
+
+        incidentSelector.incidentId
+            .onEach {
+                tileRefreshedInstant = epochZero
+                mapTileRenderer.setIncident(it, 0)
+                casesMapTileManager.clearTiles()
+            }
+            .launchIn(viewModelScope)
 
         combine(
             incidentWorksitesCount,
@@ -666,77 +672,36 @@ class CasesViewModel @Inject constructor(
         idCount: IncidentIdWorksiteCount,
         pullStats: IncidentDataPullStats,
     ) = coroutineScope {
-        var refreshTiles = true
-        var clearCache = false
+        if (mapTileRenderer.tilesIncident != idCount.id ||
+            idCount.id != pullStats.incidentId
+        ) {
+            return@coroutineScope
+        }
+
+        val now = Clock.System.now()
+
+        if (pullStats.isEnded) {
+            tileRefreshedInstant = now
+            mapTileRenderer.setIncident(idCount.id, idCount.totalCount, true)
+            casesMapTileManager.clearTiles()
+            return@coroutineScope
+        }
+
+        mapTileRenderer.setIncident(idCount.id, idCount.totalCount, false)
 
         pullStats.apply {
-            val isIncidentChange = idCount.id != incidentId
-
-            // TODO Stale tiles will flash in certain cases.
-            //      Why does the first clear call not take?
-            //      Toggle multiple times between (one large) incidents in the same area.
-            if (isIncidentChange || idCount.totalCount == 0) {
-                tileClearWorksitesCount = 0
-                mapTileRenderer.setIncident(incidentId, 0)
-                casesMapTileManager.clearTiles()
-            }
-
-            if (!isStarted || isIncidentChange) {
-                return@apply
-            }
-
-            refreshTiles = isEnded
-            clearCache = isEnded
-
-            val now = Clock.System.now()
-
-            if (isIndeterminate) {
-                if (!refreshTiles) {
-                    val sinceLastRefresh = now - tileRefreshedInstant
-
-                    refreshTiles = now - startTime > tileClearRefreshInterval &&
-                        sinceLastRefresh > tileClearRefreshInterval
-                    if (refreshTiles) {
-                        clearCache = true
-                    }
-                }
-            } else {
-                if (dataCount < 3000) {
-                    return@apply
-                }
-
-                if (!refreshTiles && savedCount > 600) {
-                    val sinceLastRefresh = now - tileRefreshedInstant
-                    val projectedDelta = projectedFinish - now
-                    refreshTiles = now - startTime > tileClearRefreshInterval &&
-                        sinceLastRefresh > tileClearRefreshInterval &&
-                        projectedDelta > tileClearRefreshInterval
-
-                    if (idCount.totalCount - tileClearWorksitesCount >= 6000 &&
-                        dataCount - tileClearWorksitesCount > 3000
-                    ) {
-                        clearCache = true
-                        refreshTiles = true
-                    }
-                }
-            }
-
-            if (refreshTiles) {
-                tileRefreshedInstant = now
+            if (!isStarted || idCount.totalCount == 0) {
+                return@coroutineScope
             }
         }
 
+        val sinceLastRefresh = now - tileRefreshedInstant
+        val refreshTiles = tileRefreshedInstant == epochZero ||
+            now - pullStats.startTime > tileClearRefreshInterval &&
+            sinceLastRefresh > tileClearRefreshInterval
         if (refreshTiles) {
-            if (mapTileRenderer.setIncident(idCount.id, idCount.totalCount, clearCache)) {
-                clearCache = true
-            }
-        }
-
-        if (clearCache) {
-            tileClearWorksitesCount = idCount.totalCount
+            tileRefreshedInstant = now
             casesMapTileManager.clearTiles()
-        } else if (refreshTiles) {
-            casesMapTileManager.onTileChange()
         }
     }
 
