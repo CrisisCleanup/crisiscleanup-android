@@ -13,6 +13,7 @@ import com.crisiscleanup.core.data.WorksiteInteractor
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.model.data.EmptyIncident
+import com.crisiscleanup.core.model.data.IncidentIdWorksiteCount
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.CoroutineDispatcher
@@ -21,6 +22,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -38,6 +40,7 @@ import kotlin.math.sin
 class CasesMapMarkerManager(
     private val isTeamCasesMap: Boolean,
     private val worksitesRepository: WorksitesRepository,
+    incidentWorksitesCount: SharedFlow<IncidentIdWorksiteCount>,
     worksiteQueryState: StateFlow<CasesQueryState>,
     mapBoundsManager: CasesMapBoundsManager,
     worksiteInteractor: WorksiteInteractor,
@@ -52,8 +55,10 @@ class CasesMapMarkerManager(
 
     @OptIn(FlowPreview::class)
     val worksitesMapMarkers = combine(
+        // TODO Regenerate when incidentWorksitesCount changes as necessary
+        //      Maybe change signal to only incident + worksites count without filters and bounds
         worksiteQueryState,
-        mapBoundsManager.isMapLoaded,
+        mapBoundsManager.isMapLoadedFlow,
         ::Pair,
     )
         // TODO Make delay a parameter

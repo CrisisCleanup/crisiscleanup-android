@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppMemoryStats
-import com.crisiscleanup.core.common.IncidentMapTracker
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.PermissionManager
@@ -122,7 +121,6 @@ class CasesViewModel @Inject constructor(
     accountDataRepository: AccountDataRepository,
     organizationsRepository: OrganizationsRepository,
     val transferWorkTypeProvider: TransferWorkTypeProvider,
-    private val incidentMapTracker: IncidentMapTracker,
     private val translator: KeyResourceTranslator,
     private val syncPuller: SyncPuller,
     val visualAlertManager: VisualAlertManager,
@@ -276,6 +274,7 @@ class CasesViewModel @Inject constructor(
     private val mapMarkerManager = CasesMapMarkerManager(
         isTeamCasesMap = false,
         worksitesRepository,
+        incidentWorksitesCount,
         qsm.worksiteQueryState,
         mapBoundsManager,
         worksiteInteractor,
@@ -376,6 +375,8 @@ class CasesViewModel @Inject constructor(
         incidentSelector.incidentId
             .onEach {
                 worksiteProvider.reset(it)
+
+                mapTileRefresher.resetTiles(it)
             }
             .launchIn(viewModelScope)
 
@@ -515,23 +516,15 @@ class CasesViewModel @Inject constructor(
     ) {
         qsm.mapZoom.value = cameraPosition.zoom
 
-        if (mapBoundsManager.isMapLoaded.value) {
+        if (mapBoundsManager.isMapLoaded) {
             projection?.let {
                 val visibleBounds = it.visibleRegion.latLngBounds
                 qsm.mapBounds.value = CoordinateBounds(
                     visibleBounds.southwest,
                     visibleBounds.northeast,
                 )
-                mapBoundsManager.cacheBounds(visibleBounds)
 
-                if (isActiveChange) {
-                    with(visibleBounds.center) {
-                        incidentMapTracker.track(
-                            latitude = latitude,
-                            longitude = longitude,
-                        )
-                    }
-                }
+                mapBoundsManager.cacheBounds(visibleBounds)
             }
         }
     }
@@ -543,7 +536,7 @@ class CasesViewModel @Inject constructor(
 
         mapCameraZoomInternal.value = MapViewCameraZoom(
             mapBoundsManager.centerCache,
-            (zoomLevel + Math.random() * 1e-3).toFloat(),
+            zoomLevel,
         )
     }
 
@@ -560,7 +553,7 @@ class CasesViewModel @Inject constructor(
             locationProvider.getLocation(10.seconds)?.let { myLocation ->
                 mapCameraZoomInternal.value = MapViewCameraZoom(
                     myLocation.toLatLng(),
-                    (11f + Math.random() * 1e-3).toFloat(),
+                    11f,
                 )
             }
         }

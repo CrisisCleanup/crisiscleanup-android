@@ -17,7 +17,9 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,6 +35,7 @@ import com.crisiscleanup.core.commoncase.ui.CasesAction
 import com.crisiscleanup.core.commoncase.ui.CasesDownloadProgress
 import com.crisiscleanup.core.commoncase.ui.CasesMapView
 import com.crisiscleanup.core.commoncase.ui.CrisisCleanupFab
+import com.crisiscleanup.core.commoncase.ui.MapLayersView
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
@@ -66,6 +69,7 @@ internal fun EditTeamCasesView(
     assignedCases: List<Worksite>,
     isLoadingSelectedMapCase: Boolean,
     isListView: Boolean,
+    isLayerView: Boolean,
     isAssigningCase: Boolean,
     mapManager: TeamCaseMapManager,
     iconProvider: MapCaseIconProvider,
@@ -159,6 +163,8 @@ internal fun EditTeamCasesView(
         }
     } else {
         Box(modifier) {
+            var isSatelliteMapType by remember { mutableStateOf(false) }
+
             CasesMapView(
                 modifier = mapModifier,
                 mapCameraBounds,
@@ -169,12 +175,24 @@ internal fun EditTeamCasesView(
                 clearTileLayer,
                 tileOverlayState,
                 mapManager::overviewMapTileProvider,
-                mapManager::onMapLoadStart,
-                mapManager::onMapLoaded,
+                onMapLoadStart = mapManager::onMapLoadStart,
+                onMapLoaded = mapManager::onMapLoaded,
                 onMapCameraChange,
                 onMapMarkerSelect,
                 null,
-                isMyLocationEnabled,
+                isMyLocationEnabled = isMyLocationEnabled,
+                isSatelliteMapType = isSatelliteMapType,
+            )
+
+            MapLayersView(
+                isLayerView,
+                onDismiss = {
+                    onCasesAction(CasesAction.Layers)
+                },
+                isSatelliteMapType = isSatelliteMapType,
+                onToggleSatelliteType = { isSatellite: Boolean ->
+                    isSatelliteMapType = isSatellite
+                },
             )
 
             // TODO Use MapOverlayMessage

@@ -469,6 +469,7 @@ internal fun TakePhotoSelectImage(
     if (showOptions) {
         ModalBottomSheet(
             onDismissRequest = closeOptions,
+            tonalElevation = 0.dp,
         ) {
             if (cameraMediaManager.hasCamera) {
                 val continueTakePhoto = remember(cameraMediaManager) {

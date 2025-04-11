@@ -94,16 +94,21 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         incidentIdStream: Flow<Long>,
         useTeamFilters: Boolean,
     ) = combine(
-        incidentIdStream,
-        incidentIdStream.flatMapLatest { worksiteDao.streamWorksitesCount(it) },
+        incidentIdStream.flatMapLatest { id ->
+            worksiteDao.streamWorksitesCount(id).map { count ->
+                Pair(id, count)
+            }
+        },
         getFiltersRepository(useTeamFilters).casesFiltersLocation,
         organizationLocationAreaBounds,
-    ) { id, totalCount, filtersLocation, areaBounds ->
-        Pair(
-            Pair(id, totalCount),
-            Pair(filtersLocation, areaBounds),
-        )
-    }
+        ::Triple,
+    )
+        .map { (idCount, filtersLocation, areaBounds) ->
+            Pair(
+                idCount,
+                Pair(filtersLocation, areaBounds),
+            )
+        }
         .debounce(timeoutMillis = 150)
         .distinctUntilChanged()
         .mapLatest { streams ->

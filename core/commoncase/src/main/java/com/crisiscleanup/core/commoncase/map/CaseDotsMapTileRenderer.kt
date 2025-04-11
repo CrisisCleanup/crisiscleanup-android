@@ -11,6 +11,7 @@ import com.crisiscleanup.core.mapmarker.MapCaseDotProvider
 import com.crisiscleanup.core.mapmarker.model.TileCoordinates
 import com.crisiscleanup.core.mapmarker.tiler.BorderTile
 import com.crisiscleanup.core.mapmarker.tiler.squareBitmap
+import com.crisiscleanup.core.model.data.EmptyIncident
 import com.google.android.gms.maps.model.Tile
 import com.google.android.gms.maps.model.TileProvider
 import com.google.android.gms.maps.model.TileProvider.NO_TILE
@@ -38,8 +39,11 @@ class CaseDotsMapTileRenderer(
     override var zoomThreshold = MAP_DOTS_ZOOM_LEVEL
 
     private val tileCache = TileDataCache(1.5f)
-    private var incidentIdCache = -1L
+    private var incidentIdCache = EmptyIncident.id
     private var worksitesCount = 0
+
+    override val tilesIncident: Long
+        get() = incidentIdCache
 
     // For visualizing tile boundaries in dev
     private var isRenderingBorder = false
@@ -47,7 +51,7 @@ class CaseDotsMapTileRenderer(
 
     private var locationCoordinates: Pair<Double, Double>? = null
 
-    override fun setIncident(id: Long, worksitesCount: Int, clearCache: Boolean): Boolean {
+    override fun setIncident(id: Long, worksitesCount: Int, clearCache: Boolean) {
         val isIncidentChanged = id != incidentIdCache
         synchronized(tileCache) {
             if (isIncidentChanged || clearCache) {
@@ -56,7 +60,6 @@ class CaseDotsMapTileRenderer(
             incidentIdCache = id
             this.worksitesCount = worksitesCount
         }
-        return isIncidentChanged
     }
 
     override fun setLocation(coordinates: Pair<Double, Double>?) {

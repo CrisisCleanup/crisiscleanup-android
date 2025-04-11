@@ -15,7 +15,12 @@ class MapTileRefresher(
     private val tileClearRefreshInterval: Duration = 5.seconds,
 ) {
     private var tileRefreshedInstant = Instant.epochZero
-    private var tileClearWorksitesCount = 0
+
+    fun resetTiles(incidentId: Long) {
+        tileRefreshedInstant = Instant.epochZero
+        mapTileRenderer.setIncident(incidentId, 0, true)
+        casesMapTileManager.clearTiles()
+    }
 
     // Attempts to clear/refresh map tiles minimally during data loads and incident changes
     // For progressively generating map tiles of larger incidents
@@ -23,77 +28,35 @@ class MapTileRefresher(
         idCount: IncidentIdWorksiteCount,
         pullStats: IncidentDataPullStats,
     ) = coroutineScope {
-        var refreshTiles = true
-        var clearCache = false
+        if (mapTileRenderer.tilesIncident != idCount.id ||
+            idCount.id != pullStats.incidentId
+        ) {
+            return@coroutineScope
+        }
+
+        val now = Clock.System.now()
+
+        if (pullStats.isEnded) {
+            tileRefreshedInstant = now
+            mapTileRenderer.setIncident(idCount.id, idCount.totalCount, true)
+            casesMapTileManager.clearTiles()
+            return@coroutineScope
+        }
 
         pullStats.apply {
-            val isIncidentChange = idCount.id != incidentId
-
-            // TODO Stale tiles will flash in certain cases.
-            //      Why does the first clear call not take?
-            //      Toggle multiple times between (one large) incidents in the same area.
-            if (isIncidentChange || idCount.totalCount == 0) {
-                tileClearWorksitesCount = 0
-                mapTileRenderer.setIncident(incidentId, 0)
-                casesMapTileManager.clearTiles()
-            }
-
-            if (!isStarted || isIncidentChange) {
-                return@apply
-            }
-
-            refreshTiles = isEnded
-            clearCache = isEnded
-
-            val now = Clock.System.now()
-
-            if (isIndeterminate) {
-                if (!refreshTiles) {
-                    val sinceLastRefresh = now - tileRefreshedInstant
-
-                    refreshTiles = now - startTime > tileClearRefreshInterval &&
-                        sinceLastRefresh > tileClearRefreshInterval
-                    if (refreshTiles) {
-                        clearCache = true
-                    }
-                }
-            } else {
-                if (dataCount < 3000) {
-                    return@apply
-                }
-
-                if (!refreshTiles && savedCount > 600) {
-                    val sinceLastRefresh = now - tileRefreshedInstant
-                    val projectedDelta = projectedFinish - now
-                    refreshTiles = now - startTime > tileClearRefreshInterval &&
-                        sinceLastRefresh > tileClearRefreshInterval &&
-                        projectedDelta > tileClearRefreshInterval
-
-                    if (idCount.totalCount - tileClearWorksitesCount >= 6000 &&
-                        dataCount - tileClearWorksitesCount > 3000
-                    ) {
-                        clearCache = true
-                        refreshTiles = true
-                    }
-                }
-            }
-
-            if (refreshTiles) {
-                tileRefreshedInstant = now
+            if (!isStarted || idCount.totalCount == 0) {
+                return@coroutineScope
             }
         }
 
+        val sinceLastRefresh = now - tileRefreshedInstant
+        val refreshTiles = tileRefreshedInstant == Instant.epochZero ||
+            now - pullStats.startTime > tileClearRefreshInterval &&
+            sinceLastRefresh > tileClearRefreshInterval
         if (refreshTiles) {
-            if (mapTileRenderer.setIncident(idCount.id, idCount.totalCount, clearCache)) {
-                clearCache = true
-            }
-        }
-
-        if (clearCache) {
-            tileClearWorksitesCount = idCount.totalCount
+            tileRefreshedInstant = now
+            mapTileRenderer.setIncident(idCount.id, idCount.totalCount, true)
             casesMapTileManager.clearTiles()
-        } else if (refreshTiles) {
-            casesMapTileManager.onTileChange()
         }
     }
 }

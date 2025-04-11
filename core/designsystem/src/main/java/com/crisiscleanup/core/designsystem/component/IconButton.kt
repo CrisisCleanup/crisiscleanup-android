@@ -9,6 +9,8 @@ import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,7 +37,6 @@ fun CrisisCleanupElevatedIconButton(
     shape: Shape = RectangleShape,
     paddingValues: PaddingValues = PaddingValues(0.dp),
     elevation: ButtonElevation? = ButtonDefaults.elevatedButtonElevation(
-        // TODO Disable elevation from changing container color
         defaultElevation = 8.dp,
     ),
     enabled: Boolean = true,
@@ -45,6 +46,11 @@ fun CrisisCleanupElevatedIconButton(
         onClick = onClick,
         shape = shape,
         contentPadding = paddingValues,
+        colors = ButtonDefaults.elevatedButtonColors().copy(
+            // TODO Remove elevation tone completely
+            //      0.dp will apply tone so settle for 1.dp for now
+            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
+        ),
         elevation = elevation,
         enabled = enabled,
     ) {

@@ -181,7 +181,7 @@ internal class CreateEditTeamCaseMapManager(
     ) {
         qsm.mapZoom.value = cameraPosition.zoom
 
-        if (mapBoundsManager.isMapLoaded.value) {
+        if (mapBoundsManager.isMapLoaded) {
             projection?.let {
                 val visibleBounds = it.visibleRegion.latLngBounds
                 qsm.mapBounds.value = CoordinateBounds(
@@ -217,7 +217,7 @@ internal class CreateEditTeamCaseMapManager(
             PermissionStatus.Requesting,
             PermissionStatus.Denied,
             PermissionStatus.Undefined,
-            -> {
+                -> {
                 // Ignore these statuses as they're not important
             }
         }

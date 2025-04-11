@@ -136,7 +136,7 @@ internal fun CaseMapZoomBar(
         }
         CasesActionButton(modifier, CasesAction.ZoomToInteractive, onCasesAction)
         CasesActionButton(modifier, CasesAction.ZoomToIncident, onCasesAction)
-        // CasesActionButton(modifier, CasesAction.Layers, onCasesAction)
+        CasesActionButton(modifier, CasesAction.Layers, onCasesAction)
     }
 }
 

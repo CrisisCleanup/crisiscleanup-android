@@ -26,7 +26,6 @@ import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.mapmarker.model.DefaultCoordinates
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
-import com.crisiscleanup.core.mapmarker.util.smallOffset
 import com.crisiscleanup.core.mapmarker.util.toLatLng
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.LocationAddress
@@ -193,14 +192,13 @@ internal class EditableLocationDataEditor(
 
     override val defaultMapZoom: Float
         get() {
-            val zoom = if (worksiteProvider.editableWorksite.value.address.isBlank()) {
-                7
+            return if (worksiteProvider.editableWorksite.value.address.isBlank()) {
+                7f
             } else if (isMoveLocationOnMapMode.get()) {
-                19
+                19f
             } else {
-                13
+                13f
             }
-            return zoom + (Math.random() * 1e-3).toFloat()
         }
     private var zoomCache = defaultMapZoom
     private var _mapCameraZoom = MutableStateFlow(MapViewCameraZoomDefault)
@@ -346,7 +344,7 @@ internal class EditableLocationDataEditor(
     private fun setMyLocationCoordinates(isUserAction: Boolean = false) {
         coroutineScope.launch(coroutineDispatcher) {
             locationProvider.getLocation()?.let {
-                val coordinates = it.toLatLng().smallOffset()
+                val coordinates = it.toLatLng()
                 locationInputData.coordinates.value = coordinates
                 _mapCameraZoom.value = MapViewCameraZoom(coordinates, defaultMapZoom)
                 // TODO Is isUserAction correct when permission must be granted?
@@ -391,7 +389,7 @@ internal class EditableLocationDataEditor(
     }
 
     private fun centerCoordinatesZoom(durationMs: Int = 0) = MapViewCameraZoom(
-        locationInputData.coordinates.value.smallOffset(),
+        locationInputData.coordinates.value,
         defaultMapZoom,
         durationMs,
     )
@@ -466,7 +464,7 @@ internal class EditableLocationDataEditor(
     }
 
     override fun centerOnLocation() {
-        val coordinates = locationInputData.coordinates.value.smallOffset()
+        val coordinates = locationInputData.coordinates.value
         _mapCameraZoom.value = MapViewCameraZoom(coordinates, zoomCache)
     }
 

@@ -2,6 +2,8 @@ package com.crisiscleanup.core.data.di
 
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.NetworkMonitor
+import com.crisiscleanup.core.data.AppIncidentMapTracker
+import com.crisiscleanup.core.data.IncidentMapTracker
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AccountUpdateRepository
 import com.crisiscleanup.core.data.repository.AppDataManagementRepository
@@ -80,6 +82,10 @@ interface DataModule {
     fun bindsLocalAppPreferencesRepository(
         repository: AppPreferencesRepositoryImpl,
     ): AppPreferencesRepository
+
+    @Singleton
+    @Binds
+    fun bindsIncidentMapTracker(tracker: AppIncidentMapTracker): IncidentMapTracker
 
     @Singleton
     @Binds

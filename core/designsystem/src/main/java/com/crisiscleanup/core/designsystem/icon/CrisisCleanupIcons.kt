@@ -25,8 +25,10 @@ import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Landscape
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Mail
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.MyLocation
@@ -92,6 +94,7 @@ object CrisisCleanupIcons {
     val MissingAvatar = icons.SentimentNeutral
     val MoreVert = icons.MoreVert
     val MyLocation = icons.MyLocation
+    val NormalMap = icons.Map
     val Organization = icons.Domain
     val Person = icons.Person
     val PendingRequestRedeploy = icons.Schedule
@@ -102,6 +105,7 @@ object CrisisCleanupIcons {
     val QuestionMark = icons.QuestionMark
     val RotateClockwise = icons.Rotate90DegreesCw
     val RotateCcw = icons.Rotate90DegreesCcw
+    val SatelliteMap = icons.Landscape
     val Search = Icons.Rounded.Search
     val Sms = icons.Sms
     val Team = R.drawable.ic_team

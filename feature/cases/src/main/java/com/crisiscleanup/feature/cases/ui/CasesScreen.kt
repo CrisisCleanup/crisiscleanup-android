@@ -33,6 +33,7 @@ import com.crisiscleanup.core.commoncase.ui.CaseMapOverlayElements
 import com.crisiscleanup.core.commoncase.ui.CasesAction
 import com.crisiscleanup.core.commoncase.ui.CasesDownloadProgress
 import com.crisiscleanup.core.commoncase.ui.CasesMapView
+import com.crisiscleanup.core.commoncase.ui.MapLayersView
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
@@ -99,7 +100,7 @@ internal fun CasesRoute(
         var showChangeIncident by rememberSaveable { mutableStateOf(false) }
         val onIncidentSelect = remember(viewModel) { { showChangeIncident = true } }
 
-        val rememberOnCasesAction = remember(onCasesAction, viewModel) {
+        val rememberOnCasesAction = remember(createNewCase, onCasesAction, viewModel) {
             { action: CasesAction ->
                 when (action) {
                     CasesAction.CreateNew -> {
@@ -129,12 +130,8 @@ internal fun CasesRoute(
         val mapCameraZoom by viewModel.mapCameraZoom.collectAsStateWithLifecycle()
         val tileOverlayState = rememberTileOverlayState()
         val tileChangeValue by viewModel.overviewTileDataChange
-        val clearTileLayer = remember(viewModel) { { viewModel.clearTileLayer } }
-        val onMapCameraChange = remember(viewModel) {
-            { position: CameraPosition, projection: Projection?, activeChange: Boolean ->
-                viewModel.onMapCameraChange(position, projection, activeChange)
-            }
-        }
+        val clearTileLayer = viewModel::clearTileLayer
+        val onMapCameraChange = viewModel::onMapCameraChange
         val dataProgressMetrics by viewModel.dataProgress.collectAsStateWithLifecycle()
         val onMapMarkerSelect = remember(viewModel) {
             { mark: WorksiteMapMark -> viewCase(viewModel.incidentId, mark.id) }
@@ -356,6 +353,8 @@ private fun CasesScreen(
                 hasIncidents = hasIncidents,
             )
         } else {
+            var isSatelliteMapType by remember { mutableStateOf(false) }
+
             CasesMapView(
                 Modifier,
                 mapCameraBounds,
@@ -371,7 +370,19 @@ private fun CasesScreen(
                 onMapCameraChange,
                 onMarkerSelect,
                 editedWorksiteLocation,
-                isMyLocationEnabled,
+                isMyLocationEnabled = isMyLocationEnabled,
+                isSatelliteMapType = isSatelliteMapType,
+            )
+
+            MapLayersView(
+                isLayerView,
+                onDismiss = {
+                    onCasesAction(CasesAction.Layers)
+                },
+                isSatelliteMapType = isSatelliteMapType,
+                onToggleSatelliteType = { isSatellite: Boolean ->
+                    isSatelliteMapType = isSatellite
+                },
             )
         }
         CaseMapOverlayElements(

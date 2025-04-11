@@ -5,6 +5,8 @@ import kotlinx.coroutines.flow.Flow
 interface CasesOverviewMapTileRenderer {
     val isBusy: Flow<Boolean>
 
+    val tilesIncident: Long
+
     /**
      * Zoom level at which tiles still render
      *
@@ -17,7 +19,7 @@ interface CasesOverviewMapTileRenderer {
     /**
      * @return true if incident is changed or false otherwise
      */
-    fun setIncident(id: Long, worksitesCount: Int, clearCache: Boolean = true): Boolean
+    fun setIncident(id: Long, worksitesCount: Int, clearCache: Boolean)
 
     fun setLocation(coordinates: Pair<Double, Double>?)
 

@@ -77,6 +77,9 @@ class CasesFilterViewModel @Inject constructor(
     // TODO This requires the filters were previously accessed
     val casesFilters = MutableStateFlow(filterRepository.casesFilters)
 
+    val isFiltersChanged: Boolean
+        get() = casesFilters.value != filterRepository.casesFilters
+
     val hasInconsistentDistanceFilter = combine(
         permissionManager.hasLocationPermission,
         casesFilters,
@@ -173,7 +176,7 @@ class CasesFilterViewModel @Inject constructor(
 
             PermissionStatus.Denied,
             PermissionStatus.Undefined,
-                -> {
+            -> {
                 // Ignore these statuses as they're not important
             }
         }
@@ -198,8 +201,6 @@ class CasesFilterViewModel @Inject constructor(
     fun applyFilters(filters: CasesFilter) {
         filterRepository.changeFilters(filters)
     }
-
-    fun isFiltersChanged() = casesFilters.value != filterRepository.casesFilters
 }
 
 enum class CollapsibleFilterSection {

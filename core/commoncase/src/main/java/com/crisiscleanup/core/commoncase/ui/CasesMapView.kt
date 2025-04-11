@@ -8,6 +8,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -28,6 +29,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.TileProvider
 import com.google.maps.android.compose.CameraMoveStartedReason
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.TileOverlay
 import com.google.maps.android.compose.TileOverlayState
@@ -53,6 +55,7 @@ fun BoxScope.CasesMapView(
     editedWorksiteLocation: LatLng? = null,
     isMyLocationEnabled: Boolean = false,
     onEditLocationZoom: Float = 12f,
+    isSatelliteMapType: Boolean = false,
 ) {
     // TODO Profile and optimize recompositions when map is changed (by user) if possible.
 
@@ -68,10 +71,19 @@ fun BoxScope.CasesMapView(
         )
     }
 
-    val mapProperties by rememberMapProperties(
+    var mapProperties by rememberMapProperties(
         mapMarkerR.raw.map_style,
         isMyLocation = isMyLocationEnabled,
     )
+    LaunchedEffect(isSatelliteMapType) {
+        mapProperties = mapProperties.copy(
+            mapType = if (isSatelliteMapType) {
+                MapType.SATELLITE
+            } else {
+                MapType.NORMAL
+            },
+        )
+    }
     GoogleMap(
         modifier = Modifier
             .fillMaxSize()
@@ -138,6 +150,7 @@ fun BoxScope.CasesMapView(
                 mapCameraZoom.center,
                 mapCameraZoom.zoom,
             )
+            // TODO Latitude is shifting off center both in animate and move
             if (mapCameraZoom.durationMs > 0) {
                 cameraPositionState.animate(update, mapCameraZoom.durationMs)
             } else {
@@ -153,7 +166,7 @@ fun BoxScope.CasesMapView(
         }
     }
 
-    val isMovingByGesture by remember {
+    val movingCamera = remember {
         derivedStateOf {
             cameraPositionState.isMoving && cameraPositionState.cameraMoveStartedReason == CameraMoveStartedReason.GESTURE
         }
@@ -161,6 +174,6 @@ fun BoxScope.CasesMapView(
     onMapCameraChange(
         cameraPositionState.position,
         cameraPositionState.projection,
-        isMovingByGesture,
+        movingCamera.value,
     )
 }

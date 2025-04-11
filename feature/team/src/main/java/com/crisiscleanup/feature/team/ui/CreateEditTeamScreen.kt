@@ -379,6 +379,8 @@ private fun CreateEditTeamPager(
                             assignedCases,
                             isLoadingSelectedMapCase = isLoadingSelectedMapCase,
                             isListView = isCaseListView,
+                            // TODO
+                            isLayerView = false,
                             isAssigningCase = isAssigningCase,
                             caseMapManager,
                             iconProvider,

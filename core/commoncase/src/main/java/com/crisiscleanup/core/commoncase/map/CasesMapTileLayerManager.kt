@@ -8,6 +8,7 @@ import com.crisiscleanup.core.model.data.EmptyIncident
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.datetime.Clock
 
 /**
  * Signals when the Compose map tile layer should invalidate its cache and/or redraw new or updated tiles.
@@ -44,7 +45,7 @@ class CasesMapTileLayerManager(
         private set(value) {
             if (value) {
                 if (incidentSelector.incidentId.value != EmptyIncident.id &&
-                    mapBoundsManager.isMapLoaded.value
+                    mapBoundsManager.isMapLoaded
                 ) {
                     _clearTileLayer = true
                 }
@@ -67,10 +68,10 @@ class CasesMapTileLayerManager(
         onTileChange()
     }
 
-    // TODO Develop a change mechanism guaranteeing uniqueness of changes
-    fun onTileChange() = onTileChange(tileDataChangeKey.longValue + 1)
+    // TODO Develop a change mechanism that guarantees uniqueness from any change
+    private fun onTileChange() = onTileChange(Clock.System.now().toEpochMilliseconds())
 
     private fun onTileChange(dataChangeValue: Long) {
-        tileDataChangeKey.longValue = dataChangeValue % 1_000_000
+        tileDataChangeKey.longValue = dataChangeValue
     }
 }

@@ -8,6 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.MapUiSettings
 
 @Composable
@@ -34,6 +35,7 @@ fun rememberMapUiSettings(
 fun rememberMapProperties(
     @RawRes mapStyle: Int = 0,
     isMyLocation: Boolean = false,
+    mapType: MapType = MapType.NORMAL,
 ): MutableState<MapProperties> {
     val context = LocalContext.current
     val mapStyleOptions = if (mapStyle == 0) {
@@ -46,6 +48,7 @@ fun rememberMapProperties(
             MapProperties(
                 mapStyleOptions = mapStyleOptions,
                 isMyLocationEnabled = isMyLocation,
+                mapType = mapType,
             ),
         )
     }
