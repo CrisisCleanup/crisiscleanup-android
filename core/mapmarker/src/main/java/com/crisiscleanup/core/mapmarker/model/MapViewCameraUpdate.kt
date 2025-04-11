@@ -2,11 +2,14 @@ package com.crisiscleanup.core.mapmarker.model
 
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 
 data class MapViewCameraBounds(
     val bounds: LatLngBounds,
     val durationMs: Int = 500,
+    private val timestamp: Instant = Clock.System.now(),
     private val initialApply: Boolean = true,
 ) {
     private val applyToMap = AtomicBoolean(initialApply)
@@ -29,6 +32,7 @@ private val neDefault = DefaultBounds.northeast
 val MapViewCameraBoundsDefault = MapViewCameraBounds(
     LatLngBounds(swDefault, neDefault),
     0,
+    Instant.fromEpochSeconds(0),
     false,
 )
 

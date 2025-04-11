@@ -24,8 +24,10 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -55,19 +57,25 @@ import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCen
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupFab
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.ExplainLocationPermissionDialog
 import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
 import com.crisiscleanup.core.designsystem.component.actionInnerSpace
 import com.crisiscleanup.core.designsystem.component.actionRoundCornerShape
 import com.crisiscleanup.core.designsystem.component.actionSize
+import com.crisiscleanup.core.designsystem.component.roundedOutline
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContainerColor
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContentColor
+import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.navigationContainerColor
+import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.domain.IncidentsData
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBounds
@@ -94,6 +102,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.TileProvider
 import com.google.maps.android.compose.CameraMoveStartedReason
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.TileOverlay
 import com.google.maps.android.compose.TileOverlayState
@@ -138,7 +147,7 @@ internal fun CasesRoute(
         var showChangeIncident by rememberSaveable { mutableStateOf(false) }
         val onIncidentSelect = remember(viewModel) { { showChangeIncident = true } }
 
-        val rememberOnCasesAction = remember(onCasesAction, viewModel) {
+        val rememberOnCasesAction = remember(createNewCase, onCasesAction, viewModel) {
             { action: CasesAction ->
                 when (action) {
                     CasesAction.CreateNew -> {
@@ -168,12 +177,8 @@ internal fun CasesRoute(
         val mapCameraZoom by viewModel.mapCameraZoom.collectAsStateWithLifecycle()
         val tileOverlayState = rememberTileOverlayState()
         val tileChangeValue by viewModel.overviewTileDataChange
-        val clearTileLayer = remember(viewModel) { { viewModel.clearTileLayer } }
-        val onMapCameraChange = remember(viewModel) {
-            { position: CameraPosition, projection: Projection?, activeChange: Boolean ->
-                viewModel.onMapCameraChange(position, projection, activeChange)
-            }
-        }
+        val clearTileLayer = viewModel::clearTileLayer
+        val onMapCameraChange = viewModel::onMapCameraChange
         val dataProgressMetrics by viewModel.dataProgress.collectAsStateWithLifecycle()
         val onMapMarkerSelect = remember(viewModel) {
             { mark: WorksiteMapMark -> viewCase(viewModel.incidentId, mark.id) }
@@ -392,6 +397,8 @@ internal fun CasesScreen(
                 hasIncidents = hasIncidents,
             )
         } else {
+            var isSatelliteMapType by remember { mutableStateOf(false) }
+
             CasesMapView(
                 mapCameraBounds,
                 mapCameraZoom,
@@ -406,7 +413,19 @@ internal fun CasesScreen(
                 onMapCameraChange,
                 onMarkerSelect,
                 editedWorksiteLocation,
-                isMyLocationEnabled,
+                isMyLocationEnabled = isMyLocationEnabled,
+                isSatelliteMapType = isSatelliteMapType,
+            )
+
+            MapLayersView(
+                isLayerView,
+                onDismiss = {
+                    onCasesAction(CasesAction.Layers)
+                },
+                isSatelliteMapType = isSatelliteMapType,
+                onToggleSatelliteType = { isSatellite: Boolean ->
+                    isSatelliteMapType = isSatellite
+                },
             )
         }
         CasesOverlayElements(
@@ -462,6 +481,7 @@ internal fun BoxScope.CasesMapView(
     editedWorksiteLocation: LatLng? = null,
     isMyLocationEnabled: Boolean = false,
     onEditLocationZoom: Float = 12f,
+    isSatelliteMapType: Boolean = false,
 ) {
     // TODO Profile and optimize recompositions when map is changed (by user) if possible.
 
@@ -477,10 +497,19 @@ internal fun BoxScope.CasesMapView(
         )
     }
 
-    val mapProperties by rememberMapProperties(
+    var mapProperties by rememberMapProperties(
         mapMarkerR.raw.map_style,
         isMyLocation = isMyLocationEnabled,
     )
+    LaunchedEffect(isSatelliteMapType) {
+        mapProperties = mapProperties.copy(
+            mapType = if (isSatelliteMapType) {
+                MapType.SATELLITE
+            } else {
+                MapType.NORMAL
+            },
+        )
+    }
     GoogleMap(
         modifier = Modifier
             .fillMaxSize()
@@ -546,6 +575,7 @@ internal fun BoxScope.CasesMapView(
                 mapCameraZoom.center,
                 mapCameraZoom.zoom,
             )
+            // TODO Latitude is shifting off center both in animate and move
             if (mapCameraZoom.durationMs > 0) {
                 cameraPositionState.animate(update, mapCameraZoom.durationMs)
             } else {
@@ -768,6 +798,64 @@ private fun CasesCountView(
                         .size(24.dp),
                     color = Color.White,
                 )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MapLayersView(
+    isVisible: Boolean,
+    onDismiss: () -> Unit,
+    isSatelliteMapType: Boolean,
+    onToggleSatelliteType: (Boolean) -> Unit,
+) {
+    if (isVisible) {
+        val t = LocalAppTranslator.current
+
+        ModalBottomSheet(
+            onDismissRequest = onDismiss,
+            tonalElevation = 0.dp,
+        ) {
+            Column(
+                listItemModifier,
+                verticalArrangement = listItemSpacedByHalf,
+            ) {
+                Text(
+                    t("~~Map type"),
+                    style = LocalFontStyles.current.header3,
+                )
+
+                val selectedOutline = Modifier.roundedOutline(
+                    width = 3.dp,
+                    color = primaryBlueColor,
+                )
+
+                Row(horizontalArrangement = listItemSpacedBy) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = listItemSpacedByHalf,
+                    ) {
+                        CrisisCleanupIconButton(
+                            if (isSatelliteMapType) Modifier else selectedOutline,
+                            imageVector = CrisisCleanupIcons.NormalMap,
+                            onClick = { onToggleSatelliteType(false) },
+                        )
+                        Text(t("~~Default"))
+                    }
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = listItemSpacedByHalf,
+                    ) {
+                        CrisisCleanupIconButton(
+                            if (isSatelliteMapType) selectedOutline else Modifier,
+                            imageVector = CrisisCleanupIcons.SatelliteMap,
+                            onClick = { onToggleSatelliteType(true) },
+                        )
+                        Text(t("~~Satellite"))
+                    }
+                }
             }
         }
     }

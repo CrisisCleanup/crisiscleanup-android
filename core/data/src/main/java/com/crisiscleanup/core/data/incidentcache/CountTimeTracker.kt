@@ -23,11 +23,12 @@ class CountTimeTracker {
         )
     }
 
-    fun averageSpeed(): Float {
+    fun averageSpeed(): Float? {
         val countSnapshot = counts.size
         var totalCount = 0
         var totalSeconds = 0f
         var zeroCounts = 0
+        var counted = 0
         for (i in 0..<countSnapshot) {
             with(counts[i]) {
                 if (count == 0 || timeSeconds <= 0) {
@@ -35,11 +36,20 @@ class CountTimeTracker {
                 } else {
                     totalCount += count
                     totalSeconds += timeSeconds
+
+                    counted += 1
                 }
             }
+            if (counted >= 3) {
+                break
+            }
         }
-        return if (zeroCounts > 1 || totalSeconds <= 0f) {
-            0f
+        return if (zeroCounts > counted || totalSeconds <= 0f) {
+            if (zeroCounts == 1) {
+                null
+            } else {
+                0f
+            }
         } else {
             totalCount / totalSeconds
         }

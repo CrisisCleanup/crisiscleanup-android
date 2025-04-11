@@ -60,6 +60,9 @@ class CasesFilterViewModel @Inject constructor(
     // TODO This requires the filters were previously accessed
     val casesFilters = MutableStateFlow(casesFilterRepository.casesFilters)
 
+    val isFiltersChanged: Boolean
+        get() = casesFilters.value != casesFilterRepository.casesFilters
+
     val hasInconsistentDistanceFilter = combine(
         permissionManager.hasLocationPermission,
         casesFilters,
@@ -69,7 +72,7 @@ class CasesFilterViewModel @Inject constructor(
 
     val workTypeStatuses = workTypeStatusRepository.workTypeStatusFilterOptions
 
-    val worksiteFlags = WorksiteFlagType.values().sortedBy { it.literal }
+    val worksiteFlags = WorksiteFlagType.entries.sortedBy { it.literal }
 
     val workTypes = incidentSelector.incidentId
         .flatMapLatest { id ->

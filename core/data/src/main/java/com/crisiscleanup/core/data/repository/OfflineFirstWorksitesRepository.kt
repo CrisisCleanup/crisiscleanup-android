@@ -80,16 +80,21 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 
     @OptIn(FlowPreview::class)
     override fun streamIncidentWorksitesCount(incidentIdStream: Flow<Long>) = combine(
-        incidentIdStream,
-        incidentIdStream.flatMapLatest { worksiteDao.streamWorksitesCount(it) },
+        incidentIdStream.flatMapLatest { id ->
+            worksiteDao.streamWorksitesCount(id).map { count ->
+                Pair(id, count)
+            }
+        },
         filterRepository.casesFiltersLocation,
         organizationLocationAreaBounds,
-    ) { id, totalCount, filtersLocation, areaBounds ->
-        Pair(
-            Pair(id, totalCount),
-            Pair(filtersLocation, areaBounds),
-        )
-    }
+        ::Triple,
+    )
+        .map { (idCount, filtersLocation, areaBounds) ->
+            Pair(
+                idCount,
+                Pair(filtersLocation, areaBounds),
+            )
+        }
         .debounce(timeoutMillis = 150)
         .distinctUntilChanged()
         .mapLatest { streams ->

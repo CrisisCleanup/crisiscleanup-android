@@ -23,6 +23,9 @@ data class IncidentDataPullStats(
     val incidentName: String = EmptyIncident.shortName,
     val pullType: IncidentPullDataType = IncidentPullDataType.WorksitesCore,
     val isIndeterminate: Boolean = false,
+    val stepTotal: Int = 0,
+    val currentStep: Int = 0,
+    val notificationMessage: String = "",
 
     val isStarted: Boolean = false,
     val startTime: Instant = Clock.System.now(),

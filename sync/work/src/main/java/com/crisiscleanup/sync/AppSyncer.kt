@@ -56,6 +56,7 @@ class AppSyncer @Inject constructor(
         context,
         incidentDataPullReporter,
         this,
+        logger,
         applicationScope,
     )
 
