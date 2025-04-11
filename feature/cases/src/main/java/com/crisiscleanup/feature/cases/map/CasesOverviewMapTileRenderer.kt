@@ -41,7 +41,7 @@ interface CasesOverviewMapTileRenderer {
     /**
      * @return true if incident is changed or false otherwise
      */
-    fun setIncident(id: Long, worksitesCount: Int, clearCache: Boolean = true)
+    fun setIncident(id: Long, worksitesCount: Int, clearCache: Boolean)
 
     fun setLocation(coordinates: Pair<Double, Double>?)
 

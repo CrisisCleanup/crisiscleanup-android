@@ -440,7 +440,7 @@ class CasesViewModel @Inject constructor(
         incidentSelector.incidentId
             .onEach {
                 tileRefreshedInstant = epochZero
-                mapTileRenderer.setIncident(it, 0)
+                mapTileRenderer.setIncident(it, 0, true)
                 casesMapTileManager.clearTiles()
             }
             .launchIn(viewModelScope)
@@ -687,8 +687,6 @@ class CasesViewModel @Inject constructor(
             return@coroutineScope
         }
 
-        mapTileRenderer.setIncident(idCount.id, idCount.totalCount, false)
-
         pullStats.apply {
             if (!isStarted || idCount.totalCount == 0) {
                 return@coroutineScope
@@ -701,6 +699,7 @@ class CasesViewModel @Inject constructor(
             sinceLastRefresh > tileClearRefreshInterval
         if (refreshTiles) {
             tileRefreshedInstant = now
+            mapTileRenderer.setIncident(idCount.id, idCount.totalCount, true)
             casesMapTileManager.clearTiles()
         }
     }
