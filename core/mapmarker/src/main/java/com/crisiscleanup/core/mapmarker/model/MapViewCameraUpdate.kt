@@ -40,6 +40,7 @@ data class MapViewCameraZoom(
     val center: LatLng,
     val zoom: Float = 8f,
     val durationMs: Int = 500,
+    val timestamp: Instant = Clock.System.now(),
     private val initialApply: Boolean = true,
 ) {
     private val applyToMap = AtomicBoolean(initialApply)
