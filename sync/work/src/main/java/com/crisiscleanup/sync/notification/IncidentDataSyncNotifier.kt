@@ -4,8 +4,10 @@ import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Context.RECEIVER_NOT_EXPORTED
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.data.incidentcache.IncidentDataPullReporter
@@ -108,10 +110,18 @@ internal class IncidentDataSyncNotifier @Inject constructor(
     suspend fun <T> notifySync(syncOperation: suspend () -> T): T {
         synchronized(syncCounter) {
             if (syncCounter.getAndIncrement() == 0) {
-                appContext.registerReceiver(
-                    stopSyncingReceiver,
-                    IntentFilter(STOP_SYNCING_ACTION),
-                )
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                    appContext.registerReceiver(
+                        stopSyncingReceiver,
+                        IntentFilter(STOP_SYNCING_ACTION),
+                    )
+                } else {
+                    appContext.registerReceiver(
+                        stopSyncingReceiver,
+                        IntentFilter(STOP_SYNCING_ACTION),
+                        RECEIVER_NOT_EXPORTED,
+                    )
+                }
             }
 
             // TODO Delete after hanging notification is solved

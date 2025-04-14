@@ -8,6 +8,8 @@ import java.lang.reflect.Type
 
 enum class RequestHeaderKey {
     AccessTokenAuth,
+    ConnectTimeout,
+    ReadTimeout,
     WrapResponse,
     ThrowClientError,
 }
@@ -23,6 +25,8 @@ enum class EndpointRequestId {
     MyProfileNoAuth,
     Incidents,
     IncidentsNoAuth,
+    Worksites,
+    Worksite,
 }
 
 class RequestHeaderKeysLookup(
@@ -67,6 +71,14 @@ class RequestHeaderKeysLookup(
             when (it.annotationClass) {
                 TokenAuthenticationHeader::class ->
                     requestKeys[RequestHeaderKey.AccessTokenAuth] = ""
+
+                ConnectTimeoutHeader::class ->
+                    requestKeys[RequestHeaderKey.ConnectTimeout] =
+                        (it as ConnectTimeoutHeader).timeoutSeconds
+
+                ReadTimeoutHeader::class ->
+                    requestKeys[RequestHeaderKey.ReadTimeout] =
+                        (it as ReadTimeoutHeader).timeoutSeconds
 
                 WrapResponseHeader::class ->
                     requestKeys[RequestHeaderKey.WrapResponse] = (it as WrapResponseHeader).key
