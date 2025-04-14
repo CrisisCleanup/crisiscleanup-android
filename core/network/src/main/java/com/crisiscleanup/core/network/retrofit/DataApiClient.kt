@@ -73,6 +73,7 @@ private interface DataSourceApi {
         ordering: String,
         @Query("start_at__gt")
         after: Instant?,
+        @Tag endpointId: EndpointRequestId = EndpointRequestId.Incidents,
     ): NetworkIncidentsResult
 
     @GET("incidents")
@@ -85,10 +86,7 @@ private interface DataSourceApi {
         ordering: String,
         @Query("start_at__gt")
         after: Instant?,
-        // Differentiates this endpoint call from getIncidents above
-        // when determining header keys (locally)
-        @Query("_ignore")
-        callerTag: String = "_no-auth",
+        @Tag endpointId: EndpointRequestId = EndpointRequestId.IncidentsNoAuth,
     ): NetworkIncidentsResult
 
     @GET("incidents_list")
@@ -173,6 +171,17 @@ private interface DataSourceApi {
     suspend fun getWorksites(
         @Query("id__in", encoded = true)
         worksiteIds: String,
+        @Tag endpointId: EndpointRequestId = EndpointRequestId.Worksites,
+    ): NetworkWorksitesFullResult
+
+    @TokenAuthenticationHeader
+    @ConnectTimeoutHeader("10")
+    @ReadTimeoutHeader("15")
+    @GET("worksites")
+    suspend fun getWorksite(
+        @Query("id__in")
+        worksiteId: String,
+        @Tag endpointId: EndpointRequestId = EndpointRequestId.Worksite,
     ): NetworkWorksitesFullResult
 
     @TokenAuthenticationHeader
@@ -242,6 +251,8 @@ private interface DataSourceApi {
     ): NetworkCountResult
 
     @TokenAuthenticationHeader
+    @ConnectTimeoutHeader("10")
+    @ReadTimeoutHeader("15")
     @GET("worksite_requests")
     suspend fun getWorkTypeRequests(
         @Query("worksite_work_type__worksite")
@@ -457,7 +468,9 @@ class DataApiClient @Inject constructor(
             .apply { errors?.tryThrowException() }
             .results
 
-    override suspend fun getWorksite(id: Long) = getWorksites(listOf(id))?.firstOrNull()
+    override suspend fun getWorksite(id: Long) = networkApi.getWorksite(id.toString())
+        .apply { errors?.tryThrowException() }
+        .results?.firstOrNull()
 
     override suspend fun getWorksitesCount(incidentId: Long, updatedAtAfter: Instant?) =
         networkApi.getWorksitesCount(incidentId, updatedAtAfter)
