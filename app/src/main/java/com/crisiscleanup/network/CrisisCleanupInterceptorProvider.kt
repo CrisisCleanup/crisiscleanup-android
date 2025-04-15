@@ -29,6 +29,7 @@ import okhttp3.Response
 import okhttp3.ResponseBody
 import okhttp3.ResponseBody.Companion.toResponseBody
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -74,6 +75,19 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
         request: Request,
         key: RequestHeaderKey,
     ) = headerKeysLookup.getHeaderKeys(request)?.get(key)
+
+    private fun getHeaderTimeout(
+        request: Request,
+        key: RequestHeaderKey,
+    ) = getHeaderKey(request, key)
+        ?.toIntOrNull()
+        ?.let { timeout ->
+            if (timeout > 1) {
+                timeout
+            } else {
+                null
+            }
+        }
 
     private val headerInterceptor by lazy {
         Interceptor { chain ->
@@ -178,6 +192,26 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
         return nextResponse
     }
 
+    private val customTimeoutInterceptor by lazy {
+        Interceptor { chain ->
+            val request = chain.request()
+            var timeoutChain = chain
+
+            getHeaderTimeout(request, RequestHeaderKey.ConnectTimeout)?.let { timeout ->
+                timeoutChain = timeoutChain.withConnectTimeout(timeout, TimeUnit.SECONDS)
+            }
+
+            getHeaderTimeout(request, RequestHeaderKey.ReadTimeout)?.let { timeout ->
+                timeoutChain = timeoutChain.withReadTimeout(timeout, TimeUnit.SECONDS)
+            }
+
+            val connectTimeout = timeoutChain.connectTimeoutMillis()
+            val readTimeout = timeoutChain.readTimeoutMillis()
+
+            timeoutChain.proceed(request)
+        }
+    }
+
     private val wrapResponseInterceptor by lazy {
         Interceptor { chain ->
             val request = chain.request()
@@ -237,6 +271,7 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
 
     override val interceptors: List<Interceptor> = listOf(
         headerInterceptor,
+        customTimeoutInterceptor,
         wrapResponseInterceptor,
         clientErrorInterceptor,
         serverErrorInterceptor,

@@ -6,8 +6,8 @@ import coil.decode.SvgDecoder
 import coil.disk.DiskCache
 import coil.util.DebugLogger
 import com.crisiscleanup.core.common.AppEnv
+import com.crisiscleanup.core.common.AppSettingsProvider
 import com.crisiscleanup.core.network.AuthInterceptorProvider
-import com.crisiscleanup.core.network.BuildConfig
 import com.crisiscleanup.core.network.CrisisCleanupAccountApi
 import com.crisiscleanup.core.network.CrisisCleanupAuthApi
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
@@ -88,45 +88,69 @@ object NetworkModule {
     @Provides
     @Singleton
     fun providesCrisisCleanupAuthRetrofit(
+        appEnv: AppEnv,
+        settingsProvider: AppSettingsProvider,
         interceptorProvider: AuthInterceptorProvider,
         json: Json,
-        appEnv: AppEnv,
     ): Retrofit {
         val interceptors = listOf(interceptorProvider.clientErrorInterceptor)
-        return getCrisisCleanupApiBuilder(interceptors, json, appEnv)
+        return getCrisisCleanupApiBuilder(
+            appEnv,
+            settingsProvider,
+            interceptors,
+            json,
+        )
     }
 
     @RetrofitConfiguration(RetrofitConfigurations.CrisisCleanup)
     @Provides
     @Singleton
     fun providesCrisisCleanupRetrofit(
+        appEnv: AppEnv,
+        settingsProvider: AppSettingsProvider,
         interceptorProvider: RetrofitInterceptorProvider,
         headerKeysLookup: RequestHeaderKeysLookup,
         json: Json,
-        appEnv: AppEnv,
-    ) = getCrisisCleanupApiBuilder(interceptorProvider, headerKeysLookup, json, appEnv)
+    ) = getCrisisCleanupApiBuilder(
+        appEnv,
+        settingsProvider,
+        interceptorProvider,
+        headerKeysLookup,
+        json,
+    )
 
     @RetrofitConfiguration(RetrofitConfigurations.Basic)
     @Provides
     @Singleton
     fun providesBasicRetrofit(
-        interceptorProvider: RetrofitInterceptorProvider,
         appEnv: AppEnv,
+        settingsProvider: AppSettingsProvider,
+        interceptorProvider: RetrofitInterceptorProvider,
     ): Retrofit {
         val interceptors = listOf(interceptorProvider.serverErrorInterceptor)
-        return getApiBuilder(interceptors, appEnv)
+        return getApiBuilder(
+            appEnv,
+            settingsProvider,
+            interceptors,
+        )
     }
 
     @RetrofitConfiguration(RetrofitConfigurations.BasicJson)
     @Provides
     @Singleton
     fun providesBasicJsonRetrofit(
-        interceptorProvider: RetrofitInterceptorProvider,
         appEnv: AppEnv,
+        settingsProvider: AppSettingsProvider,
+        interceptorProvider: RetrofitInterceptorProvider,
         json: Json,
     ): Retrofit {
         val interceptors = listOf(interceptorProvider.serverErrorInterceptor)
-        return getJsonApiBuilder(interceptors, appEnv, json)
+        return getJsonApiBuilder(
+            appEnv,
+            settingsProvider,
+            interceptors,
+            json,
+        )
     }
 
     /**
@@ -155,7 +179,7 @@ object NetworkModule {
         // but some problematic images are fetching each time
         .respectCacheHeaders(false)
         .apply {
-            if (BuildConfig.DEBUG) {
+            if (appEnv.isDebuggable) {
                 val callFactory = OkHttpClient.Builder()
                     .addInterceptor(
                         HttpLoggingInterceptor()

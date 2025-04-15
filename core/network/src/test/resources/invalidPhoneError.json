@@ -1,0 +1,9 @@
+{
+  "errors": [
+    {
+      "field": "non_field_errors",
+      "message": "info.invalid_phone_number"
+    }
+  ],
+  "data": null
+}

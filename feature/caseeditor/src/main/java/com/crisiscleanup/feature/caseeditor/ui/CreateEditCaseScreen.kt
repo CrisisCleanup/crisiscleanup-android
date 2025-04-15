@@ -24,6 +24,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
@@ -329,7 +330,7 @@ private fun ColumnScope.FullEditView(
         }
     }
 
-    var hasConfirmedDormantIncident by remember { mutableStateOf(false) }
+    var hasConfirmedDormantIncident by rememberSaveable { mutableStateOf(false) }
 
     Box(Modifier.weight(1f)) {
         val closeKeyboard = rememberCloseKeyboard(viewModel)
