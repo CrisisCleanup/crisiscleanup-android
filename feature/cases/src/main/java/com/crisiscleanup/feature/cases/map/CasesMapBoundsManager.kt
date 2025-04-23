@@ -169,7 +169,7 @@ internal class CasesMapBoundsManager(
 
         mapBoundsCache = bounds
 
-        if (isMapLoaded && cacheToDisk) {
+        if (isStarted && cacheToDisk) {
             val incidentId = incidentSelector.incidentId.value
             saveIncidentMapBounds.value = bounds.asIncidentCoordinateBounds(incidentId)
         }

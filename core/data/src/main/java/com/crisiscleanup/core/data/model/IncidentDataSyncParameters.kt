@@ -80,7 +80,7 @@ data class IncidentDataSyncParameters(
 
         fun isSignificantChange(
             other: BoundedRegion,
-            thresholdMiles: Float = 0.5f,
+            thresholdMiles: Double = 0.5,
         ): Boolean {
             // ~69 miles in 1 degree. 1/69 ~= 0.0145 (degrees).
             val thresholdDegrees = 0.0145 * thresholdMiles

@@ -119,6 +119,8 @@ private interface DataSourceApi {
     ): NetworkIncidentResult
 
     @TokenAuthenticationHeader
+    @ConnectTimeoutHeader("5")
+    @ReadTimeoutHeader("10")
     @GET("incidents/{incidentId}/organizations")
     suspend fun getIncidentOrganizations(
         @Path("incidentId")
