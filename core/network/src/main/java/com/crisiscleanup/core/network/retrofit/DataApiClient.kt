@@ -65,7 +65,7 @@ private interface DataSourceApi {
     @TokenAuthenticationHeader
     @GET("incidents")
     suspend fun getIncidents(
-        @Query("fields")
+        @Query("fields", encoded = true)
         fields: String,
         @Query("limit")
         limit: Int,
@@ -78,7 +78,7 @@ private interface DataSourceApi {
 
     @GET("incidents")
     suspend fun getIncidentsNoAuth(
-        @Query("fields")
+        @Query("fields", encoded = true)
         fields: String,
         @Query("limit")
         limit: Int,
@@ -91,7 +91,7 @@ private interface DataSourceApi {
 
     @GET("incidents_list")
     suspend fun getIncidentsList(
-        @Query("fields")
+        @Query("fields", encoded = true)
         fields: String,
         @Query("limit")
         limit: Int,
@@ -114,7 +114,7 @@ private interface DataSourceApi {
     suspend fun getIncident(
         @Path("id")
         id: Long,
-        @Query("fields")
+        @Query("fields", encoded = true)
         fields: String,
     ): NetworkIncidentResult
 
@@ -140,7 +140,7 @@ private interface DataSourceApi {
         limit: Int,
         @Query("offset")
         offset: Int,
-        @Query("fields")
+        @Query("fields", encoded = true)
         fields: String?,
     ): NetworkWorksitesCoreDataResult
 
@@ -160,7 +160,7 @@ private interface DataSourceApi {
     suspend fun getWorksitesLocationSearch(
         @Query("incident")
         incidentId: Long,
-        @Query("fields")
+        @Query("fields", encoded = true)
         fields: String,
         @Query("search")
         q: String,
@@ -181,7 +181,7 @@ private interface DataSourceApi {
     @ReadTimeoutHeader("15")
     @GET("worksites")
     suspend fun getWorksite(
-        @Query("id__in")
+        @Query("id__in", encoded = true)
         worksiteId: String,
         @Tag endpointId: EndpointRequestId = EndpointRequestId.Worksite,
     ): NetworkWorksitesFullResult
@@ -264,7 +264,7 @@ private interface DataSourceApi {
     @TokenAuthenticationHeader
     @GET("organizations")
     suspend fun getNearbyClaimingOrganizations(
-        @Query("nearby_claimed")
+        @Query("nearby_claimed", encoded = true)
         nearbyClaimed: String,
     ): NetworkOrganizationsResult
 

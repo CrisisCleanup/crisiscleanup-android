@@ -44,7 +44,7 @@ class IncidentOrganizationsSyncer @Inject constructor(
 
         var requestedCount = 0
         var networkDataOffset = 0
-        val pageDataCount = 200
+        val pageDataCount = 100
         try {
             while (networkDataOffset < syncCount) {
                 val worksitesRequest = networkDataSource.getIncidentOrganizations(
