@@ -18,6 +18,6 @@ class IncidentDataDownloadSpeedMonitor @Inject constructor() : DataDownloadSpeed
     override val isSlowSpeed = isSlowSpeedInternal.distinctUntilChanged()
 
     override fun onSpeedChange(isSlow: Boolean) {
-        this.isSlowSpeedInternal.tryEmit(isSlow)
+        isSlowSpeedInternal.tryEmit(isSlow)
     }
 }

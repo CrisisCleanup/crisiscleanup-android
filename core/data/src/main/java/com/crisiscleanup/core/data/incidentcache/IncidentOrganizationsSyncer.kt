@@ -43,7 +43,6 @@ class IncidentOrganizationsSyncer @Inject constructor(
     )
 
     override suspend fun sync(incidentId: Long) {
-        // TODO Update stats during pull
         saveOrganizationsData(incidentId)
     }
 

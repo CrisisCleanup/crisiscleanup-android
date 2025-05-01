@@ -64,15 +64,6 @@ internal class IncidentDataPullStatsUpdater(
         reportChange(pullStats.copy(savedCount = pullStats.savedCount + count))
     }
 
-    fun clearStep() {
-        reportChange(
-            pullStats.copy(
-                currentStep = 0,
-                stepTotal = 0,
-            ),
-        )
-    }
-
     fun setStep(current: Int, total: Int) {
         reportChange(
             pullStats.copy(
@@ -80,6 +71,10 @@ internal class IncidentDataPullStatsUpdater(
                 stepTotal = total,
             ),
         )
+    }
+
+    fun clearStep() {
+        setStep(0, 0)
     }
 
     fun setNotificationMessage(message: String = "") {
