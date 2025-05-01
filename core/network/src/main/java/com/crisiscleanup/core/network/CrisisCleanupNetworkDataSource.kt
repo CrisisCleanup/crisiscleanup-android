@@ -60,6 +60,7 @@ interface CrisisCleanupNetworkDataSource {
 
     suspend fun getIncidentOrganizations(
         incidentId: Long,
+        fields: List<String>,
         limit: Int,
         offset: Int,
     ): NetworkOrganizationsResult

@@ -121,10 +121,12 @@ private interface DataSourceApi {
     @TokenAuthenticationHeader
     @ConnectTimeoutHeader("5")
     @ReadTimeoutHeader("10")
-    @GET("incidents/{incidentId}/organizations")
+    @GET("organizations")
     suspend fun getIncidentOrganizations(
-        @Path("incidentId")
+        @Query("incident")
         incidentId: Long,
+        @Query("fields", encoded = true)
+        fields: String,
         @Query("limit")
         limit: Int,
         @Query("offset")
@@ -455,9 +457,15 @@ class DataApiClient @Inject constructor(
 
     override suspend fun getIncidentOrganizations(
         incidentId: Long,
+        fields: List<String>,
         limit: Int,
         offset: Int,
-    ) = networkApi.getIncidentOrganizations(incidentId, limit, offset)
+    ) = networkApi.getIncidentOrganizations(
+        incidentId,
+        fields.joinToString(","),
+        limit = limit,
+        offset = offset,
+    )
         .apply { errors?.tryThrowException() }
 
     override suspend fun getWorksitesCoreData(incidentId: Long, limit: Int, offset: Int) =
