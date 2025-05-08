@@ -137,7 +137,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
     override val cachePreferences = incidentCachePreferences.preferences
 
     override fun streamSyncStats(incidentId: Long) =
-        syncParameterDao.streamWorksitesSyncStats(incidentId)
+        syncParameterDao.streamIncidentDataSyncParameters(incidentId)
             .map { it?.asExternalModel(appLogger) }
 
     // TODO Write tests
@@ -153,19 +153,19 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         val incidentIds = incidentsRepository.incidents.first()
             .map(Incident::id)
             .toSet()
-        val selectedIncident = appPreferences.userData.first().selectedIncidentId
-        val isIncidentCached = incidentIds.contains(selectedIncident)
+        val selectedIncidentId = appPreferences.userData.first().selectedIncidentId
+        val isIncidentCached = incidentIds.contains(selectedIncidentId)
 
         if (incidentIds.isNotEmpty() &&
             !isIncidentCached &&
-            selectedIncident == EmptyIncident.id &&
+            selectedIncidentId == EmptyIncident.id &&
             !forcePullIncidents
         ) {
             return false
         }
 
-        val submittedPlan = IncidentDataSyncPlan(
-            selectedIncident,
+        val proposedPlan = IncidentDataSyncPlan(
+            selectedIncidentId,
             syncIncidents = forcePullIncidents || !isIncidentCached,
             syncSelectedIncident = cacheSelectedIncident || !isIncidentCached,
             syncActiveIncidentWorksites = cacheActiveIncidentWorksites,
@@ -174,23 +174,23 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         )
         synchronized(syncPlanReference) {
             if (!overwriteExisting &&
-                !submittedPlan.syncIncidents &&
+                !proposedPlan.syncIncidents &&
                 !restartCacheCheckpoint
             ) {
                 with(syncPlanReference.get()) {
-                    if (selectedIncident == incidentId &&
-                        submittedPlan.timestamp - timestamp < planTimeout &&
-                        submittedPlan.syncSelectedIncidentLevel <= syncSelectedIncidentLevel &&
-                        submittedPlan.syncWorksitesLevel <= syncWorksitesLevel
+                    if (selectedIncidentId == incidentId &&
+                        proposedPlan.timestamp - timestamp < planTimeout &&
+                        proposedPlan.syncSelectedIncidentLevel <= syncSelectedIncidentLevel &&
+                        proposedPlan.syncWorksitesLevel <= syncWorksitesLevel
                     ) {
-                        syncLogger.log("Skipping redundant sync plan for $selectedIncident")
+                        syncLogger.log("Skipping redundant sync plan for $selectedIncidentId")
                         return false
                     }
                 }
             }
 
-            syncLogger.log("Setting sync plan for $selectedIncident")
-            syncPlanReference.set(submittedPlan)
+            syncLogger.log("Setting sync plan for $selectedIncidentId")
+            syncPlanReference.set(proposedPlan)
             return true
         }
     }
@@ -646,6 +646,9 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         }
     }
 
+    // ~60000 Cases longer than 10 mins is reasonably slow
+    private val slowDownloadSpeed = 100f
+
     private suspend fun cacheBounded(
         incidentId: Long,
         isPaused: Boolean,
@@ -791,7 +794,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 appLogger.logException(e)
                 ""
             }
-            syncParameterDao.updatedBoundedParameters(
+            syncParameterDao.updateBoundedParameters(
                 incidentId,
                 boundedRegionEncoded,
                 syncStart,
@@ -800,9 +803,6 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
         DownloadCountSpeed(savedCount, isSlowDownload)
     }
-
-    // ~60000 Cases longer than 10 mins is reasonably slow
-    private val slowDownloadSpeed = 100f
 
     private fun getMaxQueryCount(isAdditionalData: Boolean) = if (isAdditionalData) {
         if (deviceInspector.isLimitedDevice) 2000 else 6000

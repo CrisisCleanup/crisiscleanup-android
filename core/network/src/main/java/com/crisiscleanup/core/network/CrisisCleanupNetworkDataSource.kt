@@ -135,11 +135,11 @@ interface CrisisCleanupNetworkDataSource {
     suspend fun getWorksitesFlagsFormDataPageBefore(
         incidentId: Long,
         pageCount: Int,
-        updatedAfter: Instant,
+        updatedBefore: Instant,
     ) = getWorksitesFlagsFormDataPage(
         incidentId,
         pageCount,
-        updatedAfter,
+        updatedBefore,
         true,
     )
 

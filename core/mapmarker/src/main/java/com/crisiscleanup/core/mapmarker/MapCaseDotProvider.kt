@@ -12,6 +12,7 @@ import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import javax.inject.Inject
 import javax.inject.Singleton
+import androidx.core.graphics.createBitmap
 
 interface MapCaseDotProvider : MapCaseIconProvider {
     fun setDotProperties(dotDrawProperties: DotDrawProperties)
@@ -87,7 +88,7 @@ class InMemoryDotProvider @Inject constructor(
     ): BitmapDescriptor? {
         val cacheKey = DotCacheKey(statusClaim, isDuplicate, isFilteredOut)
         synchronized(cache) {
-            cache.get(cacheKey)?.let {
+            cache[cacheKey]?.let {
                 return it
             }
         }
@@ -127,7 +128,7 @@ class InMemoryDotProvider @Inject constructor(
         dotDrawProperties: DotDrawProperties,
     ): Bitmap {
         val bitmapSize = dotDrawProperties.bitmapSizePx.toInt()
-        val output = Bitmap.createBitmap(bitmapSize, bitmapSize, Bitmap.Config.ARGB_8888)
+        val output = createBitmap(bitmapSize, bitmapSize)
         val canvas = Canvas(output)
 
         val radius = dotDrawProperties.dotDiameterPx * 0.5f
