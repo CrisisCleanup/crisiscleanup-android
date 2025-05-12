@@ -25,7 +25,6 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.sandbox.navigation.ASYNC_IMAGE_ROUTE
-import com.crisiscleanup.sandbox.navigation.MULTI_IMAGE_ROUTE
 import com.crisiscleanup.sandbox.navigation.SandboxNavHost
 import com.crisiscleanup.sandbox.navigation.navigateToAsyncImage
 import com.crisiscleanup.sandbox.navigation.navigateToBottomNav

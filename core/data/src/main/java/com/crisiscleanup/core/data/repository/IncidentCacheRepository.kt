@@ -491,16 +491,8 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         }
 
         try {
-            val recentWorksites = worksitesRepository.getRecentWorksites(incidentId, limit = 3)
-            if (recentWorksites.isNotEmpty()) {
-                var totalLatitude = 0.0
-                var totalLongitude = 0.0
-                recentWorksites.forEach {
-                    totalLatitude += it.latitude
-                    totalLongitude += it.longitude
-                }
-                val averageLatitude = totalLatitude / recentWorksites.size
-                val averageLongitude = totalLongitude / recentWorksites.size
+            worksitesRepository.getRecentWorksitesCenterLocation(incidentId, limit = 3)?.let {
+                val (averageLatitude, averageLongitude) = it
                 if (locationBounder.isInBounds(
                         incidentId,
                         latitude = averageLatitude,

@@ -314,7 +314,7 @@ private interface DataSourceApi {
         @Query("limit")
         limit: Int,
         @Query("updated_at__lt")
-        updatedAtBefore: Instant?,
+        updatedAtBefore: Instant,
         @Query("sort")
         sort: String,
     ): NetworkFlagsFormDataResult

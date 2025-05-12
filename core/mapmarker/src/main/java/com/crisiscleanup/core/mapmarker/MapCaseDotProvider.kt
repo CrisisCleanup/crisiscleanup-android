@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import androidx.collection.LruCache
 import androidx.compose.ui.geometry.Offset
+import androidx.core.graphics.createBitmap
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.model.data.WorkTypeStatusClaim
 import com.crisiscleanup.core.model.data.WorkTypeType
@@ -12,7 +13,6 @@ import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import javax.inject.Inject
 import javax.inject.Singleton
-import androidx.core.graphics.createBitmap
 
 interface MapCaseDotProvider : MapCaseIconProvider {
     fun setDotProperties(dotDrawProperties: DotDrawProperties)
