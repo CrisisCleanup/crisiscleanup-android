@@ -161,7 +161,7 @@ data class DotDrawProperties(
         fun make(
             resourceProvider: AndroidResourceProvider,
             bitmapSizeDp: Float = 8f,
-            dotDiameterDp: Float = 4f,
+            dotDiameterDp: Float = 5f,
             strokeWidthDp: Float = 0.5f,
         ) = DotDrawProperties(
             bitmapSizePx = resourceProvider.dpToPx(bitmapSizeDp),
