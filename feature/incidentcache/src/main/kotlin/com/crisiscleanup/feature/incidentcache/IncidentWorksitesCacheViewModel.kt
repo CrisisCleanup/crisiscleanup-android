@@ -94,14 +94,6 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
             started = subscribedReplay(),
         )
 
-    val isUpdatingCachePreferences = MutableStateFlow(false)
-    private val syncCachePreferences = incidentCacheRepository.cachePreferences
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = InitialIncidentWorksitesCachePreferences,
-            started = subscribedReplay(),
-        )
-
     private var isUserActed = AtomicBoolean(false)
 
     val editingPreferences = MutableStateFlow(InitialIncidentWorksitesCachePreferences)
@@ -113,7 +105,7 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
     private val locationPermissionExpiration = AtomicReference(epochZero)
 
     init {
-        syncCachePreferences
+        incidentCacheRepository.cachePreferences
             .onEach {
                 if (editingPreferences.compareAndSet(
                         InitialIncidentWorksitesCachePreferences,
@@ -166,12 +158,7 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
                     return@onEach
                 }
 
-                isUpdatingCachePreferences.value = true
-                try {
-                    incidentCacheRepository.updateCachePreferences(it)
-                } finally {
-                    isUpdatingCachePreferences.value = false
-                }
+                incidentCacheRepository.updateCachePreferences(it)
             }
             .flowOn(ioDispatcher)
             .launchIn(externalScope)

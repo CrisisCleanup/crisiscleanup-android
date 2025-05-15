@@ -35,7 +35,7 @@ import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
 import com.crisiscleanup.core.datastore.IncidentCachePreferencesDataSource
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.model.data.EmptyIncident
-import com.crisiscleanup.core.model.data.Incident
+import com.crisiscleanup.core.model.data.IncidentIdNameType
 import com.crisiscleanup.core.model.data.IncidentLocationBounder
 import com.crisiscleanup.core.model.data.IncidentWorksitesCachePreferences
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
@@ -140,6 +140,8 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         syncParameterDao.streamIncidentDataSyncParameters(incidentId)
             .map { it?.asExternalModel(appLogger) }
 
+    private suspend fun getIncidents() = incidentsRepository.getIncidentsList()
+
     // TODO Write tests
     override suspend fun submitPlan(
         overwriteExisting: Boolean,
@@ -150,8 +152,8 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         restartCacheCheckpoint: Boolean,
         planTimeout: Duration,
     ): Boolean {
-        val incidentIds = incidentsRepository.incidents.first()
-            .map(Incident::id)
+        val incidentIds = getIncidents()
+            .map(IncidentIdNameType::id)
             .toSet()
         val selectedIncidentId = appPreferences.userData.first().selectedIncidentId
         val isIncidentCached = incidentIds.contains(selectedIncidentId)
@@ -265,16 +267,16 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
             val isPaused = syncPreferences.isPaused
 
-            val incidents = incidentsRepository.incidents.first()
+            val incidents = getIncidents()
             if (incidents.isEmpty()) {
                 return@coroutineScope SyncResult.Error("Failed to sync Incidents")
             }
-            val incidentIds = incidents.map(Incident::id).toSet()
-            if (!incidentIds.contains(incidentId)) {
+
+            incidentName = incidents.firstOrNull { it.id == incidentId }?.name ?: ""
+            if (incidentName.isBlank()) {
                 return@coroutineScope SyncResult.Partial("Incident not found. Waiting for Incident select.")
             }
 
-            incidentName = incidents.first { it.id == incidentId }.name
             val worksitesCoreStatsUpdater = IncidentDataPullStatsUpdater {
                 reportStats(syncPlan, it)
             }.apply {

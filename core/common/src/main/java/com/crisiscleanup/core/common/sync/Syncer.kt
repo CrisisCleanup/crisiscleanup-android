@@ -54,7 +54,6 @@ interface SyncPuller {
 interface SyncPusher {
     fun appPushWorksite(worksiteId: Long, scheduleMediaSync: Boolean = false)
     suspend fun syncPushWorksitesAsync(): Deferred<SyncResult>
-    fun stopPushWorksites()
     suspend fun syncPushMedia(): SyncResult
     suspend fun syncPushWorksites(): SyncResult
 

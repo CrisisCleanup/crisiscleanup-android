@@ -18,6 +18,7 @@ import com.google.android.gms.maps.model.LatLngBounds
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
@@ -29,6 +30,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.time.Duration.Companion.seconds
@@ -84,6 +86,11 @@ internal class CasesMapBoundsManager(
             }
         }
         .distinctUntilChanged()
+        .shareIn(
+            scope = coroutineScope,
+            started = SharingStarted.WhileSubscribed(),
+            replay = 1,
+        )
 
     private val savedBounds = combine(
         incidentSelector.incidentId,

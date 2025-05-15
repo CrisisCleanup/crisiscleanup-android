@@ -198,6 +198,7 @@ class MainActivityViewModel @Inject constructor(
 
         incidentSelector.incidentId
             .filter { it != EmptyIncident.id }
+            .distinctUntilChanged()
             .onEach {
                 sync(
                     forcePullIncidents = false,
