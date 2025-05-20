@@ -89,7 +89,7 @@ private fun IncidentWorksitesCacheScreen(
     val t = LocalAppTranslator.current
 
     val incident by viewModel.incident.collectAsStateWithLifecycle()
-    val isSyncingIncident by viewModel.isSyncing.collectAsStateWithLifecycle()
+    val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
 
     val syncStage by viewModel.syncStage.collectAsStateWithLifecycle()
 
@@ -141,12 +141,13 @@ private fun IncidentWorksitesCacheScreen(
                 key = "last-synced-info",
                 contentType = "text-item",
             ) {
+                val incidentName = incident.shortName
                 val syncedText = lastSynced?.let {
                     t("appCache.synced_incident_as_of_date")
-                        .replace("{incident_name}", incident.shortName)
+                        .replace("{incident_name}", incidentName)
                         .replace("{sync_date}", it)
                 } ?: t("appCache.awaiting_sync_of_incident_name")
-                    .replace("{incident_name}", incident.shortName)
+                    .replace("{incident_name}", incidentName)
                 Text(
                     syncedText,
                     listItemModifier,
@@ -173,7 +174,7 @@ private fun IncidentWorksitesCacheScreen(
                     Text(syncStageMessage)
 
                     AnimatedBusyIndicator(
-                        isSyncingIncident,
+                        isSyncing,
                         padding = 0.dp,
                     )
                 }
@@ -231,7 +232,7 @@ private fun IncidentWorksitesCacheScreen(
                 textKey = "appCache.choose_area",
                 subTextKey = "appCache.choose_area_description",
                 onSelect = {
-                    viewModel.boundCachingCases(false)
+                    viewModel.boundCachingCases(false, isUserAction = true)
                     scrollToBoundedSection()
                 },
             )
@@ -379,7 +380,7 @@ private fun BoundedRegionSection(
             .height(mapHeightAnimated),
     ) {
         val mapWidth = if (contentSize.width > 0) {
-            val scrollWidth = if (isBoundedRegion && isBoundedByCoordinates) 64.dp else 0.dp
+            val scrollWidth = if (isBoundedByCoordinates) 72.dp else 0.dp
             with(density) { contentSize.width.toDp() } - scrollWidth
         } else {
             0.dp
@@ -401,7 +402,7 @@ private fun BoundedRegionSection(
                         }
                     },
                 )
-                .align(Alignment.CenterEnd)
+                .align(Alignment.Center)
                 .animateContentSize()
                 .width(mapWidth),
             onReleaseMapTouch = { setMovingMap(false) },

@@ -60,6 +60,7 @@ import com.crisiscleanup.core.designsystem.component.actionRoundCornerShape
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.cardContainerColor
+import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
@@ -684,8 +685,12 @@ private fun IncidentCacheView(
 
     Column(modifier) {
         if (hasSpeedNotAdaptive) {
-            Text(t("appMenu.good_internet_use_adaptive"))
+            Text(
+                t("appMenu.good_internet_use_adaptive"),
+                Modifier.listItemBottomPadding(),
+            )
         }
+
         Row(
             horizontalArrangement = listItemSpacedBy,
             verticalAlignment = Alignment.CenterVertically,

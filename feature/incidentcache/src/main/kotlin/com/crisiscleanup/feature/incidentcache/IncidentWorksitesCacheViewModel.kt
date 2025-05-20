@@ -28,9 +28,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
@@ -67,17 +69,24 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
             ioDispatcher,
         )
 
-    val isSyncing = incidentCacheRepository.isSyncingActiveIncident
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = false,
-            started = subscribedReplay(),
-        )
-
     val syncStage = incidentCacheRepository.cacheStage
         .stateIn(
             scope = viewModelScope,
             initialValue = IncidentCacheStage.Start,
+            started = subscribedReplay(),
+        )
+
+    val isSyncing = combine(
+        incidentCacheRepository.isSyncingActiveIncident,
+        syncStage,
+        ::Pair,
+    )
+        .map { (isSyncingActiveIncident, stage) ->
+            isSyncingActiveIncident && stage != IncidentCacheStage.End
+        }
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
             started = subscribedReplay(),
         )
 
@@ -203,12 +212,16 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
         onPreferencesSent()
     }
 
+    private fun pullIncidentData() {
+        syncPuller.appPullIncidentData(cancelOngoing = true)
+    }
+
     fun resumeCachingCases() {
         isUserActed.set(true)
 
         updatePreferences(isPaused = false, isRegionBounded = false)
 
-        syncPuller.appPullIncidentData(cancelOngoing = true)
+        pullIncidentData()
     }
 
     fun pauseCachingCases() {
@@ -219,6 +232,7 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
         syncPuller.stopPullWorksites()
     }
 
+    // TODO Simplify state management
     fun boundCachingCases(
         isNearMe: Boolean,
         isUserAction: Boolean = false,
@@ -243,14 +257,14 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
                     boundedRegionDataEditor.useMyLocation()
                 }
 
-                syncPuller.appPullIncidentData(cancelOngoing = true)
+                pullIncidentData()
             }
         } else {
             if (isUserAction) {
                 val now = Clock.System.now()
                 val expiration = when (permissionStatus) {
-                    PermissionStatus.Requesting -> now + 10.seconds
-                    PermissionStatus.ShowRationale -> now + 60.seconds
+                    PermissionStatus.Requesting -> now + 20.seconds
+                    PermissionStatus.ShowRationale -> now + 120.seconds
                     else -> epochZero
                 }
                 locationPermissionExpiration.set(expiration)
@@ -259,7 +273,7 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
     }
 
     fun resync() {
-        syncPuller.appPullIncidentData(cancelOngoing = true)
+        pullIncidentData()
     }
 
     fun resetCaching() {
