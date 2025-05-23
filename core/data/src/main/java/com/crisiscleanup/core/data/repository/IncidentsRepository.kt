@@ -6,10 +6,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
 
 interface IncidentsRepository {
-    /**
-     * Is loading incidents data
-     */
     val isLoading: Flow<Boolean>
+
+    val isFirstLoad: Flow<Boolean>
 
     val incidentCount: Long
 

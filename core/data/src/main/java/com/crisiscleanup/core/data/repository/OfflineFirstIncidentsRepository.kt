@@ -28,6 +28,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
@@ -66,6 +67,15 @@ class OfflineFirstIncidentsRepository @Inject constructor(
         incidentsQueryFields.toMutableList().also { it.add("form_fields") }
 
     override val isLoading: Flow<Boolean> = isSyncing
+
+    override val isFirstLoad = combine(
+        isSyncing,
+        incidentDao.streamIncidentCount(),
+        ::Pair,
+    )
+        .mapLatest { (syncing, count) ->
+            syncing && count == 0L
+        }
 
     override val incidentCount: Long
         get() = incidentDao.getIncidentCount()

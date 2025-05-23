@@ -28,6 +28,7 @@ fun AppTopBar(
     val isHeaderLoading by dataProvider.showHeaderLoading.collectAsState(false)
 
     val disasterIconResId by dataProvider.disasterIconResId.collectAsStateWithLifecycle()
+    val enableIncidentSelect by dataProvider.enableIncidentSelect.collectAsState(false)
 
     val isAccountExpired by dataProvider.isAccountExpired.collectAsStateWithLifecycle()
     val profilePictureUri by dataProvider.profilePictureUri.collectAsStateWithLifecycle()
@@ -42,6 +43,7 @@ fun AppTopBar(
         isAccountExpired = isAccountExpired,
         openAuthentication = openAuthentication,
         disasterIconResId = disasterIconResId,
+        enableIncidentSelect = enableIncidentSelect,
         onOpenIncidents = onOpenIncidents,
     )
 }
@@ -60,6 +62,7 @@ internal fun AppTopBar(
     isAccountExpired: Boolean = false,
     openAuthentication: () -> Unit = {},
     @DrawableRes disasterIconResId: Int = 0,
+    enableIncidentSelect: Boolean = false,
     onOpenIncidents: (() -> Unit)? = null,
 ) {
     val t = LocalAppTranslator.current
@@ -86,6 +89,7 @@ internal fun AppTopBar(
                     title = title,
                     contentDescription = t("nav.change_incident"),
                     isLoading = isAppHeaderLoading,
+                    enabled = enableIncidentSelect,
                 )
             }
         },

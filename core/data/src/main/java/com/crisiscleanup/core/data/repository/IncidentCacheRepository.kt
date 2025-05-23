@@ -5,6 +5,7 @@ import android.net.NetworkCapabilities.NET_CAPABILITY_NOT_METERED
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.LocationProvider
+import com.crisiscleanup.core.common.combine
 import com.crisiscleanup.core.common.haversineDistance
 import com.crisiscleanup.core.common.kmToMiles
 import com.crisiscleanup.core.common.log.AppLogger
@@ -49,7 +50,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
@@ -62,6 +62,7 @@ import javax.inject.Singleton
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.flow.combine as kCombine
 
 interface IncidentCacheRepository {
     val isSyncingActiveIncident: Flow<Boolean>
@@ -123,16 +124,38 @@ class IncidentWorksitesCacheRepository @Inject constructor(
     private val syncPlanReference = AtomicReference(EmptySyncPlan)
 
     private val syncingIncidentId = MutableStateFlow(EmptyIncident.id)
-    override val isSyncingActiveIncident = combine(
-        incidentSelector.incidentId,
-        syncingIncidentId,
-        ::Pair,
-    )
-        .map { (incidentId, syncingId) ->
-            incidentId == syncingId
-        }
 
     override val cacheStage = MutableStateFlow(IncidentCacheStage.Start)
+
+    private val isSyncingData = cacheStage.map {
+        it.isSyncingStage
+    }
+
+    private val isSyncingInitialIncidents = kCombine(
+        syncingIncidentId,
+        cacheStage,
+        ::Pair,
+    )
+        .map { (syncingId, stage) ->
+            syncingId == EmptyIncident.id && stage == IncidentCacheStage.Incidents
+        }
+
+    override val isSyncingActiveIncident = combine(
+        isSyncingData,
+        incidentSelector.incidentId,
+        syncingIncidentId,
+        isSyncingInitialIncidents,
+    ) { isSyncing, incidentId, syncingId, isSyncingInitial ->
+        Pair(
+            Triple(isSyncing, incidentId, syncingId),
+            isSyncingInitial,
+        )
+    }
+        .map { data ->
+            val (isSyncing, incidentId, syncingId) = data.first
+            val isSyncingInitial = data.second
+            isSyncing && incidentId == syncingId || isSyncingInitial
+        }
 
     override val cachePreferences = incidentCachePreferences.preferences
 
@@ -1247,6 +1270,14 @@ enum class IncidentCacheStage {
     ActiveIncidentOrganization,
     End,
 }
+
+private val staticCacheStages = setOf(
+    IncidentCacheStage.Start,
+    IncidentCacheStage.End,
+)
+
+val IncidentCacheStage.isSyncingStage: Boolean
+    get() = !staticCacheStages.contains(this)
 
 private data class IncidentDataSyncPlan(
     // May be a new Incident ID

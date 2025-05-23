@@ -133,7 +133,6 @@ internal fun CasesRoute(
     }
 
     val incidentsData by viewModel.incidentsData.collectAsStateWithLifecycle()
-    val isIncidentLoading by viewModel.isIncidentLoading.collectAsState(true)
     val isLoadingData by viewModel.isLoadingData.collectAsState(true)
     if (incidentsData is IncidentsData.Incidents) {
         val isTableView by viewModel.isTableView.collectAsStateWithLifecycle()
@@ -191,7 +190,8 @@ internal fun CasesRoute(
         }
         val editedWorksiteLocation = viewModel.editedWorksiteLocation
         val isMyLocationEnabled = viewModel.isMyLocationEnabled
-        val hasIncidents = (incidentsData as IncidentsData.Incidents).incidents.isNotEmpty()
+
+        val enableIncidentSelect by viewModel.enableIncidentSelect.collectAsStateWithLifecycle()
 
         val onSyncDataDelta = remember(viewModel) {
             {
@@ -232,7 +232,7 @@ internal fun CasesRoute(
             onTableItemSelect = onTableItemSelect,
             onSyncDataDelta = onSyncDataDelta,
             onSyncDataFull = onSyncDataFull,
-            hasIncidents = hasIncidents,
+            enableIncidentSelect = enableIncidentSelect,
         )
 
         if (showChangeIncident) {
@@ -261,6 +261,7 @@ internal fun CasesRoute(
             closeDialog = closePermissionDialog,
         )
     } else {
+        val isIncidentLoading by viewModel.isIncidentLoading.collectAsState(true)
         val isLoading = incidentsData is IncidentsData.Loading || isIncidentLoading
         NoIncidentsScreen(
             isLoading = isLoading,
@@ -380,7 +381,7 @@ internal fun CasesScreen(
     onTableItemSelect: (Worksite) -> Unit = {},
     onSyncDataDelta: () -> Unit = {},
     onSyncDataFull: () -> Unit = {},
-    hasIncidents: Boolean = false,
+    enableIncidentSelect: Boolean = false,
 ) {
     Box {
         if (isTableView) {
@@ -394,7 +395,7 @@ internal fun CasesScreen(
                 onTableItemSelect = onTableItemSelect,
                 onSyncDataDelta = onSyncDataDelta,
                 onSyncDataFull = onSyncDataFull,
-                hasIncidents = hasIncidents,
+                enableIncidentSelect = enableIncidentSelect,
             )
         } else {
             var isSatelliteMapType by remember { mutableStateOf(false) }
@@ -441,7 +442,7 @@ internal fun CasesScreen(
             disableTableViewActions = isTableDataTransient,
             onSyncDataDelta = onSyncDataDelta,
             onSyncDataFull = onSyncDataFull,
-            hasIncidents = hasIncidents,
+            enableIncidentSelect = enableIncidentSelect,
         )
 
         AnimatedVisibility(
@@ -617,7 +618,7 @@ private fun CasesOverlayElements(
     disableTableViewActions: Boolean = false,
     onSyncDataDelta: () -> Unit = {},
     onSyncDataFull: () -> Unit = {},
-    hasIncidents: Boolean = false,
+    enableIncidentSelect: Boolean = false,
 ) {
     val translator = LocalAppTranslator.current
 
@@ -646,7 +647,7 @@ private fun CasesOverlayElements(
                 shape = CircleShape,
                 containerColor = incidentDisasterContainerColor,
                 contentColor = incidentDisasterContentColor,
-                enabled = hasIncidents,
+                enabled = enableIncidentSelect,
             ) {
                 Icon(
                     painter = painterResource(disasterResId),
