@@ -163,8 +163,6 @@ private fun MenuScreen(
         tutorialViewLookup[TutorialViewId.ProvideFeedback] = coordinates.sizePosition
     }
 
-    val isLoadingIncidents by viewModel.isLoadingIncidents.collectAsStateWithLifecycle(false)
-
     var expandHotline by remember { mutableStateOf(false) }
     val toggleExpandHotline = { expandHotline = !expandHotline }
 
@@ -397,6 +395,7 @@ private fun MenuScreen(
     }
 
     if (showIncidentPicker) {
+        val isLoadingIncidents by viewModel.isLoadingIncidents.collectAsStateWithLifecycle(false)
         val closeDialog = { showIncidentPicker = false }
         val selectedIncidentId by viewModel.incidentSelector.incidentId.collectAsStateWithLifecycle()
         val setSelected = remember(viewModel) {

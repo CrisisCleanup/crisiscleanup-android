@@ -161,7 +161,8 @@ private fun IncidentWorksitesCacheScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     val syncStageMessage = when (syncStage) {
-                        IncidentCacheStage.Start -> t("appCache.ready_to_sync")
+                        IncidentCacheStage.Inactive -> t("appCache.ready_to_sync")
+                        IncidentCacheStage.Start -> t("~~Starting sync...")
                         IncidentCacheStage.Incidents -> t("appCache.syncing_incidents")
                         IncidentCacheStage.WorksitesBounded -> t("appCache.syncing_cases_in_designated_area")
                         IncidentCacheStage.WorksitesPreload -> t("appCache.syncing_nearby_cases")

@@ -28,11 +28,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
@@ -72,18 +70,11 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
     val syncStage = incidentCacheRepository.cacheStage
         .stateIn(
             scope = viewModelScope,
-            initialValue = IncidentCacheStage.Start,
+            initialValue = IncidentCacheStage.Inactive,
             started = subscribedReplay(),
         )
 
-    val isSyncing = combine(
-        incidentCacheRepository.isSyncingActiveIncident,
-        syncStage,
-        ::Pair,
-    )
-        .map { (isSyncingActiveIncident, stage) ->
-            isSyncingActiveIncident && stage != IncidentCacheStage.End
-        }
+    val isSyncing = incidentCacheRepository.isSyncingActiveIncident
         .stateIn(
             scope = viewModelScope,
             initialValue = false,

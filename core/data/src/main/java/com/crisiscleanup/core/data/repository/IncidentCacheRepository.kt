@@ -56,6 +56,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -125,7 +126,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
     private val syncingIncidentId = MutableStateFlow(EmptyIncident.id)
 
-    override val cacheStage = MutableStateFlow(IncidentCacheStage.Start)
+    override val cacheStage = MutableStateFlow(IncidentCacheStage.Inactive)
 
     private val isSyncingData = cacheStage.map {
         it.isSyncingStage
@@ -140,21 +141,27 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             syncingId == EmptyIncident.id && stage == IncidentCacheStage.Incidents
         }
 
+    private val planSubmissionCountFlow = MutableStateFlow(0)
+    private val planSubmissionCounter = AtomicInteger(0)
+
     override val isSyncingActiveIncident = combine(
         isSyncingData,
         incidentSelector.incidentId,
         syncingIncidentId,
+        planSubmissionCountFlow,
         isSyncingInitialIncidents,
-    ) { isSyncing, incidentId, syncingId, isSyncingInitial ->
+    ) { isSyncing, incidentId, syncingId, submissionCount, isSyncingInitial ->
         Pair(
             Triple(isSyncing, incidentId, syncingId),
-            isSyncingInitial,
+            Pair(submissionCount, isSyncingInitial),
         )
     }
         .map { data ->
             val (isSyncing, incidentId, syncingId) = data.first
-            val isSyncingInitial = data.second
-            isSyncing && incidentId == syncingId || isSyncingInitial
+            val (submissionCount, isSyncingInitial) = data.second
+            isSyncing && incidentId == syncingId ||
+                submissionCount > 0 ||
+                isSyncingInitial
         }
 
     override val cachePreferences = incidentCachePreferences.preferences
@@ -175,48 +182,54 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         restartCacheCheckpoint: Boolean,
         planTimeout: Duration,
     ): Boolean {
-        val incidentIds = getIncidents()
-            .map(IncidentIdNameType::id)
-            .toSet()
-        val selectedIncidentId = appPreferences.userData.first().selectedIncidentId
-        val isIncidentCached = incidentIds.contains(selectedIncidentId)
+        try {
+            planSubmissionCountFlow.value = planSubmissionCounter.incrementAndGet()
 
-        if (incidentIds.isNotEmpty() &&
-            !isIncidentCached &&
-            selectedIncidentId == EmptyIncident.id &&
-            !forcePullIncidents
-        ) {
-            return false
-        }
+            val incidentIds = getIncidents()
+                .map(IncidentIdNameType::id)
+                .toSet()
+            val selectedIncidentId = appPreferences.userData.first().selectedIncidentId
+            val isIncidentCached = incidentIds.contains(selectedIncidentId)
 
-        val proposedPlan = IncidentDataSyncPlan(
-            selectedIncidentId,
-            syncIncidents = forcePullIncidents || !isIncidentCached,
-            syncSelectedIncident = cacheSelectedIncident || !isIncidentCached,
-            syncActiveIncidentWorksites = cacheActiveIncidentWorksites,
-            syncWorksitesAdditional = cacheWorksitesAdditional,
-            restartCache = restartCacheCheckpoint,
-        )
-        synchronized(syncPlanReference) {
-            if (!overwriteExisting &&
-                !proposedPlan.syncIncidents &&
-                !restartCacheCheckpoint
+            if (incidentIds.isNotEmpty() &&
+                !isIncidentCached &&
+                selectedIncidentId == EmptyIncident.id &&
+                !forcePullIncidents
             ) {
-                with(syncPlanReference.get()) {
-                    if (selectedIncidentId == incidentId &&
-                        proposedPlan.timestamp - timestamp < planTimeout &&
-                        proposedPlan.syncSelectedIncidentLevel <= syncSelectedIncidentLevel &&
-                        proposedPlan.syncWorksitesLevel <= syncWorksitesLevel
-                    ) {
-                        syncLogger.log("Skipping redundant sync plan for $selectedIncidentId")
-                        return false
-                    }
-                }
+                return false
             }
 
-            syncLogger.log("Setting sync plan for $selectedIncidentId")
-            syncPlanReference.set(proposedPlan)
-            return true
+            val proposedPlan = IncidentDataSyncPlan(
+                selectedIncidentId,
+                syncIncidents = forcePullIncidents || !isIncidentCached,
+                syncSelectedIncident = cacheSelectedIncident || !isIncidentCached,
+                syncActiveIncidentWorksites = cacheActiveIncidentWorksites,
+                syncWorksitesAdditional = cacheWorksitesAdditional,
+                restartCache = restartCacheCheckpoint,
+            )
+            synchronized(syncPlanReference) {
+                if (!overwriteExisting &&
+                    !proposedPlan.syncIncidents &&
+                    !restartCacheCheckpoint
+                ) {
+                    with(syncPlanReference.get()) {
+                        if (selectedIncidentId == incidentId &&
+                            proposedPlan.timestamp - timestamp < planTimeout &&
+                            proposedPlan.syncSelectedIncidentLevel <= syncSelectedIncidentLevel &&
+                            proposedPlan.syncWorksitesLevel <= syncWorksitesLevel
+                        ) {
+                            syncLogger.log("Skipping redundant sync plan for $selectedIncidentId")
+                            return false
+                        }
+                    }
+                }
+
+                syncLogger.log("Setting sync plan for $selectedIncidentId")
+                syncPlanReference.set(proposedPlan)
+                return true
+            }
+        } finally {
+            planSubmissionCountFlow.value = planSubmissionCounter.decrementAndGet()
         }
     }
 
@@ -232,7 +245,10 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         }
 
         val indentation = when (stage) {
-            IncidentCacheStage.Start -> ""
+            IncidentCacheStage.Inactive,
+            IncidentCacheStage.Start,
+            -> ""
+
             else -> "  "
         }
         val message = "$indentation$incidentId $stage $details".trimEnd()
@@ -266,15 +282,15 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
     override suspend fun sync() = coroutineScope {
         val syncPlan: IncidentDataSyncPlan
+        val incidentId: Long
         synchronized(syncPlanReference) {
             syncPlan = syncPlanReference.get()
+            incidentId = syncPlan.incidentId
+            syncingIncidentId.value = incidentId
+            logStage(incidentId, IncidentCacheStage.Start)
         }
 
-        val incidentId = syncPlan.incidentId
-        syncingIncidentId.value = incidentId
         var incidentName = ""
-
-        logStage(incidentId, IncidentCacheStage.Start)
 
         val partialSyncReasons = mutableListOf<String>()
 
@@ -489,11 +505,11 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             synchronized(syncPlanReference) {
                 if (syncPlanReference.compareAndSet(syncPlan, EmptySyncPlan)) {
                     cacheStage.value = IncidentCacheStage.End
-                }
-            }
 
-            if (syncingIncidentId.compareAndSet(incidentId, EmptyIncident.id)) {
-                logStage(incidentId, IncidentCacheStage.End)
+                    if (syncingIncidentId.compareAndSet(incidentId, EmptyIncident.id)) {
+                        logStage(incidentId, IncidentCacheStage.End)
+                    }
+                }
             }
 
             syncLogger.flush()
@@ -1260,6 +1276,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 }
 
 enum class IncidentCacheStage {
+    Inactive,
     Start,
     Incidents,
     WorksitesBounded,
@@ -1272,7 +1289,7 @@ enum class IncidentCacheStage {
 }
 
 private val staticCacheStages = setOf(
-    IncidentCacheStage.Start,
+    IncidentCacheStage.Inactive,
     IncidentCacheStage.End,
 )
 
