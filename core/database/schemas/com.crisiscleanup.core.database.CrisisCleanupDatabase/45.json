@@ -3042,13 +3042,13 @@
             "notNull": true
           },
           {
-            "fieldPath": "fullUpdatedBefore",
+            "fieldPath": "additionalUpdatedBefore",
             "columnName": "full_updated_before",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "fullUpdatedAfter",
+            "fieldPath": "additionalUpdatedAfter",
             "columnName": "full_updated_after",
             "affinity": "INTEGER",
             "notNull": true
