@@ -4,9 +4,6 @@ import com.crisiscleanup.core.model.data.DataProgressMetrics
 import com.crisiscleanup.core.model.data.EmptyIncident
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import kotlin.math.roundToLong
-import kotlin.time.Duration.Companion.hours
-import kotlin.time.Duration.Companion.seconds
 
 enum class IncidentPullDataType {
     WorksitesCore,
@@ -63,19 +60,6 @@ data class IncidentDataPullStats(
             } else {
                 startProgressAmount
             }
-        }
-
-    val projectedFinish: Instant
-        get() {
-            val now = Clock.System.now()
-            val delta = now - startTime
-            val p = progress
-            if (p <= 0 || delta <= 0.seconds) {
-                return now.plus(999_999.hours)
-            }
-
-            val projectedDeltaSeconds = (delta.inWholeSeconds / p).roundToLong().seconds
-            return startTime.plus(projectedDeltaSeconds)
         }
 }
 

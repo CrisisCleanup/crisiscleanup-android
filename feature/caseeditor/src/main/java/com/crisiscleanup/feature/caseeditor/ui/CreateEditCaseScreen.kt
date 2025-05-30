@@ -377,23 +377,12 @@ private fun ColumnScope.FullEditView(
         BusyIndicatorFloatingTopCenter(isLoadingWorksite)
 
         if (incidentCreation.isOldIncident && !hasConfirmedDormantIncident) {
-            val t = LocalAppTranslator.current
-            CrisisCleanupAlertDialog(
-                title = t("~~Old Incident"),
-                confirmButton = {
-                    CrisisCleanupTextButton(text = t("actions.yes")) {
-                        hasConfirmedDormantIncident = true
-                    }
-                },
-                dismissButton = {
-                    CrisisCleanupTextButton(
-                        text = t("actions.no"),
-                        onClick = onBack,
-                    )
-                },
-                text = t("~~{incident_name} was created {relative_time}. Continue creating a Case for {incident_name}?")
-                    .replace("{incident_name}", caseData.incident.shortName)
-                    .replace("{relative_time}", incidentCreation.relativeTime),
+            ConfirmOldIncidentDialog(
+                isCreateWorksite = viewModel.isCreateWorksite,
+                incidentName = caseData.incident.shortName,
+                incidentCreateRelativeTime = incidentCreation.relativeTime,
+                onConfirm = { hasConfirmedDormantIncident = true },
+                onAbort = onBack,
             )
         }
     }
@@ -439,6 +428,40 @@ private fun ColumnScope.FullEditView(
             focusScrollToSection.third,
         )
     }
+}
+
+@Composable
+private fun ConfirmOldIncidentDialog(
+    isCreateWorksite: Boolean,
+    incidentName: String,
+    incidentCreateRelativeTime: String,
+    onConfirm: () -> Unit,
+    onAbort: () -> Unit,
+) {
+    val t = LocalAppTranslator.current
+    val confirmContinueKey = if (isCreateWorksite) {
+        "~~{incident_name} was created {relative_time}. Continue creating a Case for {incident_name}?"
+    } else {
+        "~~{incident_name} was created {relative_time}. Continue editing this Case for {incident_name}?"
+    }
+    CrisisCleanupAlertDialog(
+        title = t("~~Old Incident"),
+        confirmButton = {
+            CrisisCleanupTextButton(
+                text = t("actions.yes"),
+                onClick = onConfirm,
+            )
+        },
+        dismissButton = {
+            CrisisCleanupTextButton(
+                text = t("actions.no"),
+                onClick = onAbort,
+            )
+        },
+        text = t(confirmContinueKey)
+            .replace("{incident_name}", incidentName)
+            .replace("{relative_time}", incidentCreateRelativeTime),
+    )
 }
 
 private fun LazyListScope.sectionSeparator(key: String) {

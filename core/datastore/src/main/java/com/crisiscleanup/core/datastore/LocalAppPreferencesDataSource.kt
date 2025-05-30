@@ -42,7 +42,7 @@ class LocalAppPreferencesDataSource @Inject constructor(
                     it.syncAttempt.attemptedCounter,
                 ),
 
-                selectedIncidentId = it.selectedIncidentId,
+                selectedIncidentId = if (it.selectedIncidentId <= 0L) EmptyIncident.id else it.selectedIncidentId,
 
                 languageKey = it.languageKey,
 

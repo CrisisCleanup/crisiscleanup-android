@@ -403,7 +403,7 @@ class CreateEditTeamViewModel @Inject constructor(
     )
         .map { (id, assignable) ->
             assignable != EmptyTeamAssignableWorksite &&
-                    id != assignable.worksite.id
+                id != assignable.worksite.id
         }
         .stateIn(
             scope = viewModelScope,
@@ -534,7 +534,7 @@ class CreateEditTeamViewModel @Inject constructor(
         dataLoader.viewState
             .filter {
                 it.asTeamData()?.isNetworkLoadFinished == true &&
-                        isEditableTeamOpen
+                    isEditableTeamOpen
             }
             .mapLatest {
                 editorSetInstant = Clock.System.now()

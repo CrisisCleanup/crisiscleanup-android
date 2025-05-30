@@ -68,10 +68,10 @@ interface WorksitesRepository {
         viewStart: Instant,
     )
 
-    suspend fun getRecentWorksites(
+    suspend fun getRecentWorksitesCenterLocation(
         incidentId: Long,
         limit: Int = 3,
-    ): List<Worksite>
+    ): Pair<Double, Double>?
 
     fun getUnsyncedCounts(worksiteId: Long): List<Int>
 

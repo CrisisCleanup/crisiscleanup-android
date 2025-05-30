@@ -11,9 +11,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,15 +36,20 @@ import com.crisiscleanup.core.commoncase.ui.CaseMapOverlayElements
 import com.crisiscleanup.core.commoncase.ui.CasesAction
 import com.crisiscleanup.core.commoncase.ui.CasesDownloadProgress
 import com.crisiscleanup.core.commoncase.ui.CasesMapView
-import com.crisiscleanup.core.commoncase.ui.MapLayersView
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.ExplainLocationPermissionDialog
+import com.crisiscleanup.core.designsystem.component.roundedOutline
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
+import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
+import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.domain.IncidentsData
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBounds
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBoundsDefault
@@ -86,8 +94,7 @@ internal fun CasesRoute(
     }
 
     val incidentsData by viewModel.incidentsData.collectAsStateWithLifecycle()
-    val isIncidentLoading by viewModel.isIncidentLoading.collectAsStateWithLifecycle(true)
-    val isLoadingData by viewModel.isLoadingData.collectAsStateWithLifecycle(true)
+    val isLoadingData by viewModel.isLoadingData.collectAsState(true)
     if (incidentsData is IncidentsData.Incidents) {
         val isTableView by viewModel.isTableView.collectAsStateWithLifecycle()
         BackHandler(enabled = isTableView) {
@@ -144,7 +151,8 @@ internal fun CasesRoute(
         }
         val editedWorksiteLocation = viewModel.editedWorksiteLocation
         val isMyLocationEnabled = viewModel.isMyLocationEnabled
-        val hasIncidents = (incidentsData as IncidentsData.Incidents).incidents.isNotEmpty()
+
+        val enableIncidentSelect by viewModel.enableIncidentSelect.collectAsStateWithLifecycle()
 
         val onSyncDataDelta = remember(viewModel) {
             {
@@ -186,7 +194,7 @@ internal fun CasesRoute(
             onAssignCaseTeam = onAssignCaseTeam,
             onSyncDataDelta = onSyncDataDelta,
             onSyncDataFull = onSyncDataFull,
-            hasIncidents = hasIncidents,
+            enableIncidentSelect = enableIncidentSelect,
         )
 
         if (showChangeIncident) {
@@ -215,6 +223,7 @@ internal fun CasesRoute(
             closeDialog = closePermissionDialog,
         )
     } else {
+        val isIncidentLoading by viewModel.isIncidentLoading.collectAsState(true)
         val isLoading = incidentsData is IncidentsData.Loading || isIncidentLoading
         NoIncidentsScreen(
             isLoading = isLoading,
@@ -335,7 +344,7 @@ private fun CasesScreen(
     onAssignCaseTeam: (Long) -> Unit = {},
     onSyncDataDelta: () -> Unit = {},
     onSyncDataFull: () -> Unit = {},
-    hasIncidents: Boolean = false,
+    enableIncidentSelect: Boolean = false,
 ) {
     Box {
         if (isTableView) {
@@ -350,7 +359,7 @@ private fun CasesScreen(
                 onAssignCaseTeam = onAssignCaseTeam,
                 onSyncDataDelta = onSyncDataDelta,
                 onSyncDataFull = onSyncDataFull,
-                hasIncidents = hasIncidents,
+                enableIncidentSelect = enableIncidentSelect,
             )
         } else {
             var isSatelliteMapType by remember { mutableStateOf(false) }
@@ -398,10 +407,68 @@ private fun CasesScreen(
             disableTableViewActions = isTableDataTransient,
             onSyncDataDelta = onSyncDataDelta,
             onSyncDataFull = onSyncDataFull,
-            hasIncidents = hasIncidents,
+            enableIncidentSelect = enableIncidentSelect,
         )
 
         CasesDownloadProgress(dataProgress)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MapLayersView(
+    isVisible: Boolean,
+    onDismiss: () -> Unit,
+    isSatelliteMapType: Boolean,
+    onToggleSatelliteType: (Boolean) -> Unit,
+) {
+    if (isVisible) {
+        val t = LocalAppTranslator.current
+
+        ModalBottomSheet(
+            onDismissRequest = onDismiss,
+            tonalElevation = 0.dp,
+        ) {
+            Column(
+                listItemModifier,
+                verticalArrangement = listItemSpacedByHalf,
+            ) {
+                Text(
+                    t("~~Map type"),
+                    style = LocalFontStyles.current.header3,
+                )
+
+                val selectedOutline = Modifier.roundedOutline(
+                    width = 3.dp,
+                    color = primaryBlueColor,
+                )
+
+                Row(horizontalArrangement = listItemSpacedBy) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = listItemSpacedByHalf,
+                    ) {
+                        CrisisCleanupIconButton(
+                            if (isSatelliteMapType) Modifier else selectedOutline,
+                            imageVector = CrisisCleanupIcons.NormalMap,
+                            onClick = { onToggleSatelliteType(false) },
+                        )
+                        Text(t("~~Default"))
+                    }
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = listItemSpacedByHalf,
+                    ) {
+                        CrisisCleanupIconButton(
+                            if (isSatelliteMapType) selectedOutline else Modifier,
+                            imageVector = CrisisCleanupIcons.SatelliteMap,
+                            onClick = { onToggleSatelliteType(true) },
+                        )
+                        Text(t("~~Satellite"))
+                    }
+                }
+            }
+        }
     }
 }
 

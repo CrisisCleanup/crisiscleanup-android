@@ -5,6 +5,7 @@ import android.net.NetworkCapabilities.NET_CAPABILITY_NOT_METERED
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.LocationProvider
+import com.crisiscleanup.core.common.combine
 import com.crisiscleanup.core.common.haversineDistance
 import com.crisiscleanup.core.common.kmToMiles
 import com.crisiscleanup.core.common.log.AppLogger
@@ -35,7 +36,7 @@ import com.crisiscleanup.core.database.model.WorksiteFormDataEntity
 import com.crisiscleanup.core.datastore.IncidentCachePreferencesDataSource
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.model.data.EmptyIncident
-import com.crisiscleanup.core.model.data.Incident
+import com.crisiscleanup.core.model.data.IncidentIdNameType
 import com.crisiscleanup.core.model.data.IncidentLocationBounder
 import com.crisiscleanup.core.model.data.IncidentWorksitesCachePreferences
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
@@ -49,19 +50,20 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.flow.combine as kCombine
 
 interface IncidentCacheRepository {
     val isSyncingActiveIncident: Flow<Boolean>
@@ -123,22 +125,52 @@ class IncidentWorksitesCacheRepository @Inject constructor(
     private val syncPlanReference = AtomicReference(EmptySyncPlan)
 
     private val syncingIncidentId = MutableStateFlow(EmptyIncident.id)
-    override val isSyncingActiveIncident = combine(
-        incidentSelector.incidentId,
+
+    override val cacheStage = MutableStateFlow(IncidentCacheStage.Inactive)
+
+    private val isSyncingData = cacheStage.map {
+        it.isSyncingStage
+    }
+
+    private val isSyncingInitialIncidents = kCombine(
         syncingIncidentId,
+        cacheStage,
         ::Pair,
     )
-        .map { (incidentId, syncingId) ->
-            incidentId == syncingId
+        .map { (syncingId, stage) ->
+            syncingId == EmptyIncident.id && stage == IncidentCacheStage.Incidents
         }
 
-    override val cacheStage = MutableStateFlow(IncidentCacheStage.Start)
+    private val planSubmissionCountFlow = MutableStateFlow(0)
+    private val planSubmissionCounter = AtomicInteger(0)
+
+    override val isSyncingActiveIncident = combine(
+        isSyncingData,
+        incidentSelector.incidentId,
+        syncingIncidentId,
+        planSubmissionCountFlow,
+        isSyncingInitialIncidents,
+    ) { isSyncing, incidentId, syncingId, submissionCount, isSyncingInitial ->
+        Pair(
+            Triple(isSyncing, incidentId, syncingId),
+            Pair(submissionCount, isSyncingInitial),
+        )
+    }
+        .map { data ->
+            val (isSyncing, incidentId, syncingId) = data.first
+            val (submissionCount, isSyncingInitial) = data.second
+            isSyncing && incidentId == syncingId ||
+                submissionCount > 0 ||
+                isSyncingInitial
+        }
 
     override val cachePreferences = incidentCachePreferences.preferences
 
     override fun streamSyncStats(incidentId: Long) =
-        syncParameterDao.streamWorksitesSyncStats(incidentId)
+        syncParameterDao.streamIncidentDataSyncParameters(incidentId)
             .map { it?.asExternalModel(appLogger) }
+
+    private suspend fun getIncidents() = incidentsRepository.getIncidentsList()
 
     // TODO Write tests
     override suspend fun submitPlan(
@@ -150,48 +182,54 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         restartCacheCheckpoint: Boolean,
         planTimeout: Duration,
     ): Boolean {
-        val incidentIds = incidentsRepository.incidents.first()
-            .map(Incident::id)
-            .toSet()
-        val selectedIncident = appPreferences.userData.first().selectedIncidentId
-        val isIncidentCached = incidentIds.contains(selectedIncident)
+        try {
+            planSubmissionCountFlow.value = planSubmissionCounter.incrementAndGet()
 
-        if (incidentIds.isNotEmpty() &&
-            !isIncidentCached &&
-            selectedIncident == EmptyIncident.id &&
-            !forcePullIncidents
-        ) {
-            return false
-        }
+            val incidentIds = getIncidents()
+                .map(IncidentIdNameType::id)
+                .toSet()
+            val selectedIncidentId = appPreferences.userData.first().selectedIncidentId
+            val isIncidentCached = incidentIds.contains(selectedIncidentId)
 
-        val submittedPlan = IncidentDataSyncPlan(
-            selectedIncident,
-            syncIncidents = forcePullIncidents || !isIncidentCached,
-            syncSelectedIncident = cacheSelectedIncident || !isIncidentCached,
-            syncActiveIncidentWorksites = cacheActiveIncidentWorksites,
-            syncWorksitesAdditional = cacheWorksitesAdditional,
-            restartCache = restartCacheCheckpoint,
-        )
-        synchronized(syncPlanReference) {
-            if (!overwriteExisting &&
-                !submittedPlan.syncIncidents &&
-                !restartCacheCheckpoint
+            if (incidentIds.isNotEmpty() &&
+                !isIncidentCached &&
+                selectedIncidentId == EmptyIncident.id &&
+                !forcePullIncidents
             ) {
-                with(syncPlanReference.get()) {
-                    if (selectedIncident == incidentId &&
-                        submittedPlan.timestamp - timestamp < planTimeout &&
-                        submittedPlan.syncSelectedIncidentLevel <= syncSelectedIncidentLevel &&
-                        submittedPlan.syncWorksitesLevel <= syncWorksitesLevel
-                    ) {
-                        syncLogger.log("Skipping redundant sync plan for $selectedIncident")
-                        return false
-                    }
-                }
+                return false
             }
 
-            syncLogger.log("Setting sync plan for $selectedIncident")
-            syncPlanReference.set(submittedPlan)
-            return true
+            val proposedPlan = IncidentDataSyncPlan(
+                selectedIncidentId,
+                syncIncidents = forcePullIncidents || !isIncidentCached,
+                syncSelectedIncident = cacheSelectedIncident || !isIncidentCached,
+                syncActiveIncidentWorksites = cacheActiveIncidentWorksites,
+                syncWorksitesAdditional = cacheWorksitesAdditional,
+                restartCache = restartCacheCheckpoint,
+            )
+            synchronized(syncPlanReference) {
+                if (!overwriteExisting &&
+                    !proposedPlan.syncIncidents &&
+                    !restartCacheCheckpoint
+                ) {
+                    with(syncPlanReference.get()) {
+                        if (selectedIncidentId == incidentId &&
+                            proposedPlan.timestamp - timestamp < planTimeout &&
+                            proposedPlan.syncSelectedIncidentLevel <= syncSelectedIncidentLevel &&
+                            proposedPlan.syncWorksitesLevel <= syncWorksitesLevel
+                        ) {
+                            syncLogger.log("Skipping redundant sync plan for $selectedIncidentId")
+                            return false
+                        }
+                    }
+                }
+
+                syncLogger.log("Setting sync plan for $selectedIncidentId")
+                syncPlanReference.set(proposedPlan)
+                return true
+            }
+        } finally {
+            planSubmissionCountFlow.value = planSubmissionCounter.decrementAndGet()
         }
     }
 
@@ -207,7 +245,10 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         }
 
         val indentation = when (stage) {
-            IncidentCacheStage.Start -> ""
+            IncidentCacheStage.Inactive,
+            IncidentCacheStage.Start,
+            -> ""
+
             else -> "  "
         }
         val message = "$indentation$incidentId $stage $details".trimEnd()
@@ -241,15 +282,15 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
     override suspend fun sync() = coroutineScope {
         val syncPlan: IncidentDataSyncPlan
+        val incidentId: Long
         synchronized(syncPlanReference) {
             syncPlan = syncPlanReference.get()
+            incidentId = syncPlan.incidentId
+            syncingIncidentId.value = incidentId
+            logStage(incidentId, IncidentCacheStage.Start)
         }
 
-        val incidentId = syncPlan.incidentId
-        syncingIncidentId.value = incidentId
         var incidentName = ""
-
-        logStage(incidentId, IncidentCacheStage.Start)
 
         val partialSyncReasons = mutableListOf<String>()
 
@@ -265,16 +306,16 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
             val isPaused = syncPreferences.isPaused
 
-            val incidents = incidentsRepository.incidents.first()
+            val incidents = getIncidents()
             if (incidents.isEmpty()) {
                 return@coroutineScope SyncResult.Error("Failed to sync Incidents")
             }
-            val incidentIds = incidents.map(Incident::id).toSet()
-            if (!incidentIds.contains(incidentId)) {
+
+            incidentName = incidents.firstOrNull { it.id == incidentId }?.name ?: ""
+            if (incidentName.isBlank()) {
                 return@coroutineScope SyncResult.Partial("Incident not found. Waiting for Incident select.")
             }
 
-            incidentName = incidents.first { it.id == incidentId }.name
             val worksitesCoreStatsUpdater = IncidentDataPullStatsUpdater {
                 reportStats(syncPlan, it)
             }.apply {
@@ -464,11 +505,11 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             synchronized(syncPlanReference) {
                 if (syncPlanReference.compareAndSet(syncPlan, EmptySyncPlan)) {
                     cacheStage.value = IncidentCacheStage.End
-                }
-            }
 
-            if (syncingIncidentId.compareAndSet(incidentId, EmptyIncident.id)) {
-                logStage(incidentId, IncidentCacheStage.End)
+                    if (syncingIncidentId.compareAndSet(incidentId, EmptyIncident.id)) {
+                        logStage(incidentId, IncidentCacheStage.End)
+                    }
+                }
             }
 
             syncLogger.flush()
@@ -491,16 +532,8 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         }
 
         try {
-            val recentWorksites = worksitesRepository.getRecentWorksites(incidentId, limit = 3)
-            if (recentWorksites.isNotEmpty()) {
-                var totalLatitude = 0.0
-                var totalLongitude = 0.0
-                recentWorksites.forEach {
-                    totalLatitude += it.latitude
-                    totalLongitude += it.longitude
-                }
-                val averageLatitude = totalLatitude / recentWorksites.size
-                val averageLongitude = totalLongitude / recentWorksites.size
+            worksitesRepository.getRecentWorksitesCenterLocation(incidentId, limit = 3)?.let {
+                val (averageLatitude, averageLongitude) = it
                 if (locationBounder.isInBounds(
                         incidentId,
                         latitude = averageLatitude,
@@ -645,6 +678,9 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             }
         }
     }
+
+    // ~60000 Cases longer than 10 mins is reasonably slow
+    private val slowDownloadSpeed = 100f
 
     private suspend fun cacheBounded(
         incidentId: Long,
@@ -791,7 +827,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 appLogger.logException(e)
                 ""
             }
-            syncParameterDao.updatedBoundedParameters(
+            syncParameterDao.updateBoundedParameters(
                 incidentId,
                 boundedRegionEncoded,
                 syncStart,
@@ -800,9 +836,6 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
         DownloadCountSpeed(savedCount, isSlowDownload)
     }
-
-    // ~60000 Cases longer than 10 mins is reasonably slow
-    private val slowDownloadSpeed = 100f
 
     private fun getMaxQueryCount(isAdditionalData: Boolean) = if (isAdditionalData) {
         if (deviceInspector.isLimitedDevice) 2000 else 6000
@@ -1243,6 +1276,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 }
 
 enum class IncidentCacheStage {
+    Inactive,
     Start,
     Incidents,
     WorksitesBounded,
@@ -1253,6 +1287,14 @@ enum class IncidentCacheStage {
     ActiveIncidentOrganization,
     End,
 }
+
+private val staticCacheStages = setOf(
+    IncidentCacheStage.Inactive,
+    IncidentCacheStage.End,
+)
+
+val IncidentCacheStage.isSyncingStage: Boolean
+    get() = !staticCacheStages.contains(this)
 
 private data class IncidentDataSyncPlan(
     // May be a new Incident ID

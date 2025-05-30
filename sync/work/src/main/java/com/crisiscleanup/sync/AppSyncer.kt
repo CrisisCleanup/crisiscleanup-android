@@ -74,7 +74,7 @@ class AppSyncer @Inject constructor(
 
         accountDataRepository.updateAccountTokens()
         if (!hasValidAccountTokens()) {
-            return SyncResult.NotAttempted("Invalid account tokens")
+            return SyncResult.InvalidAccountTokens
         }
 
         // Other constraints are not important.
@@ -222,12 +222,6 @@ class AppSyncer @Inject constructor(
         }
     }
 
-    private var pushJob: Job? = null
-
-    override fun stopPushWorksites() {
-        pushJob?.cancel()
-    }
-
     override fun appPushWorksite(worksiteId: Long, scheduleMediaSync: Boolean) {
         applicationScope.launch(ioDispatcher) {
             onSyncPreconditions()?.let {
@@ -244,12 +238,8 @@ class AppSyncer @Inject constructor(
         }
     }
 
-    override suspend fun syncPushWorksitesAsync(): Deferred<SyncResult> {
-        val deferred = applicationScope.async {
-            syncPushWorksites()
-        }
-        pushJob = deferred
-        return deferred
+    override suspend fun syncPushWorksitesAsync() = applicationScope.async {
+        syncPushWorksites()
     }
 
     override suspend fun syncPushWorksites(): SyncResult {

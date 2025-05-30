@@ -170,10 +170,7 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
 
     private suspend fun isSyncPullStopped(): Boolean {
         val cacheStage = incidentCacheRepository.cacheStage.first()
-        return setOf(
-            IncidentCacheStage.Start,
-            IncidentCacheStage.End,
-        ).contains(cacheStage)
+        return !cacheStage.isSyncingStage
     }
 
     private suspend fun clearPersistedAppData() {

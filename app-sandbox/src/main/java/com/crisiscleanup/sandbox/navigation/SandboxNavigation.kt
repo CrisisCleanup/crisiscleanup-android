@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.crisiscleanup.sandbox.RootRoute
+import com.crisiscleanup.sandbox.ui.AsyncImageView
 import com.crisiscleanup.sandbox.ui.BottomNavRoute
 import com.crisiscleanup.sandbox.ui.CheckboxesRoute
 import com.crisiscleanup.sandbox.ui.ChipsRoute
@@ -17,9 +18,10 @@ const val ROOT_ROUTE = "root"
 private const val CHECKBOXES_ROUTE = "checkboxes"
 private const val CHIPS_ROUTE = "chips"
 private const val BOTTOM_NAV_ROUTE = "bottom-nav"
-const val SINGLE_IMAGE_ROUTE = "single-image"
-const val MULTI_IMAGE_ROUTE = "multi-image"
-const val MAP_MARKERS_ROUTE = "map-markers"
+private const val SINGLE_IMAGE_ROUTE = "single-image"
+private const val MULTI_IMAGE_ROUTE = "multi-image"
+private const val MAP_MARKERS_ROUTE = "map-markers"
+const val ASYNC_IMAGE_ROUTE = "async-image"
 
 fun NavController.navigateToBottomNav() {
     navigate(BOTTOM_NAV_ROUTE)
@@ -43,6 +45,10 @@ fun NavController.navigateToMultiImage() {
 
 fun NavController.navigateToMapMarkers() {
     navigate(MAP_MARKERS_ROUTE)
+}
+
+fun NavController.navigateToAsyncImage() {
+    this.navigate(ASYNC_IMAGE_ROUTE)
 }
 
 @Composable
@@ -81,6 +87,10 @@ fun SandboxNavHost(
 
         composable(MAP_MARKERS_ROUTE) {
             MapMarkersView()
+        }
+
+        composable(ASYNC_IMAGE_ROUTE) {
+            AsyncImageView()
         }
     }
 }

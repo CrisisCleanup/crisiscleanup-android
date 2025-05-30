@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import androidx.collection.LruCache
 import androidx.compose.ui.geometry.Offset
+import androidx.core.graphics.createBitmap
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.model.data.WorkTypeStatusClaim
 import com.crisiscleanup.core.model.data.WorkTypeType
@@ -129,7 +130,7 @@ class InMemoryDotProvider @Inject constructor(
         dotDrawProperties: DotDrawProperties,
     ): Bitmap {
         val bitmapSize = dotDrawProperties.bitmapSizePx.toInt()
-        val output = Bitmap.createBitmap(bitmapSize, bitmapSize, Bitmap.Config.ARGB_8888)
+        val output = createBitmap(bitmapSize, bitmapSize)
         val canvas = Canvas(output)
 
         val radius = dotDrawProperties.dotDiameterPx * 0.5f
@@ -162,7 +163,7 @@ data class DotDrawProperties(
         fun make(
             resourceProvider: AndroidResourceProvider,
             bitmapSizeDp: Float = 8f,
-            dotDiameterDp: Float = 4f,
+            dotDiameterDp: Float = 5f,
             strokeWidthDp: Float = 0.5f,
         ) = DotDrawProperties(
             bitmapSizePx = resourceProvider.dpToPx(bitmapSizeDp),

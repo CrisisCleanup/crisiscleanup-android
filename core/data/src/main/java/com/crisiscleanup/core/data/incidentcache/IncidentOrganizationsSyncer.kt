@@ -31,8 +31,18 @@ class IncidentOrganizationsSyncer @Inject constructor(
     private val appVersionProvider: AppVersionProvider,
     @Logger(CrisisCleanupLoggers.Incidents) private val logger: AppLogger,
 ) : OrganizationsSyncer {
+    private val organizationFields = listOf(
+        "id",
+        "name",
+        "affiliates",
+        "is_active",
+        "primary_location",
+        "secondary_location",
+        "type_t",
+        "primary_contacts",
+    )
+
     override suspend fun sync(incidentId: Long) {
-        // TODO Update stats during pull
         saveOrganizationsData(incidentId)
     }
 
@@ -44,11 +54,12 @@ class IncidentOrganizationsSyncer @Inject constructor(
 
         var requestedCount = 0
         var networkDataOffset = 0
-        val pageDataCount = 200
+        val pageDataCount = 100
         try {
             while (networkDataOffset < syncCount) {
                 val worksitesRequest = networkDataSource.getIncidentOrganizations(
                     incidentId,
+                    organizationFields,
                     pageDataCount,
                     networkDataOffset,
                 )

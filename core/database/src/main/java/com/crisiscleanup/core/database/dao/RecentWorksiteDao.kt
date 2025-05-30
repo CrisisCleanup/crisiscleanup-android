@@ -4,9 +4,9 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
-import com.crisiscleanup.core.database.model.PopulatedLocalWorksite
 import com.crisiscleanup.core.database.model.PopulatedRecentWorksite
 import com.crisiscleanup.core.database.model.RecentWorksiteEntity
+import com.crisiscleanup.core.database.model.WorksiteEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -40,10 +40,10 @@ interface RecentWorksiteDao {
         LIMIT :limit
         """,
     )
-    fun getRecents(
+    fun getRecentWorksiteCoordinates(
         incidentId: Long,
         limit: Int = 3,
-    ): List<PopulatedLocalWorksite>
+    ): List<WorksiteEntity>
 
     @Upsert
     fun upsert(recentWorksite: RecentWorksiteEntity)

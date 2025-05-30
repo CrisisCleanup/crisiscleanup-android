@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Landscape
@@ -45,6 +46,7 @@ import androidx.compose.material.icons.filled.Rotate90DegreesCw
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.SentimentNeutral
 import androidx.compose.material.icons.filled.Sms
+import androidx.compose.material.icons.filled.SyncProblem
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -85,6 +87,7 @@ object CrisisCleanupIcons {
     val ExpandMore = icons.ExpandMore
     val File = icons.Description
     val Help = Icons.AutoMirrored.Filled.HelpOutline
+    val Image = icons.Image
     val Info = icons.Info
     val List = Icons.AutoMirrored.Filled.List
     val Location = icons.LocationOn
@@ -108,6 +111,7 @@ object CrisisCleanupIcons {
     val SatelliteMap = icons.Landscape
     val Search = Icons.Rounded.Search
     val Sms = icons.Sms
+    val SyncProblem = icons.SyncProblem
     val Team = R.drawable.ic_team
     val UnfoldMore = icons.UnfoldMore
     val Visibility = icons.Visibility

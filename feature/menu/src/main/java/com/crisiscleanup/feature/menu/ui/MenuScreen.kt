@@ -61,6 +61,7 @@ import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.cardContainerColor
 import com.crisiscleanup.core.designsystem.theme.edgePadding
+import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
@@ -162,8 +163,6 @@ private fun MenuScreen(
     val provideFeedbackModifier = Modifier.onGloballyPositioned { coordinates ->
         tutorialViewLookup[TutorialViewId.ProvideFeedback] = coordinates.sizePosition
     }
-
-    val isLoadingIncidents by viewModel.isLoadingIncidents.collectAsStateWithLifecycle(false)
 
     var expandHotline by remember { mutableStateOf(false) }
     val toggleExpandHotline = { expandHotline = !expandHotline }
@@ -397,6 +396,7 @@ private fun MenuScreen(
     }
 
     if (showIncidentPicker) {
+        val isLoadingIncidents by viewModel.isLoadingIncidents.collectAsStateWithLifecycle(false)
         val closeDialog = { showIncidentPicker = false }
         val selectedIncidentId by viewModel.incidentSelector.incidentId.collectAsStateWithLifecycle()
         val setSelected = remember(viewModel) {
@@ -684,8 +684,12 @@ private fun IncidentCacheView(
 
     Column(modifier) {
         if (hasSpeedNotAdaptive) {
-            Text(t("appMenu.good_internet_use_adaptive"))
+            Text(
+                t("appMenu.good_internet_use_adaptive"),
+                Modifier.listItemBottomPadding(),
+            )
         }
+
         Row(
             horizontalArrangement = listItemSpacedBy,
             verticalAlignment = Alignment.CenterVertically,

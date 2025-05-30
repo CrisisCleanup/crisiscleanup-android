@@ -121,7 +121,7 @@ class CreateEditCaseViewModel @Inject constructor(
 
     private val caseEditorArgs = CaseEditorArgs(savedStateHandle)
     private var worksiteIdArg = caseEditorArgs.worksiteId
-    private val isCreateWorksite: Boolean
+    val isCreateWorksite: Boolean
         get() = worksiteIdArg == null
 
     private val hasNewWorksitePhotosImages: Boolean

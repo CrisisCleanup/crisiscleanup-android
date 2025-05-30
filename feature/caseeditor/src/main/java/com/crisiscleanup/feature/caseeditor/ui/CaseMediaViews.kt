@@ -45,6 +45,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -333,8 +334,9 @@ internal fun PhotosSection(
                             contentSize = it.size.toSize()
                         },
                     ) {
+                        val photoUri = photo.thumbnailUri.ifBlank { photo.imageUri }
                         AsyncImage(
-                            model = photo.thumbnailUri.ifBlank { photo.imageUri },
+                            model = photoUri,
                             modifier = Modifier
                                 .sizeIn(minWidth = 96.dp)
                                 .fillMaxSize()
@@ -345,6 +347,8 @@ internal fun PhotosSection(
                                     }
                                 },
                             placeholder = painterResource(commonR.drawable.cc_grayscale_pin),
+                            error = rememberVectorPainter(CrisisCleanupIcons.SyncProblem),
+                            fallback = rememberVectorPainter(CrisisCleanupIcons.Image),
                             contentDescription = photo.title,
                             contentScale = ContentScale.Crop,
                         )

@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.androidx.profileinstaller)
 
     implementation(libs.coil.kt)
+    implementation(libs.coil.kt.compose)
 
     implementation(libs.kotlinx.coroutines.playservices)
     implementation(libs.playservices.maps)

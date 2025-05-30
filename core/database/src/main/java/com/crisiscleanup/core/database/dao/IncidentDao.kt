@@ -25,6 +25,10 @@ interface IncidentDao {
     fun getIncidentCount(): Long
 
     @Transaction
+    @Query("SELECT COUNT(*) FROM incidents")
+    fun streamIncidentCount(): Flow<Long>
+
+    @Transaction
     @Query(
         """
         SELECT *

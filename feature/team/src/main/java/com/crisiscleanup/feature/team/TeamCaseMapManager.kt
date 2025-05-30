@@ -217,7 +217,7 @@ internal class CreateEditTeamCaseMapManager(
             PermissionStatus.Requesting,
             PermissionStatus.Denied,
             PermissionStatus.Undefined,
-                -> {
+            -> {
                 // Ignore these statuses as they're not important
             }
         }

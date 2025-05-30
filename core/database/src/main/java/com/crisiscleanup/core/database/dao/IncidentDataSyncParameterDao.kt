@@ -12,7 +12,7 @@ import kotlinx.datetime.Instant
 interface IncidentDataSyncParameterDao {
     @Transaction
     @Query("SELECT * FROM incident_data_sync_parameters WHERE id=:id")
-    fun streamWorksitesSyncStats(id: Long): Flow<IncidentDataSyncParametersEntity?>
+    fun streamIncidentDataSyncParameters(id: Long): Flow<IncidentDataSyncParametersEntity?>
 
     @Transaction
     @Query(
@@ -92,7 +92,7 @@ interface IncidentDataSyncParameterDao {
         WHERE id=:incidentId
         """,
     )
-    fun updatedBoundedParameters(
+    fun updateBoundedParameters(
         incidentId: Long,
         boundedRegion: String,
         boundedSyncedAt: Instant,

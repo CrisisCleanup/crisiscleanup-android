@@ -67,17 +67,17 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
             ioDispatcher,
         )
 
+    val syncStage = incidentCacheRepository.cacheStage
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = IncidentCacheStage.Inactive,
+            started = subscribedReplay(),
+        )
+
     val isSyncing = incidentCacheRepository.isSyncingActiveIncident
         .stateIn(
             scope = viewModelScope,
             initialValue = false,
-            started = subscribedReplay(),
-        )
-
-    val syncStage = incidentCacheRepository.cacheStage
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = IncidentCacheStage.Start,
             started = subscribedReplay(),
         )
 
@@ -94,14 +94,6 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
             started = subscribedReplay(),
         )
 
-    val isUpdatingCachePreferences = MutableStateFlow(false)
-    private val syncCachePreferences = incidentCacheRepository.cachePreferences
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = InitialIncidentWorksitesCachePreferences,
-            started = subscribedReplay(),
-        )
-
     private var isUserActed = AtomicBoolean(false)
 
     val editingPreferences = MutableStateFlow(InitialIncidentWorksitesCachePreferences)
@@ -113,7 +105,7 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
     private val locationPermissionExpiration = AtomicReference(epochZero)
 
     init {
-        syncCachePreferences
+        incidentCacheRepository.cachePreferences
             .onEach {
                 if (editingPreferences.compareAndSet(
                         InitialIncidentWorksitesCachePreferences,
@@ -166,12 +158,7 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
                     return@onEach
                 }
 
-                isUpdatingCachePreferences.value = true
-                try {
-                    incidentCacheRepository.updateCachePreferences(it)
-                } finally {
-                    isUpdatingCachePreferences.value = false
-                }
+                incidentCacheRepository.updateCachePreferences(it)
             }
             .flowOn(ioDispatcher)
             .launchIn(externalScope)
@@ -216,12 +203,16 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
         onPreferencesSent()
     }
 
+    private fun pullIncidentData() {
+        syncPuller.appPullIncidentData(cancelOngoing = true)
+    }
+
     fun resumeCachingCases() {
         isUserActed.set(true)
 
         updatePreferences(isPaused = false, isRegionBounded = false)
 
-        syncPuller.appPullIncidentData(cancelOngoing = true)
+        pullIncidentData()
     }
 
     fun pauseCachingCases() {
@@ -232,6 +223,7 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
         syncPuller.stopPullWorksites()
     }
 
+    // TODO Simplify state management
     fun boundCachingCases(
         isNearMe: Boolean,
         isUserAction: Boolean = false,
@@ -256,14 +248,14 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
                     boundedRegionDataEditor.useMyLocation()
                 }
 
-                syncPuller.appPullIncidentData(cancelOngoing = true)
+                pullIncidentData()
             }
         } else {
             if (isUserAction) {
                 val now = Clock.System.now()
                 val expiration = when (permissionStatus) {
-                    PermissionStatus.Requesting -> now + 10.seconds
-                    PermissionStatus.ShowRationale -> now + 60.seconds
+                    PermissionStatus.Requesting -> now + 20.seconds
+                    PermissionStatus.ShowRationale -> now + 120.seconds
                     else -> epochZero
                 }
                 locationPermissionExpiration.set(expiration)
@@ -272,7 +264,7 @@ class IncidentWorksitesCacheViewModel @Inject constructor(
     }
 
     fun resync() {
-        syncPuller.appPullIncidentData(cancelOngoing = true)
+        pullIncidentData()
     }
 
     fun resetCaching() {

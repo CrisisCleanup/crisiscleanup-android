@@ -85,7 +85,7 @@ internal fun BoxScope.CasesTableView(
     onAssignCaseTeam: (Long) -> Unit = {},
     onSyncDataDelta: () -> Unit = {},
     onSyncDataFull: () -> Unit = {},
-    hasIncidents: Boolean = false,
+    enableIncidentSelect: Boolean = false,
 ) {
     val countText by viewModel.casesCountTableText.collectAsStateWithLifecycle()
 
@@ -130,7 +130,7 @@ internal fun BoxScope.CasesTableView(
                 title = selectedIncident.shortName,
                 contentDescription = selectedIncident.shortName,
                 isLoading = isLoadingData,
-                enabled = hasIncidents,
+                enabled = enableIncidentSelect,
             )
 
             Spacer(Modifier.weight(1f))

@@ -6,7 +6,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 fun IncidentDataSyncParametersEntity.asExternalModel(logger: AppLogger): IncidentDataSyncParameters {
-    val boundedRegion = if (boundedRegion.isNotBlank()) {
+    val savedRegion = if (boundedRegion.isNotBlank()) {
         try {
             Json.decodeFromString<IncidentDataSyncParameters.BoundedRegion>(boundedRegion)
         } catch (e: Exception) {
@@ -28,7 +28,7 @@ fun IncidentDataSyncParametersEntity.asExternalModel(logger: AppLogger): Inciden
                 after = additionalUpdatedAfter,
             ),
         ),
-        boundedRegion = boundedRegion,
+        boundedRegion = savedRegion,
         boundedSyncedAt = boundedSyncedAt,
     )
 }

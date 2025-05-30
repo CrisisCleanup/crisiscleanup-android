@@ -47,8 +47,6 @@ interface LanguageTranslationsRepository : KeyTranslator {
 
     suspend fun loadLanguages(force: Boolean = false)
 
-    fun setLanguage(key: String = "")
-
     fun setLanguageFromSystem()
 
     suspend fun getLanguageOptions(): List<LanguageIdName>
@@ -178,7 +176,7 @@ class OfflineFirstLanguageTranslationsRepository @Inject constructor(
         }
     }
 
-    override fun setLanguage(key: String) {
+    private fun setLanguage(key: String) {
         setLanguageJob?.cancel()
         setLanguageJob = coroutineScope.launch(ioDispatcher) {
             val languages = supportedLanguages.first()

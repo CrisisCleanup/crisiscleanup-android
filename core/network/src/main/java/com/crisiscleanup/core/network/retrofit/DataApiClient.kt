@@ -70,7 +70,7 @@ private interface DataSourceApi {
     @TokenAuthenticationHeader
     @GET("incidents")
     suspend fun getIncidents(
-        @Query("fields")
+        @Query("fields", encoded = true)
         fields: String,
         @Query("limit")
         limit: Int,
@@ -83,7 +83,7 @@ private interface DataSourceApi {
 
     @GET("incidents")
     suspend fun getIncidentsNoAuth(
-        @Query("fields")
+        @Query("fields", encoded = true)
         fields: String,
         @Query("limit")
         limit: Int,
@@ -96,7 +96,7 @@ private interface DataSourceApi {
 
     @GET("incidents_list")
     suspend fun getIncidentsList(
-        @Query("fields")
+        @Query("fields", encoded = true)
         fields: String,
         @Query("limit")
         limit: Int,
@@ -119,15 +119,19 @@ private interface DataSourceApi {
     suspend fun getIncident(
         @Path("id")
         id: Long,
-        @Query("fields")
+        @Query("fields", encoded = true)
         fields: String,
     ): NetworkIncidentResult
 
     @TokenAuthenticationHeader
-    @GET("incidents/{incidentId}/organizations")
+    @ConnectTimeoutHeader("5")
+    @ReadTimeoutHeader("10")
+    @GET("organizations")
     suspend fun getIncidentOrganizations(
-        @Path("incidentId")
+        @Query("incident")
         incidentId: Long,
+        @Query("fields", encoded = true)
+        fields: String,
         @Query("limit")
         limit: Int,
         @Query("offset")
@@ -143,7 +147,7 @@ private interface DataSourceApi {
         limit: Int,
         @Query("offset")
         offset: Int,
-        @Query("fields")
+        @Query("fields", encoded = true)
         fields: String?,
     ): NetworkWorksitesCoreDataResult
 
@@ -163,7 +167,7 @@ private interface DataSourceApi {
     suspend fun getWorksitesLocationSearch(
         @Query("incident")
         incidentId: Long,
-        @Query("fields")
+        @Query("fields", encoded = true)
         fields: String,
         @Query("search")
         q: String,
@@ -184,7 +188,7 @@ private interface DataSourceApi {
     @ReadTimeoutHeader("15")
     @GET("worksites")
     suspend fun getWorksite(
-        @Query("id__in")
+        @Query("id__in", encoded = true)
         worksiteId: String,
         @Tag endpointId: EndpointRequestId = EndpointRequestId.Worksite,
     ): NetworkWorksitesFullResult
@@ -267,7 +271,7 @@ private interface DataSourceApi {
     @TokenAuthenticationHeader
     @GET("organizations")
     suspend fun getNearbyClaimingOrganizations(
-        @Query("nearby_claimed")
+        @Query("nearby_claimed", encoded = true)
         nearbyClaimed: String,
     ): NetworkOrganizationsResult
 
@@ -315,7 +319,7 @@ private interface DataSourceApi {
         @Query("limit")
         limit: Int,
         @Query("updated_at__lt")
-        updatedAtBefore: Instant?,
+        updatedAtBefore: Instant,
         @Query("sort")
         sort: String,
     ): NetworkFlagsFormDataResult
@@ -504,9 +508,15 @@ class DataApiClient @Inject constructor(
 
     override suspend fun getIncidentOrganizations(
         incidentId: Long,
+        fields: List<String>,
         limit: Int,
         offset: Int,
-    ) = networkApi.getIncidentOrganizations(incidentId, limit, offset)
+    ) = networkApi.getIncidentOrganizations(
+        incidentId,
+        fields.joinToString(","),
+        limit = limit,
+        offset = offset,
+    )
         .apply { errors?.tryThrowException() }
 
     override suspend fun getWorksitesCoreData(incidentId: Long, limit: Int, offset: Int) =

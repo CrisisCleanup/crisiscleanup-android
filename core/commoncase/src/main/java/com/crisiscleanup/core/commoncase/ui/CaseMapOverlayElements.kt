@@ -44,7 +44,7 @@ fun CaseMapOverlayElements(
     disableTableViewActions: Boolean = false,
     onSyncDataDelta: () -> Unit = {},
     onSyncDataFull: () -> Unit = {},
-    hasIncidents: Boolean = false,
+    enableIncidentSelect: Boolean = false,
     showCasesMainActions: Boolean = true,
     assignedCaseCount: Int = 0,
 ) {
@@ -74,7 +74,7 @@ fun CaseMapOverlayElements(
                     shape = CircleShape,
                     containerColor = incidentDisasterContainerColor,
                     contentColor = incidentDisasterContentColor,
-                    enabled = hasIncidents,
+                    enabled = enableIncidentSelect,
                 ) {
                     Icon(
                         painter = painterResource(disasterResId),
