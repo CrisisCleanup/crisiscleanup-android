@@ -43,6 +43,8 @@ class AppTopBarDataProvider(
 
     val showHeaderLoading = incidentCacheRepository.isSyncingActiveIncident
 
+    val enableIncidentSelect = incidentsRepository.isFirstLoad.map(Boolean::not)
+
     val screenTitle = incidentSelector.incident
         .map { it.shortName.ifBlank { translator(screenTitleKey) } }
         .stateIn(

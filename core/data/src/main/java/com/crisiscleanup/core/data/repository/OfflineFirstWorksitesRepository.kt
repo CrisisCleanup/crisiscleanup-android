@@ -20,7 +20,6 @@ import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.IncidentIdWorksiteCount
 import com.crisiscleanup.core.model.data.OrganizationLocationAreaBounds
 import com.crisiscleanup.core.model.data.TableDataWorksite
-import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteSortBy
 import com.crisiscleanup.core.model.data.getClaimStatus
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
@@ -65,9 +64,9 @@ class OfflineFirstWorksitesRepository @Inject constructor(
 ) : WorksitesRepository {
     override val isDeterminingWorksitesCount = MutableStateFlow(false)
 
-    private val orgId = accountDataRepository.accountData.map { it.org.id }
+    private val organizationId = accountDataRepository.accountData.map { it.org.id }
 
-    private val organizationLocationAreaBounds = orgId
+    private val organizationLocationAreaBounds = organizationId
         .filter { it > 0 }
         .flatMapLatest {
             organizationsRepository.streamPrimarySecondaryAreas(it)
@@ -125,7 +124,7 @@ class OfflineFirstWorksitesRepository @Inject constructor(
             IncidentIdWorksiteCount(id, totalCount, totalCount)
         }
 
-    private val organizationAffiliates = orgId.map {
+    private val organizationAffiliates = organizationId.map {
         organizationsRepository.getOrganizationAffiliateIds(it, true).toSet()
     }
         .stateIn(
@@ -137,14 +136,14 @@ class OfflineFirstWorksitesRepository @Inject constructor(
     override fun streamLocalWorksite(worksiteId: Long) =
         worksiteDao.streamLocalWorksite(worksiteId).map {
             it?.asExternalModel(
-                orgId.first(),
+                organizationId.first(),
                 languageTranslationsRepository,
             )
         }
 
     override suspend fun getWorksite(worksiteId: Long) =
         worksiteDao.getWorksite(worksiteId).asExternalModel(
-            orgId.first(),
+            organizationId.first(),
             languageTranslationsRepository,
         )
             .worksite
@@ -244,13 +243,25 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         )
     }
 
-    override suspend fun getRecentWorksites(incidentId: Long, limit: Int): List<Worksite> {
-        val orgId = orgId.first()
-        return recentWorksiteDao.getRecents(incidentId, limit)
-            .map {
-                it.asExternalModel(orgId, languageTranslationsRepository)
-                    .worksite
+    override suspend fun getRecentWorksitesCenterLocation(
+        incidentId: Long,
+        limit: Int,
+    ): Pair<Double, Double>? {
+        val recentWorksites =
+            recentWorksiteDao.getRecentWorksiteCoordinates(incidentId, limit = limit)
+        if (recentWorksites.isNotEmpty()) {
+            var totalLatitude = 0.0
+            var totalLongitude = 0.0
+            recentWorksites.forEach {
+                totalLatitude += it.latitude
+                totalLongitude += it.longitude
             }
+            val averageLatitude = totalLatitude / recentWorksites.size
+            val averageLongitude = totalLongitude / recentWorksites.size
+            return Pair(averageLatitude, averageLongitude)
+        }
+
+        return null
     }
 
     override fun getUnsyncedCounts(worksiteId: Long) =

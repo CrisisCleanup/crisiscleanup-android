@@ -65,7 +65,12 @@ internal class CasesMapMarkerManager(
             }
         }
 
-        return BoundsQueryParams(fullCount, queryCount, sw, ne)
+        return BoundsQueryParams(
+            fullCount = fullCount,
+            queryCount = queryCount,
+            southWest = sw,
+            northEast = ne,
+        )
     }
 
     suspend fun queryWorksitesInBounds(
@@ -86,8 +91,8 @@ internal class CasesMapMarkerManager(
 
         ensureActive()
 
-        val sw = q.southwest
-        val ne = q.northeast
+        val sw = q.southWest
+        val ne = q.northEast
         val mapMarks = worksitesRepository.getWorksitesMapVisual(
             incidentId,
             sw.latitude,
@@ -216,8 +221,8 @@ internal class CasesMapMarkerManager(
 private data class BoundsQueryParams(
     val fullCount: Int,
     val queryCount: Int,
-    val southwest: LatLng,
-    val northeast: LatLng,
+    val southWest: LatLng,
+    val northEast: LatLng,
 )
 
 private data class MarkerFromCenter(

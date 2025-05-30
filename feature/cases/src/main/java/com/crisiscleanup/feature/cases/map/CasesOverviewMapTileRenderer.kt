@@ -79,8 +79,8 @@ class CaseDotsMapTileRenderer @Inject constructor(
     private var locationCoordinates: Pair<Double, Double>? = null
 
     override fun setIncident(id: Long, worksitesCount: Int, clearCache: Boolean) {
-        val isIncidentChanged = id != incidentIdCache
         synchronized(tileCache) {
+            val isIncidentChanged = id != incidentIdCache
             if (isIncidentChanged || clearCache) {
                 tileCache.evictAll()
             }

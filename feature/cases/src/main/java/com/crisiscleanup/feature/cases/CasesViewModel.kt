@@ -37,6 +37,7 @@ import com.crisiscleanup.core.data.model.IncidentDataPullStats
 import com.crisiscleanup.core.data.model.IncidentPullDataType
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
+import com.crisiscleanup.core.data.repository.IncidentCacheRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
@@ -101,6 +102,7 @@ class CasesViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
     incidentBoundsProvider: IncidentBoundsProvider,
     private val worksitesRepository: WorksitesRepository,
+    incidentCacheRepository: IncidentCacheRepository,
     val incidentSelector: IncidentSelector,
     dataPullReporter: IncidentDataPullReporter,
     private val mapCaseIconProvider: MapCaseIconProvider,
@@ -134,6 +136,13 @@ class CasesViewModel @Inject constructor(
         coroutineScope = viewModelScope,
     )
     val incidentsData = loadSelectIncidents.data
+    val enableIncidentSelect = incidentsRepository.isFirstLoad
+        .map(Boolean::not)
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
 
     val incidentId: Long
         get() = incidentSelector.incidentId.value
@@ -233,10 +242,9 @@ class CasesViewModel @Inject constructor(
      * Incident or worksites data are currently saving/caching/loading
      */
     val isLoadingData = combine(
-        isIncidentLoading,
-        dataProgress,
+        incidentCacheRepository.isSyncingActiveIncident,
         worksitesRepository.isDeterminingWorksitesCount,
-    ) { b0, progress, b2 -> b0 || progress.isLoadingPrimary || b2 }
+    ) { b0, b1 -> b0 || b1 }
 
     private var _mapCameraZoom = MutableStateFlow(MapViewCameraZoomDefault)
     val mapCameraZoom = _mapCameraZoom.asStateFlow()

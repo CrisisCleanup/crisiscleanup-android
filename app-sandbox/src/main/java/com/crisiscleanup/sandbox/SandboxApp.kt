@@ -24,8 +24,9 @@ import androidx.navigation.NavController
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
-import com.crisiscleanup.sandbox.navigation.MULTI_IMAGE_ROUTE
+import com.crisiscleanup.sandbox.navigation.ASYNC_IMAGE_ROUTE
 import com.crisiscleanup.sandbox.navigation.SandboxNavHost
+import com.crisiscleanup.sandbox.navigation.navigateToAsyncImage
 import com.crisiscleanup.sandbox.navigation.navigateToBottomNav
 import com.crisiscleanup.sandbox.navigation.navigateToCheckboxes
 import com.crisiscleanup.sandbox.navigation.navigateToChips
@@ -65,7 +66,7 @@ fun SandboxApp(
                     SandboxNavHost(
                         appState.navController,
                         appState::onBack,
-                        MULTI_IMAGE_ROUTE,
+                        ASYNC_IMAGE_ROUTE,
                     )
                 }
             }
@@ -97,6 +98,9 @@ fun RootRoute(navController: NavController) {
             }
             CrisisCleanupTextButton(text = "Images") {
                 navController.navigateToMultiImage()
+            }
+            CrisisCleanupTextButton(text = "Async image") {
+                navController.navigateToAsyncImage()
             }
         }
     }

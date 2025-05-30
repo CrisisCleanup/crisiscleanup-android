@@ -60,6 +60,7 @@ interface CrisisCleanupNetworkDataSource {
 
     suspend fun getIncidentOrganizations(
         incidentId: Long,
+        fields: List<String>,
         limit: Int,
         offset: Int,
     ): NetworkOrganizationsResult
@@ -134,11 +135,11 @@ interface CrisisCleanupNetworkDataSource {
     suspend fun getWorksitesFlagsFormDataPageBefore(
         incidentId: Long,
         pageCount: Int,
-        updatedAfter: Instant,
+        updatedBefore: Instant,
     ) = getWorksitesFlagsFormDataPage(
         incidentId,
         pageCount,
-        updatedAfter,
+        updatedBefore,
         true,
     )
 

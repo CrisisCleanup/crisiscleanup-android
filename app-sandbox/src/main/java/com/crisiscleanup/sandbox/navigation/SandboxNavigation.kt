@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.crisiscleanup.sandbox.RootRoute
+import com.crisiscleanup.sandbox.ui.AsyncImageView
 import com.crisiscleanup.sandbox.ui.BottomNavRoute
 import com.crisiscleanup.sandbox.ui.CheckboxesRoute
 import com.crisiscleanup.sandbox.ui.ChipsRoute
@@ -18,6 +19,7 @@ private const val CHIPS_ROUTE = "chips"
 private const val BOTTOM_NAV_ROUTE = "bottom-nav"
 const val SINGLE_IMAGE_ROUTE = "single-image"
 const val MULTI_IMAGE_ROUTE = "multi-image"
+const val ASYNC_IMAGE_ROUTE = "async-image"
 
 fun NavController.navigateToBottomNav() {
     this.navigate(BOTTOM_NAV_ROUTE)
@@ -37,6 +39,10 @@ fun NavController.navigateToSingleImage() {
 
 fun NavController.navigateToMultiImage() {
     this.navigate(MULTI_IMAGE_ROUTE)
+}
+
+fun NavController.navigateToAsyncImage() {
+    this.navigate(ASYNC_IMAGE_ROUTE)
 }
 
 @Composable
@@ -71,6 +77,10 @@ fun SandboxNavHost(
 
         composable(MULTI_IMAGE_ROUTE) {
             MultiImageRoute(onBack)
+        }
+
+        composable(ASYNC_IMAGE_ROUTE) {
+            AsyncImageView()
         }
     }
 }
