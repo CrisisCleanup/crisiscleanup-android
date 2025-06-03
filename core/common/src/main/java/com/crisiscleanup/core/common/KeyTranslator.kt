@@ -29,9 +29,7 @@ class AndroidResourceTranslator @Inject constructor(
     override fun translate(phraseKey: String, @StringRes fallbackResId: Int) =
         keyTranslator.translate(phraseKey) ?: (
             if (fallbackResId != 0) {
-                context.getString(
-                    fallbackResId,
-                )
+                context.getString(fallbackResId)
             } else {
                 phraseKey
             }

@@ -8,6 +8,7 @@ import android.content.Context.RECEIVER_NOT_EXPORTED
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
+import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.sync.SyncPuller
 import com.crisiscleanup.core.data.incidentcache.IncidentDataPullReporter
@@ -29,6 +30,7 @@ internal class IncidentDataSyncNotifier @Inject constructor(
     private val appContext: Context,
     incidentDataPullReporter: IncidentDataPullReporter,
     private val syncPuller: SyncPuller,
+    private val translator: KeyResourceTranslator,
     private val logger: AppLogger,
     coroutineScope: CoroutineScope,
 ) {
@@ -56,27 +58,34 @@ internal class IncidentDataSyncNotifier @Inject constructor(
                     if (isOngoing &&
                         isSyncing
                     ) {
-                        val title = appContext.getString(R.string.syncing_text, incidentName)
+                        val title = translator.translate("~~Syncing {incident_name}", 0)
+                            .replace("{incident_name}", incidentName)
                         val text = notificationMessage.ifBlank {
                             var message = if (isIndeterminate) {
-                                appContext.getString(
-                                    R.string.saving_indeterminate_data,
-                                )
+                                translator.translate("~~Saving data...", 0)
                             } else if (pullType == IncidentPullDataType.WorksitesCore) {
-                                appContext.getString(
-                                    R.string.saved_cases_out_of,
-                                    savedCount,
-                                    dataCount,
+                                translator.translate(
+                                    "~~Saved {case_count}/{total_case_count} Cases.",
+                                    0,
                                 )
+                                    .replace("{case_count}", "$savedCount")
+                                    .replace("{total_case_count}", "$dataCount")
                             } else {
-                                appContext.getString(
-                                    R.string.saved_full_cases_out_of,
-                                    savedCount,
-                                    dataCount,
+                                translator.translate(
+                                    "~~Saved {case_count}/{total_case_count} offline Cases.",
+                                    0,
                                 )
+                                    .replace("{case_count}", "$savedCount")
+                                    .replace("{total_case_count}", "$dataCount")
                             }
                             if (currentStep in 1..stepTotal) {
-                                message = "($currentStep/$stepTotal) $message"
+                                message = translator.translate(
+                                    "~~({current_step}/{total_step_count}) {message}",
+                                    0,
+                                )
+                                    .replace("{current_step}", "$currentStep")
+                                    .replace("{total_step_count}", "$stepTotal")
+                                    .replace("{message}", message)
                             }
                             message
                         }
@@ -92,7 +101,7 @@ internal class IncidentDataSyncNotifier @Inject constructor(
                                 .progress(progress)
                                 .addAction(
                                     R.drawable.close,
-                                    appContext.getString(R.string.stop_syncing),
+                                    translator.translate("~~Stop syncing", 0),
                                     stopSyncIntent,
                                 )
                                 .setOnlyAlertOnce(true)
