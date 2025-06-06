@@ -41,7 +41,7 @@ fun IncidentHeaderView(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = listItemSpacedBy,
     ) {
-        DisasterIcon(disasterResId, incidentName)
+        DisasterIcon(disasterResId, incidentName, true)
         Text(
             incidentName,
             Modifier

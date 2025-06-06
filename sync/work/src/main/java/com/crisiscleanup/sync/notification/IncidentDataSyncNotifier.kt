@@ -70,13 +70,15 @@ internal class IncidentDataSyncNotifier @Inject constructor(
                                 )
                                     .replace("{case_count}", "$savedCount")
                                     .replace("{total_case_count}", "$dataCount")
-                            } else {
+                            } else if (pullType == IncidentPullDataType.WorksitesAdditional) {
                                 translator.translate(
                                     "~~Saved {case_count}/{total_case_count} offline Cases.",
                                     0,
                                 )
                                     .replace("{case_count}", "$savedCount")
                                     .replace("{total_case_count}", "$dataCount")
+                            } else {
+                                translator.translate("~~Saving more data...", 0)
                             }
                             if (currentStep in 1..stepTotal) {
                                 message = translator.translate(
