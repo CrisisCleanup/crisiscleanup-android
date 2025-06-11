@@ -4,6 +4,8 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import com.crisiscleanup.core.datastore.AccountInfo
 import com.crisiscleanup.core.datastore.AccountInfoProtoSerializer
+import com.crisiscleanup.core.datastore.AppMetrics
+import com.crisiscleanup.core.datastore.AppMetricsSerializer
 import com.crisiscleanup.core.datastore.UserPreferences
 import com.crisiscleanup.core.datastore.UserPreferencesSerializer
 import com.crisiscleanup.core.datastore.di.DataStoreModule
@@ -23,10 +25,10 @@ object TestDataStoreModule {
     @Provides
     @Singleton
     fun providesUserPreferencesDataStore(
-        userPreferencesSerializer: UserPreferencesSerializer,
+        serializer: UserPreferencesSerializer,
         tmpFolder: TemporaryFolder,
     ): DataStore<UserPreferences> =
-        tmpFolder.testUserPreferencesDataStore(userPreferencesSerializer)
+        tmpFolder.testUserPreferencesDataStore(serializer)
 
     @Provides
     @Singleton
@@ -34,12 +36,19 @@ object TestDataStoreModule {
         serializer: AccountInfoProtoSerializer,
         tmpFolder: TemporaryFolder,
     ): DataStore<AccountInfo> = tmpFolder.testAccountInfoDataStore(serializer)
+
+    @Provides
+    @Singleton
+    fun providesAppMetricsDataStore(
+        serializer: AppMetricsSerializer,
+        tmpFolder: TemporaryFolder,
+    ): DataStore<AppMetrics> = tmpFolder.testAppMetricsDataStore(serializer)
 }
 
 fun TemporaryFolder.testUserPreferencesDataStore(
-    userPreferencesSerializer: UserPreferencesSerializer = UserPreferencesSerializer(),
+    serializer: UserPreferencesSerializer = UserPreferencesSerializer(),
 ) = DataStoreFactory.create(
-    serializer = userPreferencesSerializer,
+    serializer = serializer,
 ) {
     newFile("user_preferences_test.pb")
 }
@@ -50,4 +59,12 @@ fun TemporaryFolder.testAccountInfoDataStore(
     serializer = serializer,
 ) {
     newFile("account_info_test.pb")
+}
+
+fun TemporaryFolder.testAppMetricsDataStore(
+    serializer: AppMetricsSerializer = AppMetricsSerializer(),
+) = DataStoreFactory.create(
+    serializer = serializer,
+) {
+    newFile("app_metrics_test.pb")
 }
