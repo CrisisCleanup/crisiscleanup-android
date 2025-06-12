@@ -205,6 +205,10 @@ class CasesViewModel @Inject constructor(
     fun setContentViewType(isTableView: Boolean) {
         this.isTableView.value = isTableView
 
+        viewModelScope.launch {
+            appPreferencesRepository.setWorkScreenView(isTableView)
+        }
+
         if (!isTableView) {
             mapBoundsManager.restoreBounds()
         }

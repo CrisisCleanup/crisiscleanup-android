@@ -41,7 +41,6 @@ internal class CasesQueryStateManager(
         isTableView
             .onEach {
                 worksiteQueryState.value = worksiteQueryState.value.copy(isTableView = it)
-                preferencesRepository.setWorkScreenView(it)
             }
             .launchIn(coroutineScope)
 
