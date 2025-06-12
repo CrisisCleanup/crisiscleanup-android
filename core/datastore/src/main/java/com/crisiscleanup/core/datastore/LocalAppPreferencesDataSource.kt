@@ -75,6 +75,9 @@ class LocalAppPreferencesDataSource @Inject constructor(
                 allowAllAnalytics = false
                 hideGettingStartedVideo = false
                 isMenuTutorialDone = false
+                shareLocationWithOrg = false
+                // TODO Bounds
+                isWorkScreenTableView = false
             }
         }
     }
