@@ -40,4 +40,6 @@ message UserPreferences {
 
   IncidentMapBoundsProto cases_map_bounds = 13;
   IncidentMapBoundsProto team_map_bounds = 14;
+
+  bool is_work_screen_table_view = 15;
 }

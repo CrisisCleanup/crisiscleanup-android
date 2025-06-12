@@ -77,4 +77,8 @@ class AppPreferencesRepository @Inject constructor(
     override suspend fun setTeamMapBounds(bounds: IncidentCoordinateBounds) {
         preferencesDataSource.saveTeamMapBounds(bounds)
     }
+
+    override suspend fun setWorkScreenView(isTableView: Boolean) {
+        preferencesDataSource.saveWorkScreenView(isTableView)
+    }
 }

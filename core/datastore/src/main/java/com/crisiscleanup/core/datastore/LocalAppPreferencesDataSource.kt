@@ -58,6 +58,8 @@ class LocalAppPreferencesDataSource @Inject constructor(
 
                 casesMapBounds = it.casesMapBounds.asExternalModel(),
                 teamMapBounds = it.teamMapBounds.asExternalModel(),
+
+                isWorkScreenTableView = it.isWorkScreenTableView,
             )
         }
 
@@ -179,6 +181,12 @@ class LocalAppPreferencesDataSource @Inject constructor(
     suspend fun saveTeamMapBounds(bounds: IncidentCoordinateBounds) {
         userPreferences.updateData {
             it.copy { teamMapBounds = bounds.asProto() }
+        }
+    }
+
+    suspend fun saveWorkScreenView(isTableView: Boolean) {
+        userPreferences.updateData {
+            it.copy { isWorkScreenTableView = isTableView }
         }
     }
 }

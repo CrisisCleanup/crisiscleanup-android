@@ -157,6 +157,7 @@ class CasesViewModel @Inject constructor(
     private val qsm = CasesQueryStateManager(
         incidentSelector,
         filterRepository,
+        appPreferencesRepository,
         viewModelScope,
     )
 

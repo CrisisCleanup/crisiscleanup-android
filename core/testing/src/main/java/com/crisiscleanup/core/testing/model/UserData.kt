@@ -20,4 +20,5 @@ val UserDataNone = UserData(
     shareLocationWithOrg = false,
     casesMapBounds = IncidentCoordinateBoundsNone,
     teamMapBounds = IncidentCoordinateBoundsNone,
+    isWorkScreenTableView = false,
 )
