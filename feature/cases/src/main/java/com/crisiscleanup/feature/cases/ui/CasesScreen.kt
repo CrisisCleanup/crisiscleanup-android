@@ -50,7 +50,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
@@ -113,7 +112,7 @@ import com.crisiscleanup.core.mapmarker.R as mapMarkerR
 
 @Composable
 internal fun CasesRoute(
-    viewModel: CasesViewModel = hiltViewModel(),
+    viewModel: CasesViewModel,
     onCasesAction: (CasesAction) -> Unit = { },
     createNewCase: (Long) -> Unit = {},
     viewCase: (Long, Long) -> Boolean = { _, _ -> false },
@@ -204,6 +203,7 @@ internal fun CasesRoute(
             }
         }
         CasesScreen(
+            viewModel,
             dataProgress = dataProgressMetrics,
             disasterResId = disasterResId,
             onSelectIncident = onIncidentSelect,
@@ -269,12 +269,12 @@ internal fun CasesRoute(
         )
     }
 
-    NonProductionDialog()
+    NonProductionDialog(viewModel)
 }
 
 @Composable
 private fun NonProductionDialog(
-    viewModel: CasesViewModel = hiltViewModel(),
+    viewModel: CasesViewModel,
 ) {
     var showDialog by remember { mutableStateOf(false) }
     if (viewModel.visualAlertManager.takeNonProductionAppAlert()) {
@@ -353,6 +353,7 @@ internal fun NoIncidentsScreen(
 
 @Composable
 internal fun CasesScreen(
+    viewModel: CasesViewModel,
     dataProgress: DataProgressMetrics = zeroDataProgress,
     onSelectIncident: () -> Unit = {},
     @DrawableRes disasterResId: Int = commonAssetsR.drawable.ic_disaster_other,
@@ -386,6 +387,7 @@ internal fun CasesScreen(
     Box {
         if (isTableView) {
             CasesTableView(
+                viewModel,
                 isLoadingData = isLoadingData,
                 isTableDataTransient = isTableDataTransient,
                 disasterResId = disasterResId,
