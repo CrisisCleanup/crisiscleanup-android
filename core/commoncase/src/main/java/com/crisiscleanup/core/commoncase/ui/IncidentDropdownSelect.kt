@@ -43,7 +43,7 @@ fun IncidentDropdownSelect(
         CompositionLocalProvider(
             LocalContentColor provides if (enabled) contentColor else contentColor.disabledAlpha(),
         ) {
-            DisasterIcon(disasterIconResId, title)
+            DisasterIcon(disasterIconResId, title, enabled)
             TruncatedAppBarText(
                 title = title,
                 modifier = Modifier.padding(start = 8.dp),

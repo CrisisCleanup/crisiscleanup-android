@@ -38,4 +38,6 @@ interface LocalAppPreferencesRepository {
 
     suspend fun setCasesMapBounds(bounds: IncidentCoordinateBounds)
     suspend fun setTeamMapBounds(bounds: IncidentCoordinateBounds)
+
+    suspend fun setWorkScreenView(isTableView: Boolean)
 }

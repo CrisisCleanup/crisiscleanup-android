@@ -41,6 +41,8 @@ class LocalAppMetricsDataSource @Inject constructor(
                     link = buildSupport.appLink,
                     isUnsupported = buildSupport.minVersion > appVersionProvider.versionCode,
                 ),
+
+                appInstallVersion = it.appInstallVersion,
             )
         }
 
@@ -58,13 +60,15 @@ class LocalAppMetricsDataSource @Inject constructor(
     }
 
     suspend fun setAppOpen(
-        appVersion: Long,
         timestamp: Instant = Clock.System.now(),
     ) {
+        val appVersion = appVersionProvider.versionCode
         appMetrics.updateData {
+            val installedVersion = it.appInstallVersion
             it.copy {
                 appOpenVersion = appVersion
                 appOpenSeconds = timestamp.epochSeconds
+                appInstallVersion = if (installedVersion <= 0) appVersion else installedVersion
             }
         }
     }

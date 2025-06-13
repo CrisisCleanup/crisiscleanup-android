@@ -44,7 +44,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.appcomponent.ui.AppTopBar
 import com.crisiscleanup.core.common.TutorialStep
@@ -80,6 +79,7 @@ import com.google.accompanist.permissions.shouldShowRationale
 
 @Composable
 internal fun MenuRoute(
+    viewModel: MenuViewModel,
     openAuthentication: () -> Unit = {},
     openInviteTeammate: () -> Unit = {},
     openRequestRedeploy: () -> Unit = {},
@@ -96,6 +96,7 @@ internal fun MenuRoute(
         openLists = openLists,
         openIncidentCache = openIncidentCache,
         openSyncLogs = openSyncLogs,
+        viewModel = viewModel,
     )
 }
 
@@ -109,7 +110,7 @@ private fun MenuScreen(
     openLists: () -> Unit = {},
     openIncidentCache: () -> Unit = {},
     openSyncLogs: () -> Unit = {},
-    viewModel: MenuViewModel = hiltViewModel(),
+    viewModel: MenuViewModel,
 ) {
     val t = LocalAppTranslator.current
     val translationCount by t.translationCount.collectAsStateWithLifecycle()
@@ -379,7 +380,7 @@ private fun MenuScreen(
 
             if (viewModel.isDebuggable) {
                 item {
-                    MenuScreenNonProductionView()
+                    MenuScreenNonProductionView(viewModel)
                 }
             }
 
@@ -626,7 +627,7 @@ private fun GettingStartedSection(
 
 @Composable
 internal fun MenuScreenNonProductionView(
-    viewModel: MenuViewModel = hiltViewModel(),
+    viewModel: MenuViewModel,
 ) {
     val databaseText = viewModel.databaseVersionText
     Text(

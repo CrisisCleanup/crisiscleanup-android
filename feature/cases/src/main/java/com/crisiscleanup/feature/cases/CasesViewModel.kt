@@ -157,6 +157,7 @@ class CasesViewModel @Inject constructor(
     private val qsm = CasesQueryStateManager(
         incidentSelector,
         filterRepository,
+        appPreferencesRepository,
         viewModelScope,
     )
 
@@ -203,6 +204,10 @@ class CasesViewModel @Inject constructor(
 
     fun setContentViewType(isTableView: Boolean) {
         this.isTableView.value = isTableView
+
+        viewModelScope.launch {
+            appPreferencesRepository.setWorkScreenView(isTableView)
+        }
 
         if (!isTableView) {
             mapBoundsManager.restoreBounds()

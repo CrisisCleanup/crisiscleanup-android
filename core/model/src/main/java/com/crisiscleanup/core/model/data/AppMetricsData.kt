@@ -12,6 +12,8 @@ data class AppMetricsData(
     val switchToProductionApiVersion: Long,
 
     val minSupportedAppVersion: MinSupportedAppVersion,
+
+    val appInstallVersion: Long,
 )
 
 data class MinSupportedAppVersion(

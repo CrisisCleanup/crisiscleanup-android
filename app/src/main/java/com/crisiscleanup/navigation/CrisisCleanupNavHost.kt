@@ -189,6 +189,7 @@ fun CrisisCleanupNavHost(
         modifier = modifier,
     ) {
         casesGraph(
+            navController,
             nestedGraphs = {
                 casesSearchScreen(searchCasesOnBack, viewCase)
                 casesFilterScreen(onBack)
@@ -217,6 +218,7 @@ fun CrisisCleanupNavHost(
             openViewTeam = navController::navigateToViewTeam,
         )
         menuScreen(
+            navController,
             openAuthentication = openAuthentication,
             openIncidentCache = openIncidentCache,
             openLists = openLists,

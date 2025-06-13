@@ -1,6 +1,7 @@
 package com.crisiscleanup.sync
 
 import android.content.Context
+import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.log.AppLogger
@@ -42,6 +43,7 @@ class AppSyncer @Inject constructor(
     private val statusRepository: WorkTypeStatusRepository,
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val networkMonitor: NetworkMonitor,
+    translator: KeyResourceTranslator,
     @ApplicationContext private val context: Context,
     @Logger(CrisisCleanupLoggers.Sync) private val logger: AppLogger,
     @ApplicationScope private val applicationScope: CoroutineScope,
@@ -56,6 +58,7 @@ class AppSyncer @Inject constructor(
         context,
         incidentDataPullReporter,
         this,
+        translator,
         logger,
         applicationScope,
     )

@@ -30,4 +30,6 @@ dependencies {
 
     testImplementation(projects.core.testing)
     testImplementation(projects.core.datastoreTest)
+    testImplementation(libs.mockk.android)
+    testImplementation(libs.turbine)
 }

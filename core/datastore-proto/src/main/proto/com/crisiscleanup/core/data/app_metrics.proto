@@ -15,4 +15,6 @@ message AppMetrics {
   int64 productionApiSwitchVersion = 4;
 
   AppMinUseProto minBuildSupport = 5;
+
+  int64 appInstallVersion = 6;
 }

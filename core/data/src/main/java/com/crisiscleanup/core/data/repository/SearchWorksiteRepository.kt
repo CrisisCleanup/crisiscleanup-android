@@ -108,7 +108,7 @@ class MemoryCacheSearchWorksitesRepository @Inject constructor(
                             city,
                             state,
                             postalCode ?: "",
-                            county,
+                            county ?: "",
                             caseNumber,
                             workType,
                         )

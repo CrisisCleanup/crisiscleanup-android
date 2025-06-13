@@ -1,7 +1,7 @@
 package com.crisiscleanup.core.datastore
 
 class AccountInfoDataSourceTest {
-    // TODO Rewrite tests
+    // TODO Rewrite tests with testable dependencies
 //    private lateinit var subject: AccountInfoDataSource
 //
 //    @get:Rule
