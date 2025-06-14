@@ -21,6 +21,7 @@ interface MapCaseIconProvider {
         isDuplicate: Boolean = false,
         isFilteredOut: Boolean = false,
         isVisited: Boolean = false,
+        hasPhotos: Boolean = false,
     ): BitmapDescriptor?
 
     fun getIconBitmap(
@@ -30,5 +31,6 @@ interface MapCaseIconProvider {
         isDuplicate: Boolean = false,
         isFilteredOut: Boolean = false,
         isVisited: Boolean = false,
+        hasPhotos: Boolean = false,
     ): Bitmap?
 }
