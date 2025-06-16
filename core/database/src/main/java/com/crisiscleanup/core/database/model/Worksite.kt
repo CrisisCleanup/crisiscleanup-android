@@ -43,6 +43,7 @@ fun Worksite.asEntities(
         what3Words = what3Words ?: "",
         updatedAt = modifiedAt,
         isLocalFavorite = isLocalFavorite,
+        photoCount = null,
     )
 
     val flagsEntities = flags?.map { flag ->

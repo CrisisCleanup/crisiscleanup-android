@@ -64,9 +64,9 @@ interface WorksiteDao {
         """
         SELECT w.id,
                latitude, longitude,
-               key_work_type_type, key_work_type_org, key_work_type_status, COUNT(wt.id) as work_type_count,
+               key_work_type_type, key_work_type_org, key_work_type_status, COUNT(wt.id) AS work_type_count,
                favorite_id,
-               w.created_at, is_local_favorite, reported_by, svi, updated_at
+               w.created_at, is_local_favorite, reported_by, svi, updated_at, network_photo_count
         FROM worksites w LEFT JOIN work_types wt ON w.id=wt.worksite_id
         WHERE incident_id=:incidentId AND
               (longitude BETWEEN :longitudeWest AND :longitudeEast) AND
@@ -244,7 +244,8 @@ interface WorksiteDao {
         state           =:state,
         svi             =:svi,
         what3Words      =COALESCE(:what3Words, what3Words),
-        updated_at      =:updatedAt
+        updated_at      =:updatedAt,
+        network_photo_count =COALESCE(:photoCount, network_photo_count)
         WHERE id=:id AND network_id=:networkId
         """,
     )
@@ -276,6 +277,7 @@ interface WorksiteDao {
         svi: Float?,
         what3Words: String?,
         updatedAt: Instant,
+        photoCount: Int?,
     )
 
     @Transaction
@@ -293,7 +295,8 @@ interface WorksiteDao {
         plus_code   =COALESCE(plus_code, :plusCode),
         svi         =COALESCE(svi, :svi),
         reported_by =COALESCE(reported_by, :reportedBy),
-        what3Words  =COALESCE(what3Words, :what3Words)
+        what3Words  =COALESCE(what3Words, :what3Words),
+        network_photo_count =COALESCE(:photoCount, network_photo_count)
         WHERE id=:id
         """,
     )
@@ -310,6 +313,7 @@ interface WorksiteDao {
         svi: Float?,
         reportedBy: Long?,
         what3Words: String?,
+        photoCount: Int?,
     )
 
     @Transaction

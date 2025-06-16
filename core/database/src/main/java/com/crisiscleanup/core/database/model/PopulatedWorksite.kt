@@ -119,6 +119,9 @@ data class PopulatedWorksiteMapVisual(
     )
     val formData: List<WorksiteFormDataEntity>,
 
+    // Has photo
+    @ColumnInfo("network_photo_count")
+    val networkPhotoCount: Int,
     @Relation(
         parentColumn = "id",
         entityColumn = "id",
@@ -153,5 +156,7 @@ fun PopulatedWorksiteMapVisual.asExternalModel(isFilteredOut: Boolean = false) =
     },
     isDuplicate = flags.any { it.reasonT == duplicateFlagLiteral },
     isFilteredOut = isFilteredOut,
-    hasPhotos = fileImages.any { !it.isDeleted } || localImages.isNotEmpty(),
+    hasPhotos = networkPhotoCount > 0 ||
+        fileImages.any { !it.isDeleted } ||
+        localImages.isNotEmpty(),
 )
