@@ -400,6 +400,7 @@ fun testWorksiteEntity(
     svi = null,
     what3Words = null,
     updatedAt = updatedAt,
+    photoCount = null,
 )
 
 // Defines all fields setting updated_at to be relative to createdAt
@@ -436,6 +437,7 @@ fun testWorksiteFullEntity(
     svi = 6.235f,
     what3Words = "what,three,words",
     updatedAt = createdAt.plus(99.seconds),
+    photoCount = null,
 )
 
 // Defines all fields not nullable
@@ -472,4 +474,5 @@ fun testWorksiteShortEntity(
     svi = 0.548f,
     what3Words = null,
     updatedAt = createdAt.plus(66.seconds),
+    photoCount = null,
 )

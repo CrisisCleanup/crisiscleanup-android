@@ -315,7 +315,7 @@ data class NetworkWorksitePage(
     @SerialName("work_types")
     private val workTypes: List<NetworkWorksiteFull.WorkTypeShort>,
     @SerialName("photos_count")
-    val photoCount: Int?,
+    val photoCount: Int? = null,
 ) : WorksiteDataSubset {
     @Transient
     var newestWorkTypes: List<NetworkWorksiteFull.WorkTypeShort> = emptyList()
