@@ -85,7 +85,7 @@ class WorkTypeIconProvider @Inject constructor(
     private val shadowRadius: Int
     private val shadowColor = (0xFF666666).toInt()
 
-    private val bitmapSizeDp = 36f + 2 * shadowRadiusDp
+    private val bitmapSizeDp = 40f + 2 * shadowRadiusDp
     private val bitmapSize: Int
     private var bitmapCenterOffset = Offset(0f, 0f)
 
@@ -97,6 +97,7 @@ class WorkTypeIconProvider @Inject constructor(
 
     private val cameraDrawable: Drawable
     private val cameraDrawableTransparent: Drawable
+    private val cameraDrawableVerticalOffset: Int
 
     init {
         bitmapSize = resourceProvider.dpToPx(bitmapSizeDp).toInt()
@@ -116,6 +117,7 @@ class WorkTypeIconProvider @Inject constructor(
             resourceProvider.getDrawable(R.drawable.ic_work_type_photos).also {
                 it.alpha = overlayAlpha
             }
+        cameraDrawableVerticalOffset = resourceProvider.dpToPx(2f).toInt()
     }
 
     private fun cacheIconBitmap(cacheKey: WorkTypeIconCacheKey): BitmapDescriptor {
@@ -264,6 +266,7 @@ class WorkTypeIconProvider @Inject constructor(
             transparentDrawable: Drawable,
             drawable: Drawable,
             isLeftAligned: Boolean,
+            verticalOffset: Int = 0,
         ) {
             val pd = if (cacheKey.isFilteredOut) transparentDrawable else drawable
 
@@ -277,11 +280,12 @@ class WorkTypeIconProvider @Inject constructor(
             } else {
                 rightBounds
             }
+            val overlayBottom = bottomBounds - verticalOffset
             pd.setBounds(
                 horizontalOffsetStart,
-                bottomBounds - pd.intrinsicHeight,
+                overlayBottom - pd.intrinsicHeight,
                 horizontalOffsetEnd,
-                bottomBounds,
+                overlayBottom,
             )
             pd.draw(canvas)
         }
@@ -302,6 +306,7 @@ class WorkTypeIconProvider @Inject constructor(
                     transparentDrawable = cameraDrawableTransparent,
                     drawable = cameraDrawable,
                     isLeftAligned = true,
+                    verticalOffset = cameraDrawableVerticalOffset,
                 )
             }
         }
