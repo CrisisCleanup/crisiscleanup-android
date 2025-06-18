@@ -100,6 +100,7 @@ private fun TeamsScreen(
 
     Box {
         Column {
+            // TODO Modifiers and test tag
             AppTopBar(
                 dataProvider = viewModel.appTopBarDataProvider,
                 openAuthentication = openAuthentication,

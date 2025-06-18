@@ -42,6 +42,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -189,7 +190,9 @@ private fun MenuScreen(
     Column {
         AppTopBar(
             incidentDropdownModifier = incidentDropdownModifier,
-            accountToggleModifier = accountToggleModifier,
+            accountToggleModifier = accountToggleModifier
+                .testTag("menuAccountToggle"),
+            incidentSelectTestTag = "menuIncidentSelect",
             dataProvider = viewModel.appTopBarDataProvider,
             openAuthentication = openAuthentication,
             onOpenIncidents = openIncidentsSelect,
@@ -660,13 +663,17 @@ private fun TermsPrivacyView(
         horizontalArrangement = Arrangement.Center,
     ) {
         CrisisCleanupTextButton(
-            Modifier.actionHeight(),
+            Modifier
+                .actionHeight()
+                .testTag("menuTermsAction"),
             text = t("publicNav.terms"),
         ) {
             uriHandler.openUri(termsOfServiceUrl)
         }
         CrisisCleanupTextButton(
-            Modifier.actionHeight(),
+            Modifier
+                .actionHeight()
+                .testTag("menuPrivacyAction"),
             text = t("nav.privacy"),
         ) {
             uriHandler.openUri(privacyPolicyUrl)
