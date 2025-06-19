@@ -45,7 +45,7 @@ fun NetworkWorksiteFull.asEntity() = WorksiteEntity(
     what3Words = what3words,
     updatedAt = updatedAt,
     photoCount = files.map(NetworkFile::mimeContentType)
-        .filter { it.startsWith("image/") }
+        .filter { it?.startsWith("image/") == true }
         .size,
 )
 
