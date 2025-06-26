@@ -227,7 +227,7 @@ private fun TeamsScreen(
         val selectedIncidentId by viewModel.incidentSelector.incidentId.collectAsStateWithLifecycle()
         val setSelected = remember(viewModel) {
             { incident: Incident ->
-                viewModel.loadSelectIncidents.selectIncident(incident)
+                viewModel.incidentSelector.selectIncident(incident)
             }
         }
         SelectIncidentDialog(

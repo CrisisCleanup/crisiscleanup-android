@@ -76,7 +76,6 @@ import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.navigationContainerColor
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
 import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
-import com.crisiscleanup.core.domain.IncidentsData
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBounds
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBoundsDefault
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
@@ -85,6 +84,7 @@ import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
 import com.crisiscleanup.core.mapmarker.ui.rememberMapUiSettings
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
+import com.crisiscleanup.core.model.data.IncidentsData
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.core.selectincident.SelectIncidentDialog
@@ -240,7 +240,7 @@ internal fun CasesRoute(
             val selectedIncidentId by viewModel.incidentSelector.incidentId.collectAsStateWithLifecycle()
             val setSelected = remember(viewModel) {
                 { incident: Incident ->
-                    viewModel.loadSelectIncidents.selectIncident(incident)
+                    viewModel.incidentSelector.selectIncident(incident)
                 }
             }
             SelectIncidentDialog(
