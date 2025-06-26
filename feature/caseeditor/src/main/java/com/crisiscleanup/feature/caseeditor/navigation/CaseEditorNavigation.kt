@@ -198,13 +198,23 @@ fun NavController.rerouteToCaseChange(ids: ExistingWorksiteIdentifier) {
     popBackStack()
     while (currentBackStackEntry?.destination?.route?.let {
             it.startsWith(CASE_EDITOR_ROUTE) ||
-                it.startsWith(VIEW_CASE_ROUTE)
+            it.startsWith(VIEW_CASE_ROUTE)
         } == true
     ) {
         popBackStack()
     }
 
     navigateToCaseEditor(ids.incidentId, ids.worksiteId)
+}
+
+fun NavController.rerouteToViewCase(ids: ExistingWorksiteIdentifier) {
+    popBackStack()
+    while (currentBackStackEntry?.destination?.route?.startsWith(VIEW_CASE_ROUTE) == true
+    ) {
+        popBackStack()
+    }
+
+    navigateToViewCase(ids.incidentId, ids.worksiteId)
 }
 
 fun NavGraphBuilder.caseEditSearchAddressScreen(
