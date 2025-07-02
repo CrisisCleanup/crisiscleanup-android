@@ -1,6 +1,7 @@
 package com.google.android.renderscript
 
 import android.graphics.Bitmap
+import androidx.core.graphics.createBitmap
 
 // This string is used for error messages.
 private const val EXTERNAL_NAME = "RenderScript Toolkit"
@@ -1498,7 +1499,7 @@ internal fun validateBitmap(
 }
 
 internal fun createCompatibleBitmap(inputBitmap: Bitmap) =
-    Bitmap.createBitmap(inputBitmap.width, inputBitmap.height, inputBitmap.config)
+    createBitmap(inputBitmap.width, inputBitmap.height, inputBitmap.config!!)
 
 internal fun validateHistogramDotCoefficients(
     coefficients: FloatArray?,
