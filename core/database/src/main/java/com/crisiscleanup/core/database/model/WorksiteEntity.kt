@@ -131,6 +131,8 @@ data class WorksiteEntity(
     val what3Words: String?,
     @ColumnInfo("updated_at")
     val updatedAt: Instant,
+    @ColumnInfo("network_photo_count", defaultValue = "0")
+    val photoCount: Int?,
 
     // TODO Write tests throughout (model, data, edit feature)
     /**

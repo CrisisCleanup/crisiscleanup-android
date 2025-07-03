@@ -391,7 +391,7 @@ class CaseAddFlagViewModel @Inject constructor(
                             true,
                         )
 
-                        incidentSelectManager.incident.value = incidentChange
+                        incidentSelectManager.submitIncidentChange(incidentChange)
                         incidentWorksiteChange.value =
                             ExistingWorksiteIdentifier(selectedIncidentId, startingWorksite.id)
                     } catch (e: Exception) {

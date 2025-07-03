@@ -78,7 +78,7 @@ import com.crisiscleanup.core.designsystem.component.LinkifyEmailText
 import com.crisiscleanup.core.designsystem.component.LinkifyLocationText
 import com.crisiscleanup.core.designsystem.component.LinkifyPhoneText
 import com.crisiscleanup.core.designsystem.component.TemporaryDialog
-import com.crisiscleanup.core.designsystem.component.WorkTypeAction
+import com.crisiscleanup.core.designsystem.component.WorkTypeBusyAction
 import com.crisiscleanup.core.designsystem.component.WorkTypePrimaryAction
 import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
 import com.crisiscleanup.core.designsystem.component.fabPlusSpaceHeight
@@ -502,7 +502,7 @@ private fun ColumnScope.ExistingCaseContent(
                 2 -> CaseNotesView(worksite)
             }
         }
-        BusyIndicatorFloatingTopCenter(isLoading)
+        BusyIndicatorFloatingTopCenter(isLoading && pagerState.currentPage > 0)
     }
 
     val closeKeyboard = rememberCloseKeyboard(pagerState)
@@ -831,12 +831,17 @@ private fun LazyListScope.workItems(
                 val t = LocalAppTranslator.current
                 val isEditable = LocalCaseEditor.current.isEditable
                 if (profile.unclaimed.isNotEmpty()) {
-                    WorkTypePrimaryAction(t("actions.claim_all_alt"), isEditable, claimAll)
+                    WorkTypePrimaryAction(
+                        t("actions.claim_all_alt"),
+                        enabled = isEditable,
+                        indicateBusy = !isEditable,
+                        claimAll,
+                    )
                 }
                 if (profile.releasableCount > 0) {
-                    WorkTypeAction(t("actions.release_all"), isEditable, releaseAll)
+                    WorkTypeBusyAction(t("actions.release_all"), isEditable, releaseAll)
                 } else if (profile.requestableCount > 0) {
-                    WorkTypeAction(t("actions.request_all"), isEditable, requestAll)
+                    WorkTypeBusyAction(t("actions.request_all"), isEditable, requestAll)
                 }
             }
         }

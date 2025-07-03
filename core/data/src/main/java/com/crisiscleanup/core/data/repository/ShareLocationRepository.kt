@@ -23,7 +23,7 @@ class CrisisCleanupShareLocationRepository @Inject
 constructor(
     private val accountDataRepository: AccountDataRepository,
     private val appPreferencesRepository: LocalAppPreferencesRepository,
-    private val appMetricsRepository: AppMetricsRepository,
+    private val appMetricsRepository: LocalAppMetricsRepository,
     private val locationProvider: LocationProvider,
     private val writeApiClient: CrisisCleanupWriteApi,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,

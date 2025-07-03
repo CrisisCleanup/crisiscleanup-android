@@ -576,7 +576,7 @@ class CreateEditCaseViewModel @Inject constructor(
                 }
                 worksiteProvider.updateIncidentChangeWorksite(copiedWorksite)
                 changeWorksiteIncidentId.value = changeIncident.id
-                incidentSelector.setIncident(changeIncident)
+                incidentSelector.submitIncidentChange(changeIncident)
             } else {
                 worksiteProvider.takeIncidentChanged()
 
@@ -678,7 +678,7 @@ class CreateEditCaseViewModel @Inject constructor(
 
                 worksiteProvider.setEditedLocation(worksite.coordinates)
                 if (isIncidentChange) {
-                    incidentSelector.setIncident(saveChangeIncident)
+                    incidentSelector.submitIncidentChange(saveChangeIncident)
                 } else {
                     editorSetInstant = null
                     dataLoader.reloadData(worksiteId)

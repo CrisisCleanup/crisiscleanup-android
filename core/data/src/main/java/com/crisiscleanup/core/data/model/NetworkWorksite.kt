@@ -44,6 +44,9 @@ fun NetworkWorksiteFull.asEntity() = WorksiteEntity(
     svi = svi,
     what3Words = what3words,
     updatedAt = updatedAt,
+    photoCount = files.map(NetworkFile::mimeContentType)
+        .filter { it?.startsWith("image/") == true }
+        .size,
 )
 
 // Copy similar changes from [NetworkWorksiteFull.asEntity] above
@@ -74,6 +77,7 @@ fun NetworkWorksiteCoreData.asEntity() = WorksiteEntity(
     svi = svi,
     what3Words = what3words,
     updatedAt = updatedAt,
+    photoCount = null,
 )
 
 fun NetworkWorksiteShort.asEntity() = WorksiteEntity(
@@ -105,6 +109,7 @@ fun NetworkWorksiteShort.asEntity() = WorksiteEntity(
     plusCode = null,
     reportedBy = null,
     what3Words = null,
+    photoCount = null,
 )
 
 fun NetworkWorksitePage.asEntity() = WorksiteEntity(
@@ -136,6 +141,7 @@ fun NetworkWorksitePage.asEntity() = WorksiteEntity(
     plusCode = plusCode,
     reportedBy = reportedBy,
     what3Words = what3words,
+    photoCount = photoCount,
 )
 
 fun KeyDynamicValuePair.asWorksiteEntity() = WorksiteFormDataEntity(

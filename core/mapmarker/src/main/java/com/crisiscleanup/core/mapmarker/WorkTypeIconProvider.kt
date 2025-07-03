@@ -11,8 +11,10 @@ import android.graphics.drawable.Drawable
 import androidx.collection.LruCache
 import androidx.compose.ui.geometry.Offset
 import androidx.core.graphics.alpha
+import androidx.core.graphics.createBitmap
 import androidx.core.graphics.get
 import androidx.core.graphics.red
+import androidx.core.graphics.set
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.model.data.WorkTypeStatusClaim
 import com.crisiscleanup.core.model.data.WorkTypeType
@@ -83,7 +85,7 @@ class WorkTypeIconProvider @Inject constructor(
     private val shadowRadius: Int
     private val shadowColor = (0xFF666666).toInt()
 
-    private val bitmapSizeDp = 36f + 2 * shadowRadiusDp
+    private val bitmapSizeDp = 40f + 2 * shadowRadiusDp
     private val bitmapSize: Int
     private var bitmapCenterOffset = Offset(0f, 0f)
 
@@ -93,6 +95,10 @@ class WorkTypeIconProvider @Inject constructor(
     private val plusDrawable: Drawable
     private val plusDrawableTransparent: Drawable
 
+    private val cameraDrawable: Drawable
+    private val cameraDrawableTransparent: Drawable
+    private val cameraDrawableVerticalOffset: Int
+
     init {
         bitmapSize = resourceProvider.dpToPx(bitmapSizeDp).toInt()
         val centerOffset = bitmapSizeDp * 0.5f
@@ -100,10 +106,18 @@ class WorkTypeIconProvider @Inject constructor(
 
         shadowRadius = resourceProvider.dpToPx(shadowRadiusDp).toInt()
 
+        val overlayAlpha = (255 * FILTERED_OUT_MARKER_ALPHA).toInt()
         plusDrawable = resourceProvider.getDrawable(R.drawable.ic_work_type_plus)
         plusDrawableTransparent = resourceProvider.getDrawable(R.drawable.ic_work_type_plus).also {
-            it.alpha = (255 * FILTERED_OUT_MARKER_ALPHA).toInt()
+            it.alpha = overlayAlpha
         }
+
+        cameraDrawable = resourceProvider.getDrawable(R.drawable.ic_work_type_photos)
+        cameraDrawableTransparent =
+            resourceProvider.getDrawable(R.drawable.ic_work_type_photos).also {
+                it.alpha = overlayAlpha
+            }
+        cameraDrawableVerticalOffset = resourceProvider.dpToPx(2f).toInt()
     }
 
     private fun cacheIconBitmap(cacheKey: WorkTypeIconCacheKey): BitmapDescriptor {
@@ -125,6 +139,7 @@ class WorkTypeIconProvider @Inject constructor(
         isDuplicate: Boolean,
         isFilteredOut: Boolean,
         isVisited: Boolean,
+        hasPhotos: Boolean,
     ): BitmapDescriptor {
         val cacheKey = WorkTypeIconCacheKey(
             statusClaim,
@@ -135,6 +150,7 @@ class WorkTypeIconProvider @Inject constructor(
             isDuplicate = isDuplicate,
             isFilteredOut = isFilteredOut,
             isVisited = isVisited,
+            hasPhotos = hasPhotos,
         )
         synchronized(cache) {
             cache.get(cacheKey)?.let {
@@ -152,6 +168,7 @@ class WorkTypeIconProvider @Inject constructor(
         isDuplicate: Boolean,
         isFilteredOut: Boolean,
         isVisited: Boolean,
+        hasPhotos: Boolean,
     ): Bitmap? {
         val cacheKey = WorkTypeIconCacheKey(
             statusClaim,
@@ -160,6 +177,7 @@ class WorkTypeIconProvider @Inject constructor(
             isDuplicate,
             isFilteredOut,
             isVisited,
+            hasPhotos,
         )
         synchronized(cache) {
             bitmapCache.get(cacheKey)?.let {
@@ -186,11 +204,7 @@ class WorkTypeIconProvider @Inject constructor(
         }
 
         val drawable = resourceProvider.getDrawable(iconResId)
-        val output = Bitmap.createBitmap(
-            bitmapSize,
-            bitmapSize,
-            Bitmap.Config.ARGB_8888,
-        )
+        val output = createBitmap(bitmapSize, bitmapSize)
         val canvas = Canvas(output)
 
         // TODO Keep bounds squared and icon centered
@@ -231,7 +245,7 @@ class WorkTypeIconProvider @Inject constructor(
                         (colorValue and 0x00FF00) shr 8,
                         (colorValue and 0x0000FF),
                     )
-                    output.setPixel(w, h, color)
+                    output[w, h] = color
                 }
             }
         }
@@ -241,27 +255,59 @@ class WorkTypeIconProvider @Inject constructor(
             val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 colorFilter = PorterDuffColorFilter(shadowColor, PorterDuff.Mode.SRC_IN)
             }
-            val flatShadow = Bitmap.createBitmap(
-                bitmapSize,
-                bitmapSize,
-                Bitmap.Config.ARGB_8888,
-            )
+            val flatShadow = createBitmap(bitmapSize, bitmapSize)
             Canvas(flatShadow).apply {
                 drawBitmap(output, Matrix(), paint)
             }
             blurred = Toolkit.blur(flatShadow, shadowRadius)
         }
 
+        fun drawOverlay(
+            transparentDrawable: Drawable,
+            drawable: Drawable,
+            isLeftAligned: Boolean,
+            verticalOffset: Int = 0,
+        ) {
+            val pd = if (cacheKey.isFilteredOut) transparentDrawable else drawable
+
+            val horizontalOffsetStart = if (isLeftAligned) {
+                0
+            } else {
+                rightBounds - pd.intrinsicWidth
+            }
+            val horizontalOffsetEnd = if (isLeftAligned) {
+                pd.intrinsicWidth
+            } else {
+                rightBounds
+            }
+            val overlayBottom = bottomBounds - verticalOffset
+            pd.setBounds(
+                horizontalOffsetStart,
+                overlayBottom - pd.intrinsicHeight,
+                horizontalOffsetEnd,
+                overlayBottom,
+            )
+            pd.draw(canvas)
+        }
+
         if (cacheKey.hasMultipleWorkTypes) {
             synchronized(plusDrawable) {
-                val pd = if (cacheKey.isFilteredOut) plusDrawableTransparent else plusDrawable
-                pd.setBounds(
-                    rightBounds - pd.intrinsicWidth,
-                    bottomBounds - pd.intrinsicHeight,
-                    rightBounds,
-                    bottomBounds,
+                drawOverlay(
+                    transparentDrawable = plusDrawableTransparent,
+                    drawable = plusDrawable,
+                    isLeftAligned = false,
                 )
-                pd.draw(canvas)
+            }
+        }
+
+        if (cacheKey.hasPhotos) {
+            synchronized(cameraDrawable) {
+                drawOverlay(
+                    transparentDrawable = cameraDrawableTransparent,
+                    drawable = cameraDrawable,
+                    isLeftAligned = true,
+                    verticalOffset = cameraDrawableVerticalOffset,
+                )
             }
         }
 
@@ -330,4 +376,5 @@ private data class WorkTypeIconCacheKey(
     val isDuplicate: Boolean = false,
     val isFilteredOut: Boolean = false,
     val isVisited: Boolean = false,
+    val hasPhotos: Boolean = false,
 )

@@ -42,6 +42,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -189,7 +190,9 @@ private fun MenuScreen(
     Column {
         AppTopBar(
             incidentDropdownModifier = incidentDropdownModifier,
-            accountToggleModifier = accountToggleModifier,
+            accountToggleModifier = accountToggleModifier
+                .testTag("menuAccountToggle"),
+            incidentSelectTestTag = "menuIncidentSelect",
             dataProvider = viewModel.appTopBarDataProvider,
             openAuthentication = openAuthentication,
             onOpenIncidents = openIncidentsSelect,
@@ -391,6 +394,20 @@ private fun MenuScreen(
                         text = "See sync logs",
                     )
                 }
+
+                item {
+                    CrisisCleanupTextButton(
+                        onClick = viewModel::checkInactivity,
+                        text = "Check inactivity",
+                    )
+                }
+
+                item {
+                    CrisisCleanupTextButton(
+                        onClick = viewModel::clearAppData,
+                        text = "Clear app data",
+                    )
+                }
             }
         }
     }
@@ -401,7 +418,7 @@ private fun MenuScreen(
         val selectedIncidentId by viewModel.incidentSelector.incidentId.collectAsStateWithLifecycle()
         val setSelected = remember(viewModel) {
             { incident: Incident ->
-                viewModel.loadSelectIncidents.selectIncident(incident)
+                viewModel.incidentSelector.selectIncident(incident)
             }
         }
         SelectIncidentDialog(
@@ -660,13 +677,17 @@ private fun TermsPrivacyView(
         horizontalArrangement = Arrangement.Center,
     ) {
         CrisisCleanupTextButton(
-            Modifier.actionHeight(),
+            Modifier
+                .actionHeight()
+                .testTag("menuTermsAction"),
             text = t("publicNav.terms"),
         ) {
             uriHandler.openUri(termsOfServiceUrl)
         }
         CrisisCleanupTextButton(
-            Modifier.actionHeight(),
+            Modifier
+                .actionHeight()
+                .testTag("menuPrivacyAction"),
             text = t("nav.privacy"),
         ) {
             uriHandler.openUri(privacyPolicyUrl)

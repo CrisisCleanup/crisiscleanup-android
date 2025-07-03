@@ -203,6 +203,7 @@ class WorksiteDaoPlus @Inject constructor(
                     svi = svi,
                     what3Words = what3Words,
                     updatedAt = updatedAt,
+                    photoCount = photoCount,
                 )
             }
 
@@ -347,12 +348,11 @@ class WorksiteDaoPlus @Inject constructor(
             true,
         )
 
-        val worksiteId =
-            if (isUpdated) {
-                db.worksiteDao().getWorksiteId(core.networkId)
-            } else {
-                -1
-            }
+        val worksiteId = if (isUpdated) {
+            db.worksiteDao().getWorksiteId(core.networkId)
+        } else {
+            -1
+        }
         return@withTransaction Pair(isUpdated, worksiteId)
     }
 
@@ -377,6 +377,7 @@ class WorksiteDaoPlus @Inject constructor(
                     svi = svi,
                     reportedBy = reportedBy,
                     what3Words = what3Words,
+                    photoCount = photoCount,
                 )
             }
 

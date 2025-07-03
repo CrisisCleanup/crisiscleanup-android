@@ -23,14 +23,12 @@ import com.crisiscleanup.core.data.IncidentSelectManager
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
-import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.OrgVolunteerRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
-import com.crisiscleanup.core.domain.IncidentsData
-import com.crisiscleanup.core.domain.LoadSelectIncidents
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.IncidentOrganizationInviteInfo
+import com.crisiscleanup.core.model.data.IncidentsData
 import com.crisiscleanup.core.model.data.JoinOrgInvite
 import com.crisiscleanup.core.model.data.OrgInviteResult
 import com.crisiscleanup.core.model.data.OrganizationIdName
@@ -47,6 +45,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
@@ -60,7 +59,6 @@ class InviteTeammateViewModel @Inject constructor(
     accountDataRepository: AccountDataRepository,
     incidentsRepository: IncidentsRepository,
     incidentSelector: IncidentSelector,
-    appPreferencesRepository: LocalAppPreferencesRepository,
     organizationsRepository: OrganizationsRepository,
     private val orgVolunteerRepository: OrgVolunteerRepository,
     private val inputValidator: InputValidator,
@@ -88,14 +86,7 @@ class InviteTeammateViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    private val loadSelectIncidents = LoadSelectIncidents(
-        incidentsRepository = incidentsRepository,
-        accountDataRepository = accountDataRepository,
-        incidentSelector = incidentSelector,
-        appPreferencesRepository = appPreferencesRepository,
-        coroutineScope = viewModelScope,
-    )
-    private val incidentsData = loadSelectIncidents.data
+    private val incidentsData = incidentSelector.data
 
     val inviteToAnotherOrg = MutableStateFlow(false)
     private val affiliateOrganizationIds = MutableStateFlow<Set<Long>?>(null)
@@ -416,10 +407,9 @@ class InviteTeammateViewModel @Inject constructor(
 
     init {
         incidentsData
-            .filter { it is IncidentsData.Incidents }
-            .onEach {
+            .mapNotNull { (it as? IncidentsData.Incidents)?.incidents }
+            .onEach { incidents ->
                 withContext(ioDispatcher) {
-                    val incidents = (it as IncidentsData.Incidents).incidents
                     this@InviteTeammateViewModel.incidents.value = incidents
                     incidentLookup.value = incidents.associateBy(Incident::id)
                 }

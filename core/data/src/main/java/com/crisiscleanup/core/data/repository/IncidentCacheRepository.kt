@@ -762,8 +762,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     !savedWorksiteIds.contains(it.id)
                 }
                 if (deduplicateWorksites.isEmpty()) {
-                    val duplicateCount = networkData.size - deduplicateWorksites.size
-                    log("$duplicateCount duplicate(s), before")
+                    log("${networkData.size} duplicate(s), before")
                     break
                 }
 
@@ -984,8 +983,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     !savedWorksiteIds.contains(it.id)
                 }
                 if (deduplicateWorksites.isEmpty()) {
-                    val duplicateCount = networkData.size - deduplicateWorksites.size
-                    log("$duplicateCount duplicate(s), before")
+                    log("${networkData.size} duplicate(s), before")
                     break
                 }
 
@@ -1086,8 +1084,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     !savedWorksiteIds.contains(it.id)
                 }
                 if (deduplicateWorksites.isEmpty()) {
-                    val duplicateCount = networkData.size - deduplicateWorksites.size
-                    log("$duplicateCount duplicate(s) after")
+                    log("${networkData.size} duplicate(s) after")
                     break
                 }
 

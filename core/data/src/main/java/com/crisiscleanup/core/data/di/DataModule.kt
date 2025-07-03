@@ -4,6 +4,8 @@ import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.data.AppIncidentMapTracker
 import com.crisiscleanup.core.data.IncidentMapTracker
+import com.crisiscleanup.core.data.IncidentSelectManager
+import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AccountUpdateRepository
 import com.crisiscleanup.core.data.repository.AppDataManagementRepository
@@ -69,6 +71,10 @@ interface DataModule {
     fun bindsNetworkMonitor(
         networkMonitor: ConnectivityManagerNetworkMonitor,
     ): NetworkMonitor
+
+    @Singleton
+    @Binds
+    fun bindsIncidentSelector(selector: IncidentSelectManager): IncidentSelector
 
     @Singleton
     @Binds

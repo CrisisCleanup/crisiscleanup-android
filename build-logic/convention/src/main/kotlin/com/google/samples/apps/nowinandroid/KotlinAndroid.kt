@@ -29,7 +29,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinTopLevelExtension
 
-internal const val DefaultConfigTargetSdk = 34
+internal const val DefaultConfigTargetSdk = 35
 
 /**
  * Configure base Kotlin with Android options

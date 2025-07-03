@@ -43,7 +43,6 @@ import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
-import com.crisiscleanup.core.domain.LoadSelectIncidents
 import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
@@ -128,14 +127,7 @@ class CasesViewModel @Inject constructor(
     @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
     val appEnv: AppEnv,
 ) : ViewModel(), TrimMemoryListener {
-    val loadSelectIncidents = LoadSelectIncidents(
-        incidentsRepository = incidentsRepository,
-        accountDataRepository = accountDataRepository,
-        incidentSelector = incidentSelector,
-        appPreferencesRepository = appPreferencesRepository,
-        coroutineScope = viewModelScope,
-    )
-    val incidentsData = loadSelectIncidents.data
+    val incidentsData = incidentSelector.data
     val enableIncidentSelect = incidentsRepository.isFirstLoad
         .map(Boolean::not)
         .stateIn(
@@ -452,9 +444,7 @@ class CasesViewModel @Inject constructor(
 
         incidentSelector.incidentId
             .onEach {
-                tileRefreshedInstant = epochZero
-                mapTileRenderer.setIncident(it, 0, true)
-                casesMapTileManager.clearTiles()
+                redrawDotsOverlay(it, 0, epochZero)
             }
             .launchIn(viewModelScope)
 
@@ -681,6 +671,20 @@ class CasesViewModel @Inject constructor(
         }
     }
 
+    private fun redrawDotsOverlay(
+        incidentId: Long,
+        worksitesCount: Int,
+        timestamp: Instant,
+    ) {
+        tileRefreshedInstant = timestamp
+        mapTileRenderer.setIncident(incidentId, worksitesCount, true)
+        casesMapTileManager.clearTiles()
+    }
+
+    private fun redrawDotsOverlay(idCount: IncidentIdWorksiteCount) {
+        redrawDotsOverlay(idCount.id, idCount.totalCount, Clock.System.now())
+    }
+
     private suspend fun refreshTiles(
         idCount: IncidentIdWorksiteCount,
         pullStats: IncidentDataPullStats,
@@ -694,9 +698,7 @@ class CasesViewModel @Inject constructor(
         val now = Clock.System.now()
 
         if (pullStats.isEnded) {
-            tileRefreshedInstant = now
-            mapTileRenderer.setIncident(idCount.id, idCount.totalCount, true)
-            casesMapTileManager.clearTiles()
+            redrawDotsOverlay(idCount)
             return@coroutineScope
         }
 
@@ -711,9 +713,7 @@ class CasesViewModel @Inject constructor(
             now - pullStats.startTime > tileClearRefreshInterval &&
             sinceLastRefresh > tileClearRefreshInterval
         if (refreshTiles) {
-            tileRefreshedInstant = now
-            mapTileRenderer.setIncident(idCount.id, idCount.totalCount, true)
-            casesMapTileManager.clearTiles()
+            redrawDotsOverlay(idCount)
         }
     }
 

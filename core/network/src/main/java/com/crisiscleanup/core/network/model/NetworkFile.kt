@@ -24,7 +24,7 @@ data class NetworkFile(
     @SerialName("large_thumbnail_url")
     val largeThumbnailUrl: String? = null,
     @SerialName("mime_content_type")
-    val mimeContentType: String,
+    val mimeContentType: String?,
     val notes: String? = null,
     @SerialName("small_thumbnail_url")
     val smallThumbnailUrl: String? = null,

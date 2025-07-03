@@ -20,6 +20,7 @@ fun AppTopBar(
     modifier: Modifier = Modifier,
     incidentDropdownModifier: Modifier = Modifier,
     accountToggleModifier: Modifier = Modifier,
+    incidentSelectTestTag: String = "appIncidentSelect",
     dataProvider: AppTopBarDataProvider,
     openAuthentication: () -> Unit = {},
     onOpenIncidents: (() -> Unit)? = null,
@@ -35,7 +36,11 @@ fun AppTopBar(
 
     AppTopBar(
         modifier = modifier,
-        incidentDropdownModifier = incidentDropdownModifier,
+        incidentDropdownModifier = if (enableIncidentSelect) {
+            incidentDropdownModifier.testTag(incidentSelectTestTag)
+        } else {
+            incidentDropdownModifier
+        },
         accountToggleModifier = accountToggleModifier,
         title = screenTitle,
         isAppHeaderLoading = isHeaderLoading,
@@ -83,7 +88,7 @@ internal fun AppTopBar(
                 TruncatedAppBarText(title = title)
             } else {
                 IncidentDropdownSelect(
-                    modifier = incidentDropdownModifier.testTag("appIncidentSelector"),
+                    modifier = incidentDropdownModifier,
                     onOpenIncidents,
                     disasterIconResId,
                     title = title,
