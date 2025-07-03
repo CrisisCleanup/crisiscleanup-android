@@ -394,6 +394,20 @@ private fun MenuScreen(
                         text = "See sync logs",
                     )
                 }
+
+                item {
+                    CrisisCleanupTextButton(
+                        onClick = viewModel::checkInactivity,
+                        text = "Check inactivity",
+                    )
+                }
+
+                item {
+                    CrisisCleanupTextButton(
+                        onClick = viewModel::clearAppData,
+                        text = "Clear app data",
+                    )
+                }
             }
         }
     }

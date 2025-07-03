@@ -198,7 +198,7 @@ fun NavController.rerouteToCaseChange(ids: ExistingWorksiteIdentifier) {
     popBackStack()
     while (currentBackStackEntry?.destination?.route?.let {
             it.startsWith(CASE_EDITOR_ROUTE) ||
-            it.startsWith(VIEW_CASE_ROUTE)
+                it.startsWith(VIEW_CASE_ROUTE)
         } == true
     ) {
         popBackStack()

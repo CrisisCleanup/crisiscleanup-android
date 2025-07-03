@@ -3,13 +3,15 @@ package com.crisiscleanup.sync.workers
 import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
-import androidx.work.OutOfQuotaPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkerParameters
+import com.crisiscleanup.core.common.log.AppLogger
+import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
+import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.repository.AppDataManagementRepository
-import com.crisiscleanup.core.data.repository.AppMetricsRepository
+import com.crisiscleanup.core.data.repository.LocalAppMetricsRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -26,8 +28,9 @@ private const val REPEAT_DURATION_DAYS = 15L
 internal class InactivityWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted workerParams: WorkerParameters,
-    appMetricsRepository: AppMetricsRepository,
+    appMetricsRepository: LocalAppMetricsRepository,
     private val appDataManagementRepository: AppDataManagementRepository,
+    @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : CoroutineWorker(appContext, workerParams) {
     private val appMetrics = appMetricsRepository.metrics
@@ -35,9 +38,8 @@ internal class InactivityWorker @AssistedInject constructor(
     override suspend fun doWork(): Result = withContext(ioDispatcher) {
         val latestAppOpen = appMetrics.first().appOpen.date
         val delta = Clock.System.now().minus(latestAppOpen)
-        val halfToClearDuration = clearDuration.times(0.5)
         when {
-            delta >= clearDuration -> {
+            delta in clearDuration..999.days -> {
                 if (appDataManagementRepository.backgroundClearAppData(false)) {
                     Result.success()
                 } else {
@@ -45,12 +47,11 @@ internal class InactivityWorker @AssistedInject constructor(
                 }
             }
 
-            delta >= halfToClearDuration -> {
-                // TODO Log halfway to clear
+            else -> {
+                val daysToClear = clearDuration.minus(delta)
+                logger.logDebug("App will clear in ${daysToClear.inWholeDays} days due to inactivity.")
                 Result.success()
             }
-
-            else -> Result.success()
         }
     }
 
@@ -59,7 +60,6 @@ internal class InactivityWorker @AssistedInject constructor(
             REPEAT_DURATION_DAYS,
             TimeUnit.DAYS,
         )
-            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
             .setInputData(InactivityWorker::class.delegatedData())
             .build()
     }

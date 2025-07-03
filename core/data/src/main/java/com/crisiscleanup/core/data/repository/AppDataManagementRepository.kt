@@ -16,6 +16,8 @@ import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
 import com.crisiscleanup.core.database.dao.fts.rebuildIncidentFts
 import com.crisiscleanup.core.database.dao.fts.rebuildOrganizationFts
 import com.crisiscleanup.core.database.dao.fts.rebuildWorksiteTextFts
+import com.crisiscleanup.core.model.data.CasesFilter
+import com.crisiscleanup.core.model.data.InitialIncidentWorksitesCachePreferences
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ensureActive
@@ -63,6 +65,8 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
     private val incidentCacheRepository: IncidentCacheRepository,
     private val languageTranslationsRepository: LanguageTranslationsRepository,
     private val workTypeStatusRepository: WorkTypeStatusRepository,
+    private val casesFilterRepository: CasesFilterRepository,
+    private val appMetricsRepository: LocalAppMetricsRepository,
     private val accountEventBus: AccountEventBus,
     @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
@@ -165,9 +169,12 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
     }
 
     private suspend fun clearPersistedAppData() {
-        // TODO Clear/reset other persistent data sources relating to incidents
         databaseOperator.clearBackendDataTables()
-        // TODO Reset all preferences not reset on logout
+        // App preferences resets on logout
+        // Account info clears on logout
+        casesFilterRepository.changeFilters(CasesFilter())
+        incidentCacheRepository.updateCachePreferences(InitialIncidentWorksitesCachePreferences)
+        appMetricsRepository.setAppOpen()
     }
 
     private fun isPersistedAppDataCleared() =
