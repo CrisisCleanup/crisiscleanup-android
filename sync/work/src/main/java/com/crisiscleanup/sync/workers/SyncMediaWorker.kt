@@ -34,7 +34,7 @@ internal class SyncMediaWorker @AssistedInject constructor(
 ) : CoroutineWorker(appContext, workerParams) {
     override suspend fun getForegroundInfo() = appContext.syncForegroundInfo(
         SYNC_MEDIA_NOTIFICATION_ID,
-        text = translator.translate("~~Syncing photos and images", 0),
+        text = translator.translate("sync.syncing_photos_images", 0),
     )
 
     override suspend fun doWork() = withContext(ioDispatcher) {

@@ -58,31 +58,31 @@ internal class IncidentDataSyncNotifier @Inject constructor(
                     if (isOngoing &&
                         isSyncing
                     ) {
-                        val title = translator.translate("~~Syncing {incident_name}", 0)
+                        val title = translator.translate("sync.syncing_incident_name", 0)
                             .replace("{incident_name}", incidentName)
                         val text = notificationMessage.ifBlank {
                             var message = if (isIndeterminate) {
-                                translator.translate("~~Saving data...", 0)
+                                translator.translate("sync.saving_data", 0)
                             } else if (pullType == IncidentPullDataType.WorksitesCore) {
                                 translator.translate(
-                                    "~~Saved {case_count}/{total_case_count} Cases.",
+                                    "sync.saved_case_count_of_total_count",
                                     0,
                                 )
                                     .replace("{case_count}", "$savedCount")
                                     .replace("{total_case_count}", "$dataCount")
                             } else if (pullType == IncidentPullDataType.WorksitesAdditional) {
                                 translator.translate(
-                                    "~~Saved {case_count}/{total_case_count} offline Cases.",
+                                    "sync.saved_case_count_of_total_count_offline",
                                     0,
                                 )
                                     .replace("{case_count}", "$savedCount")
                                     .replace("{total_case_count}", "$dataCount")
                             } else {
-                                translator.translate("~~Saving more data...", 0)
+                                translator.translate("sync.saving_more_data", 0)
                             }
                             if (currentStep in 1..stepTotal) {
                                 message = translator.translate(
-                                    "~~({current_step}/{total_step_count}) {message}",
+                                    "({current_step}/{total_step_count}) {message}",
                                     0,
                                 )
                                     .replace("{current_step}", "$currentStep")
@@ -103,7 +103,7 @@ internal class IncidentDataSyncNotifier @Inject constructor(
                                 .progress(progress)
                                 .addAction(
                                     R.drawable.close,
-                                    translator.translate("~~Stop syncing", 0),
+                                    translator.translate("sync.stop_syncing", 0),
                                     stopSyncIntent,
                                 )
                                 .setOnlyAlertOnce(true)

@@ -34,7 +34,7 @@ internal class SyncWorksitesWorker @AssistedInject constructor(
 ) : CoroutineWorker(appContext, workerParams) {
     override suspend fun getForegroundInfo() = appContext.syncForegroundInfo(
         SYNC_WORKSITES_NOTIFICATION_ID,
-        text = translator.translate("~~Syncing Cases", 0),
+        text = translator.translate("sync.syncing_cases", 0),
     )
 
     override suspend fun doWork() = withContext(ioDispatcher) {
