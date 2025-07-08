@@ -109,18 +109,18 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
 
                 clearingAppDataStep.value = ClearAppDataStep.StopSyncPull
                 stopSyncPull()
-                for (i in 0..9) {
-                    TimeUnit.SECONDS.sleep(6)
+                for (i in 0..19) {
+                    TimeUnit.SECONDS.sleep(3)
                     if (isSyncPullStopped()) {
                         break
                     }
                 }
 
                 clearingAppDataStep.value = ClearAppDataStep.ClearData
-                for (i in 0..<3) {
+                for (i in 0..<6) {
                     clearPersistedAppData()
 
-                    TimeUnit.SECONDS.sleep(2)
+                    TimeUnit.SECONDS.sleep(1)
                     if (isPersistedAppDataCleared()) {
                         break
                     }
@@ -178,5 +178,7 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
     }
 
     private fun isPersistedAppDataCleared() =
-        incidentsRepository.incidentCount == 0L && worksiteChangeRepository.worksiteChangeCount == 0L && incidentDataSyncParameterDao.getSyncStatCount() == 0
+        incidentsRepository.incidentCount == 0L &&
+            worksiteChangeRepository.worksiteChangeCount == 0L &&
+            incidentDataSyncParameterDao.getSyncStatCount() == 0
 }
