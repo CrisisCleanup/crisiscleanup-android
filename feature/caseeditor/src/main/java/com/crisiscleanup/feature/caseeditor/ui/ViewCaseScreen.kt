@@ -787,14 +787,18 @@ private fun LazyListScope.propertyInfoItems(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = listItemSpacedBy,
                 ) {
+                    val actionDescription =
+                        LocalAppTranslator.current.translate("actions.jump_to_case")
                     Image(
                         modifier = Modifier.size(24.dp),
                         painter = painterResource(R.drawable.ic_jump_to_case_on_map),
-                        contentDescription = LocalAppTranslator.current.translate("actions.jump_to_case"),
+                        contentDescription = actionDescription,
                     )
 
                     if (distanceAwayText.isNotBlank()) {
                         Text(distanceAwayText, style = MaterialTheme.typography.bodyLarge)
+                    } else if (actionDescription?.isNotBlank() == true) {
+                        Text(actionDescription, style = MaterialTheme.typography.bodyLarge)
                     }
                 }
 
