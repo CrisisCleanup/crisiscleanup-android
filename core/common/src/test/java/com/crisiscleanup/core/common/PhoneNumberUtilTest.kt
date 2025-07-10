@@ -5,46 +5,187 @@ import kotlin.test.assertEquals
 
 class PhoneNumberUtilTest {
     @Test
-    fun emptyPhoneNumbers() {
-        val actual = PhoneNumberUtil.getPhoneNumbers(listOf("", "  "))
-        assertEquals(emptyList(), actual)
+    fun invalidPhoneNumbers() {
+        val inputs = listOf(
+            "",
+            "   ",
+            " 12345 ",
+            " no numbers",
+        )
+        for (input in inputs) {
+            val actual = PhoneNumberUtil.parsePhoneNumbers(input)?.parsedNumbers
+            assertEquals(null, actual)
+        }
     }
 
     @Test
-    fun tenElevenDigitPhoneNumbers() {
-        val actual = PhoneNumberUtil.getPhoneNumbers(listOf("1234567890", "11234567890"))
-        val expected = listOf(
-            ParsedPhoneNumber("1234567890", listOf("1234567890")),
-            ParsedPhoneNumber("11234567890", listOf("11234567890")),
+    fun tenDigitNumberExactly() {
+        val inputs = listOf(
+            "1234567890",
+            "  1234567890",
+            "1234567890   ",
+            "  1234567890  ",
         )
-        assertEquals(expected, actual)
+        for (input in inputs) {
+            val actual = PhoneNumberUtil.parsePhoneNumbers(input)?.parsedNumbers
+            assertEquals(listOf("1234567890"), actual)
+        }
     }
 
     @Test
-    fun commonSpacedPhoneNumbers() {
-        val actual = PhoneNumberUtil.getPhoneNumbers(listOf("123 456 7890", "123 4567890"))
-        val expected = listOf(
-            ParsedPhoneNumber("123 456 7890", listOf("1234567890")),
-            ParsedPhoneNumber("123 4567890", listOf("1234567890")),
+    fun noCompaction() {
+        val inputs = listOf(
+            " (234)5678901 ",
+            "(234)5678901",
+            " 1(234)5678901",
+            "12345678901 ",
         )
-        assertEquals(expected, actual)
+        for (input in inputs) {
+            val actual = PhoneNumberUtil.parsePhoneNumbers(input)?.parsedNumbers
+            assertEquals(listOf("2345678901"), actual)
+        }
     }
 
     @Test
-    fun doublePhoneNumber() {
-        val actual = PhoneNumberUtil.getPhoneNumbers(listOf("1234567890dgk e*11234567890"))
-        val expected = listOf(
-            ParsedPhoneNumber("1234567890dgk e*11234567890", listOf("1234567890", "11234567890")),
+    fun compact334() {
+        val inputs = listOf(
+            "234 567 8901",
+            "234-567-8901",
+            "234.567.8901",
+            "1234 567 8901",
+            "1234-567-8901",
+            "1234.567.8901",
+            "1234.567.8901",
+            "(234).567.8901",
+            "1(234).567.8901",
+            "234 567  8901 ",
+            " 234  567 8901",
+            " 234  567  8901 ",
+            "1234  567  8901 ",
         )
-        assertEquals(expected, actual)
+        for (input in inputs) {
+            val actual = PhoneNumberUtil.parsePhoneNumbers(input)?.parsedNumbers
+            assertEquals(listOf("2345678901"), actual)
+        }
     }
 
     @Test
-    fun onlyNumbers() {
-        val actual = PhoneNumberUtil.getPhoneNumbers(listOf("1-2/3a4.5-6:7890"))
-        val expected = listOf(
-            ParsedPhoneNumber("1-2/3a4.5-6:7890", listOf("1234567890")),
+    fun dashParenthesis() {
+        val inputs = listOf(
+            "234567-8901",
+            "234-5678901",
+            "234) 567-8901",
         )
-        assertEquals(expected, actual)
+        for (input in inputs) {
+            val actual = PhoneNumberUtil.parsePhoneNumbers(input)?.parsedNumbers
+            assertEquals(listOf("2345678901"), actual)
+        }
+    }
+
+    @Test
+    fun nonNumeric3764() {
+        val inputs = listOf(
+            "234 5678901",
+            "1234 5678901",
+            "something 1234 5678901-cell",
+            "+234 5678901 (air)",
+            "2345678901 a number",
+            "a 1234 5678901 b",
+            "234567 8901",
+            "something 234567 8901-cell",
+            "a 234567 8901 b",
+            "1234567 8901",
+            "12345678901 for anyone",
+        )
+        for (input in inputs) {
+            val actual = PhoneNumberUtil.parsePhoneNumbers(input)?.parsedNumbers
+            assertEquals(listOf("2345678901"), actual)
+        }
+    }
+
+    @Test
+    fun possibleMultiple() {
+        val inputs = mapOf(
+            "23456789012" to listOf("23456789012"),
+            "1\u202A2345678901" to listOf("2345678901"),
+            "2345678901 or 3456789012" to listOf(
+                "2345678901",
+                "3456789012",
+            ),
+            "234567890" to listOf("234567890"),
+            "234567890-" to listOf("234567890"),
+            "2345678901  . 4282 M-F" to listOf("2345678901"),
+            "2345678901 / 3456789012" to listOf(
+                "2345678901",
+                "3456789012",
+            ),
+            "2345678901 or 3456789012" to listOf(
+                "2345678901",
+                "3456789012",
+            ),
+            "1.7068339198" to listOf("7068339198"),
+            "(23456789012" to listOf("23456789012"),
+            "18002345678901" to listOf("8002345678901"),
+            "2345678901   1st" to listOf("2345678901"),
+            "2345678901             9  0" to listOf("2345678901"),
+            "2345678901 (  be 3456789012)" to listOf(
+                "2345678901",
+                "3456789012",
+            ),
+            "2345678901/3456789012" to listOf(
+                "2345678901",
+                "3456789012",
+            ),
+            "  2345678901 or      3456789012 " to listOf(
+                "2345678901",
+                "3456789012",
+            ),
+            "2345678901/ 3456789012 ( )" to listOf(
+                "2345678901",
+                "3456789012",
+            ),
+            "2345678901/3456789012/4567891234" to listOf(
+                "2345678901",
+                "3456789012",
+                "4567891234",
+            ),
+            "2345678901, 3456789012, 4567891234 \n" to listOf(
+                "2345678901",
+                "3456789012",
+                "4567891234",
+            ),
+            "1234567890r9 " to listOf("234567890"),
+            "2345678901 x558   " to listOf("2345678901"),
+        )
+        for ((input, expected) in inputs) {
+            val actual = PhoneNumberUtil.parsePhoneNumbers(input)?.parsedNumbers
+            assertEquals(expected, actual, input)
+        }
+    }
+
+    @Test
+    fun dotDelimited11() {
+        val inputs = listOf(
+            "234.5678901",
+            "(234.5678901",
+        )
+        for (input in inputs) {
+            val actual = PhoneNumberUtil.parsePhoneNumbers(input)?.parsedNumbers
+            assertEquals(listOf("2345678901"), actual)
+        }
+    }
+
+    @Test
+    fun mostlyNumbers() {
+        val inputs = mapOf(
+            "234 567- 8901-  " to "2345678901",
+            "1234*5678901" to "12345678901",
+            "123 4567 8901" to "12345678901",
+            "123456 78901" to "12345678901",
+        )
+        for ((input, expected) in inputs) {
+            val actual = PhoneNumberUtil.parsePhoneNumbers(input)?.parsedNumbers?.first()
+            assertEquals(expected, actual, input)
+        }
     }
 }
