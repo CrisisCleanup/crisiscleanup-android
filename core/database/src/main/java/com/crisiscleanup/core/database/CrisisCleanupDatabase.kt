@@ -11,6 +11,7 @@ import com.crisiscleanup.core.database.DatabaseMigrations.Schema18To19
 import com.crisiscleanup.core.database.DatabaseMigrations.Schema2To3
 import com.crisiscleanup.core.database.DatabaseMigrations.Schema35To36
 import com.crisiscleanup.core.database.DatabaseMigrations.Schema3to4
+import com.crisiscleanup.core.database.DatabaseMigrations.Schema45To46
 import com.crisiscleanup.core.database.dao.CaseHistoryDao
 import com.crisiscleanup.core.database.dao.IncidentDao
 import com.crisiscleanup.core.database.dao.IncidentDataSyncParameterDao
@@ -118,7 +119,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         TeamMemberCrossRef::class,
         IncidentDataSyncParametersEntity::class,
     ],
-    version = 45,
+    version = 46,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -164,6 +165,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 42, to = 43),
         AutoMigration(from = 43, to = 44),
         AutoMigration(from = 44, to = 45),
+        AutoMigration(from = 45, to = 46, spec = Schema45To46::class),
     ],
     exportSchema = true,
 )

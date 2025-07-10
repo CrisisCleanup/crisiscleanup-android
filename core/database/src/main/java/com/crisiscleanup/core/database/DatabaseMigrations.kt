@@ -60,4 +60,11 @@ object DatabaseMigrations {
         ),
     )
     class Schema35To36 : AutoMigrationSpec
+
+    @DeleteTable.Entries(
+        DeleteTable(
+            tableName = "worksite_text_fts_b",
+        ),
+    )
+    class Schema45To46 : AutoMigrationSpec
 }

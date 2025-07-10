@@ -238,6 +238,7 @@ interface WorksiteDao {
         name            =:name,
         phone1          =COALESCE(:phone1, phone1),
         phone2          =COALESCE(:phone2, phone2),
+        phone_search    =COALESCE(:phoneSearch, phone_search),
         plus_code       =COALESCE(:plusCode, plus_code),
         postal_code     =:postalCode,
         reported_by     =COALESCE(:reportedBy, reported_by),
@@ -270,6 +271,7 @@ interface WorksiteDao {
         name: String,
         phone1: String?,
         phone2: String?,
+        phoneSearch: String?,
         plusCode: String?,
         postalCode: String,
         reportedBy: Long?,
@@ -613,7 +615,7 @@ interface WorksiteDao {
     fun getRandomWorksiteCaseNumber(): String?
 
     @Transaction
-    @Query("INSERT INTO worksite_text_fts_b(worksite_text_fts_b) VALUES ('rebuild')")
+    @Query("INSERT INTO worksite_text_fts_c(worksite_text_fts_c) VALUES ('rebuild')")
     fun rebuildWorksiteTextFts()
 
     // TODO Is it possible to filter by incident_id with FTS match more efficiently?
@@ -621,10 +623,10 @@ interface WorksiteDao {
     @Query(
         """
         SELECT w.*,
-        matchinfo(worksite_text_fts_b, 'pcnalx') AS match_info
-        FROM worksite_text_fts_b f
+        matchinfo(worksite_text_fts_c, 'pcnalx') AS match_info
+        FROM worksite_text_fts_c f
         INNER JOIN worksites w ON f.docid=w.id
-        WHERE worksite_text_fts_b MATCH :query
+        WHERE worksite_text_fts_c MATCH :query
         LIMIT :limit
         """,
     )
@@ -637,9 +639,9 @@ interface WorksiteDao {
     @Query(
         """
         SELECT w.id
-        FROM worksite_text_fts_b f
+        FROM worksite_text_fts_c f
         INNER JOIN worksites w ON f.docid=w.id
-        WHERE worksite_text_fts_b MATCH :query
+        WHERE worksite_text_fts_c MATCH :query
         LIMIT 1
         """,
     )

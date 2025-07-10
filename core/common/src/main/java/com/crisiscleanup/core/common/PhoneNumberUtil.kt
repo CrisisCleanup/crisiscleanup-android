@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.common
 
 import androidx.annotation.VisibleForTesting
+import kotlin.math.abs
 
 object PhoneNumberUtil {
     private val noNumbersPattern = """^\D+$""".toRegex()
@@ -140,6 +141,45 @@ object PhoneNumberUtil {
         .mapNotNull { it }
         .mapNotNull(::parsePhoneNumbers)
         .toList()
+
+    fun searchablePhoneNumbers(phone1: String, phone2: String?): String =
+        getPhoneNumbers(listOf(phone1, phone2))
+            .asSequence()
+            .map(ParsedPhoneNumber::parsedNumbers)
+            .flatten()
+            .filter(String::isNotBlank)
+            .map {
+                if (it.startsWith("1") && it.length == 11) {
+                    it.substring(1)
+                } else {
+                    it
+                }
+            }
+            .flatMap {
+                if (it.length == 10) {
+                    listOf(it, it.substring(3))
+                } else {
+                    listOf(it)
+                }
+            }
+            .toList()
+            .sortedWith(
+                { a, b ->
+                    if (a.length == 10) {
+                        return@sortedWith -1
+                    }
+                    if (b.length == 10) {
+                        return@sortedWith 1
+                    }
+                    val closestToTen = abs(a.length - 10) - abs(b.length - 10)
+                    if (closestToTen <= 0) {
+                        -1
+                    } else {
+                        1
+                    }
+                },
+            )
+            .joinToString(" ")
 }
 
 data class ParsedPhoneNumber(
