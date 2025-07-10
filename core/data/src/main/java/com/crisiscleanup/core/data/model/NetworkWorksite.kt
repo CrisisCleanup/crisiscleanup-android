@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.data.model
 
+import com.crisiscleanup.core.common.PhoneNumberUtil.searchablePhoneNumbers
 import com.crisiscleanup.core.database.model.WorksiteEntities
 import com.crisiscleanup.core.database.model.WorksiteEntity
 import com.crisiscleanup.core.database.model.WorksiteFlagEntity
@@ -37,6 +38,7 @@ fun NetworkWorksiteFull.asEntity() = WorksiteEntity(
     name = name,
     phone1 = phone1,
     phone2 = phone2,
+    phoneSearch = searchablePhoneNumbers(phone1, phone2),
     plusCode = plusCode,
     postalCode = postalCode ?: "",
     reportedBy = reportedBy,
@@ -70,6 +72,7 @@ fun NetworkWorksiteCoreData.asEntity() = WorksiteEntity(
     name = name,
     phone1 = phone1,
     phone2 = phone2,
+    phoneSearch = searchablePhoneNumbers(phone1, phone2),
     plusCode = plusCode,
     postalCode = postalCode ?: "",
     reportedBy = reportedBy,
@@ -106,6 +109,7 @@ fun NetworkWorksiteShort.asEntity() = WorksiteEntity(
     email = null,
     phone1 = null,
     phone2 = null,
+    phoneSearch = null,
     plusCode = null,
     reportedBy = null,
     what3Words = null,
@@ -138,6 +142,7 @@ fun NetworkWorksitePage.asEntity() = WorksiteEntity(
     email = email,
     phone1 = phone1,
     phone2 = phone2,
+    phoneSearch = searchablePhoneNumbers(phone1, phone2),
     plusCode = plusCode,
     reportedBy = reportedBy,
     what3Words = what3words,

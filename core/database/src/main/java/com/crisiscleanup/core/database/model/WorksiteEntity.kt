@@ -13,7 +13,7 @@ import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteNote
 import kotlinx.datetime.Instant
 
-// Changes below should update WorksitesStableModelBuildVersion in core.network
+// Changes below should update WORKSITES_STABLE_MODEL_BUILD_VERSION in core.network
 
 @Entity(
     "worksites_root",
@@ -119,6 +119,8 @@ data class WorksiteEntity(
     val phone1: String?,
     @ColumnInfo(defaultValue = "")
     val phone2: String?,
+    @ColumnInfo("phone_search", defaultValue = "")
+    val phoneSearch: String?,
     @ColumnInfo("plus_code", defaultValue = "")
     val plusCode: String?,
     @ColumnInfo("postal_code")

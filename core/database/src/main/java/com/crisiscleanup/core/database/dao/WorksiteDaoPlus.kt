@@ -196,6 +196,7 @@ class WorksiteDaoPlus @Inject constructor(
                     name = name,
                     phone1 = phone1,
                     phone2 = phone2,
+                    phoneSearch = phoneSearch,
                     plusCode = plusCode,
                     postalCode = postalCode,
                     reportedBy = reportedBy,

@@ -483,7 +483,7 @@ internal fun BoxScope.CasesMapView(
     onMarkerSelect: (WorksiteMapMark) -> Boolean = { false },
     editedWorksiteLocation: LatLng? = null,
     isMyLocationEnabled: Boolean = false,
-    onEditLocationZoom: Float = 12f,
+    onEditLocationZoom: Float = 15f,
     isSatelliteMapType: Boolean = false,
 ) {
     // TODO Profile and optimize recompositions when map is changed (by user) if possible.
