@@ -50,7 +50,7 @@ data class PopulatedWorksiteTextMatchInfo(
             matchInfoInts.okapiBm25Score(3) * 0.7 +
             matchInfoInts.okapiBm25Score(4) * 0.7 +
             matchInfoInts.okapiBm25Score(5) * 0.9 +
-            matchInfoInts.okapiBm25Score(8) * 0.6
+            matchInfoInts.okapiBm25Score(6) * 0.6
     }
 
     override fun equals(other: Any?): Boolean {
