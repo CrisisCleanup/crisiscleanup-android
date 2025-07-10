@@ -77,11 +77,9 @@ class TeamsViewModel @Inject constructor(
         incidentSelector,
         translator,
         accountDataRepository,
-        appPreferencesRepository,
         viewModelScope,
     )
     val incidentsData = appTopBarDataProvider.incidentsData
-    val loadSelectIncidents = appTopBarDataProvider.loadSelectIncidents
 
     private val incidentIdStream = incidentSelector.incidentId
     private val additionalUserProfileLookup = MutableStateFlow<Map<Long, PersonContact>>(emptyMap())

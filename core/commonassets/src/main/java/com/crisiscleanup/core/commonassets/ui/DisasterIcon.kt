@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.commonassets.R
+import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContainerColor
 import com.crisiscleanup.core.designsystem.theme.incidentDisasterContentColor
 import com.crisiscleanup.core.model.data.Disaster
@@ -42,12 +43,17 @@ fun getDisasterIcon(disaster: Disaster) = statusIcons[disaster] ?: R.drawable.ic
 fun DisasterIcon(
     @DrawableRes disasterResId: Int,
     incidentName: String,
+    enabled: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Surface(
         modifier = modifier,
         shape = CircleShape,
-        color = incidentDisasterContainerColor,
+        color = if (enabled) {
+            incidentDisasterContainerColor
+        } else {
+            incidentDisasterContainerColor.disabledAlpha()
+        },
         contentColor = incidentDisasterContentColor,
     ) {
         Icon(

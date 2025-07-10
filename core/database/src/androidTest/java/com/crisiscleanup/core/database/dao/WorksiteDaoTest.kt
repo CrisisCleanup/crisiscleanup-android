@@ -393,6 +393,7 @@ fun testWorksiteEntity(
     name = "",
     phone1 = "",
     phone2 = null,
+    phoneSearch = null,
     plusCode = null,
     postalCode = "",
     reportedBy = 0,
@@ -400,6 +401,7 @@ fun testWorksiteEntity(
     svi = null,
     what3Words = null,
     updatedAt = updatedAt,
+    photoCount = null,
 )
 
 // Defines all fields setting updated_at to be relative to createdAt
@@ -429,6 +431,7 @@ fun testWorksiteFullEntity(
     name = "full worksite",
     phone1 = "345-414-7825",
     phone2 = "835-621-8938",
+    phoneSearch = null,
     plusCode = "code 123",
     postalCode = "83425",
     reportedBy = 7835,
@@ -436,6 +439,7 @@ fun testWorksiteFullEntity(
     svi = 6.235f,
     what3Words = "what,three,words",
     updatedAt = createdAt.plus(99.seconds),
+    photoCount = null,
 )
 
 // Defines all fields not nullable
@@ -465,6 +469,7 @@ fun testWorksiteShortEntity(
     name = "short worksite",
     phone1 = null,
     phone2 = null,
+    phoneSearch = null,
     plusCode = null,
     postalCode = "83425-shrt",
     reportedBy = null,
@@ -472,4 +477,5 @@ fun testWorksiteShortEntity(
     svi = 0.548f,
     what3Words = null,
     updatedAt = createdAt.plus(66.seconds),
+    photoCount = null,
 )

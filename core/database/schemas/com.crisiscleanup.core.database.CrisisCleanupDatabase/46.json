@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 45,
-    "identityHash": "517fd23338868bdba39991ddcf9f7c5f",
+    "version": 46,
+    "identityHash": "bca6de9e826d883a435f11ffeb93f80a",
     "entities": [
       {
         "tableName": "work_type_statuses",
@@ -626,7 +626,7 @@
       },
       {
         "tableName": "worksites",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `network_id` INTEGER NOT NULL DEFAULT -1, `incident_id` INTEGER NOT NULL, `address` TEXT NOT NULL, `auto_contact_frequency_t` TEXT, `case_number` TEXT NOT NULL, `case_number_order` INTEGER NOT NULL DEFAULT 0, `city` TEXT NOT NULL, `county` TEXT NOT NULL, `created_at` INTEGER, `email` TEXT DEFAULT '', `favorite_id` INTEGER, `key_work_type_type` TEXT NOT NULL DEFAULT '', `key_work_type_org` INTEGER, `key_work_type_status` TEXT NOT NULL DEFAULT '', `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `name` TEXT NOT NULL, `phone1` TEXT, `phone2` TEXT DEFAULT '', `plus_code` TEXT DEFAULT '', `postal_code` TEXT NOT NULL, `reported_by` INTEGER, `state` TEXT NOT NULL, `svi` REAL, `what3Words` TEXT DEFAULT '', `updated_at` INTEGER NOT NULL, `network_photo_count` INTEGER DEFAULT 0, `is_local_favorite` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`), FOREIGN KEY(`id`) REFERENCES `worksites_root`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `network_id` INTEGER NOT NULL DEFAULT -1, `incident_id` INTEGER NOT NULL, `address` TEXT NOT NULL, `auto_contact_frequency_t` TEXT, `case_number` TEXT NOT NULL, `case_number_order` INTEGER NOT NULL DEFAULT 0, `city` TEXT NOT NULL, `county` TEXT NOT NULL, `created_at` INTEGER, `email` TEXT DEFAULT '', `favorite_id` INTEGER, `key_work_type_type` TEXT NOT NULL DEFAULT '', `key_work_type_org` INTEGER, `key_work_type_status` TEXT NOT NULL DEFAULT '', `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `name` TEXT NOT NULL, `phone1` TEXT, `phone2` TEXT DEFAULT '', `phone_search` TEXT DEFAULT '', `plus_code` TEXT DEFAULT '', `postal_code` TEXT NOT NULL, `reported_by` INTEGER, `state` TEXT NOT NULL, `svi` REAL, `what3Words` TEXT DEFAULT '', `updated_at` INTEGER NOT NULL, `network_photo_count` INTEGER DEFAULT 0, `is_local_favorite` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`), FOREIGN KEY(`id`) REFERENCES `worksites_root`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -750,6 +750,13 @@
           {
             "fieldPath": "phone2",
             "columnName": "phone2",
+            "affinity": "TEXT",
+            "notNull": false,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "phoneSearch",
+            "columnName": "phone_search",
             "affinity": "TEXT",
             "notNull": false,
             "defaultValue": "''"
@@ -2689,13 +2696,13 @@
           "preferredOrder": "ASC"
         },
         "contentSyncTriggers": [
-          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_worksite_text_fts_b_BEFORE_UPDATE BEFORE UPDATE ON `worksites` BEGIN DELETE FROM `worksite_text_fts_b` WHERE `docid`=OLD.`rowid`; END",
-          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_worksite_text_fts_b_BEFORE_DELETE BEFORE DELETE ON `worksites` BEGIN DELETE FROM `worksite_text_fts_b` WHERE `docid`=OLD.`rowid`; END",
-          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_worksite_text_fts_b_AFTER_UPDATE AFTER UPDATE ON `worksites` BEGIN INSERT INTO `worksite_text_fts_b`(`docid`, `address`, `case_number`, `city`, `county`, `email`, `name`, `phone1`, `phone2`) VALUES (NEW.`rowid`, NEW.`address`, NEW.`case_number`, NEW.`city`, NEW.`county`, NEW.`email`, NEW.`name`, NEW.`phone1`, NEW.`phone2`); END",
-          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_worksite_text_fts_b_AFTER_INSERT AFTER INSERT ON `worksites` BEGIN INSERT INTO `worksite_text_fts_b`(`docid`, `address`, `case_number`, `city`, `county`, `email`, `name`, `phone1`, `phone2`) VALUES (NEW.`rowid`, NEW.`address`, NEW.`case_number`, NEW.`city`, NEW.`county`, NEW.`email`, NEW.`name`, NEW.`phone1`, NEW.`phone2`); END"
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_worksite_text_fts_c_BEFORE_UPDATE BEFORE UPDATE ON `worksites` BEGIN DELETE FROM `worksite_text_fts_c` WHERE `docid`=OLD.`rowid`; END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_worksite_text_fts_c_BEFORE_DELETE BEFORE DELETE ON `worksites` BEGIN DELETE FROM `worksite_text_fts_c` WHERE `docid`=OLD.`rowid`; END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_worksite_text_fts_c_AFTER_UPDATE AFTER UPDATE ON `worksites` BEGIN INSERT INTO `worksite_text_fts_c`(`docid`, `address`, `case_number`, `city`, `county`, `email`, `name`, `phone_search`) VALUES (NEW.`rowid`, NEW.`address`, NEW.`case_number`, NEW.`city`, NEW.`county`, NEW.`email`, NEW.`name`, NEW.`phone_search`); END",
+          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_worksite_text_fts_c_AFTER_INSERT AFTER INSERT ON `worksites` BEGIN INSERT INTO `worksite_text_fts_c`(`docid`, `address`, `case_number`, `city`, `county`, `email`, `name`, `phone_search`) VALUES (NEW.`rowid`, NEW.`address`, NEW.`case_number`, NEW.`city`, NEW.`county`, NEW.`email`, NEW.`name`, NEW.`phone_search`); END"
         ],
-        "tableName": "worksite_text_fts_b",
-        "createSql": "CREATE VIRTUAL TABLE IF NOT EXISTS `${TABLE_NAME}` USING FTS4(`address` TEXT NOT NULL, `case_number` TEXT NOT NULL, `city` TEXT NOT NULL, `county` TEXT NOT NULL, `email` TEXT NOT NULL, `name` TEXT NOT NULL, `phone1` TEXT NOT NULL, `phone2` TEXT NOT NULL, content=`worksites`)",
+        "tableName": "worksite_text_fts_c",
+        "createSql": "CREATE VIRTUAL TABLE IF NOT EXISTS `${TABLE_NAME}` USING FTS4(`address` TEXT NOT NULL, `case_number` TEXT NOT NULL, `city` TEXT NOT NULL, `county` TEXT NOT NULL, `email` TEXT NOT NULL, `name` TEXT NOT NULL, `phone_search` TEXT NOT NULL DEFAULT '', content=`worksites`)",
         "fields": [
           {
             "fieldPath": "address",
@@ -2734,16 +2741,11 @@
             "notNull": true
           },
           {
-            "fieldPath": "phone1",
-            "columnName": "phone1",
+            "fieldPath": "phoneSearch",
+            "columnName": "phone_search",
             "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "phone2",
-            "columnName": "phone2",
-            "affinity": "TEXT",
-            "notNull": true
+            "notNull": true,
+            "defaultValue": "''"
           }
         ],
         "primaryKey": {
@@ -3371,7 +3373,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '517fd23338868bdba39991ddcf9f7c5f')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'bca6de9e826d883a435f11ffeb93f80a')"
     ]
   }
 }

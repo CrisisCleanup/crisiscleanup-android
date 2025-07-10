@@ -152,7 +152,7 @@ private fun WorkTypeSummaryView(
                         }
                     }
                 } else {
-                    WorkTypePrimaryAction(t("actions.claim"), isEditable) {
+                    WorkTypePrimaryAction(t("actions.claim"), enabled = isEditable) {
                         updateWorkType(workType.copy(orgClaim = myOrgId), false)
                     }
                 }

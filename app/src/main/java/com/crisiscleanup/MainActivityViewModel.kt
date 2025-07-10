@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.AppSettingsProvider
-import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.CrisisCleanupTutorialDirectors.Menu
 import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.NetworkMonitor
@@ -34,7 +33,6 @@ import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.data.repository.ShareLocationRepository
 import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.AppMetricsData
-import com.crisiscleanup.core.model.data.AppOpenInstant
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.MinSupportedAppVersion
 import com.crisiscleanup.core.model.data.UserData
@@ -54,10 +52,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.hours
 
 @HiltViewModel
 class MainActivityViewModel @Inject constructor(
@@ -72,7 +67,6 @@ class MainActivityViewModel @Inject constructor(
     val tutorialViewTracker: TutorialViewTracker,
     val translator: KeyResourceTranslator,
     private val syncPuller: SyncPuller,
-    private val appVersionProvider: AppVersionProvider,
     appSettingsProvider: AppSettingsProvider,
     private val appEnv: AppEnv,
     firebaseAnalytics: FirebaseAnalytics,
@@ -83,25 +77,15 @@ class MainActivityViewModel @Inject constructor(
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : ViewModel() {
-    /**
-     * Previous app open
-     *
-     * Sets only once every app session.
-     */
-    private val initialAppOpen = AtomicReference<AppOpenInstant>(null)
-
     val viewState = combine(
         appPreferencesRepository.preferences,
         appMetricsRepository.metrics.distinctUntilChanged(),
         ::Pair,
     )
         .map { (preferences, metrics) ->
-            if (initialAppOpen.compareAndSet(null, metrics.appOpen)) {
-                onAppOpen()
-            }
-
             MainActivityViewState.Success(preferences, metrics)
-        }.stateIn(
+        }
+        .stateIn(
             scope = viewModelScope,
             initialValue = MainActivityViewState.Loading,
             started = ReplaySubscribed3,
@@ -259,16 +243,7 @@ class MainActivityViewModel @Inject constructor(
         )
     }
 
-    fun onAppOpen() {
-        initialAppOpen.get()?.let {
-            viewModelScope.launch {
-                val previousOpen = appMetricsRepository.metrics.first().appOpen
-                if (Clock.System.now() - previousOpen.date > 1.hours) {
-                    appMetricsRepository.setAppOpen(appVersionProvider.versionCode)
-                }
-            }
-        }
-
+    fun onAppFocus() {
         viewModelScope.launch(ioDispatcher) {
             shareLocationWithOrganization()
         }

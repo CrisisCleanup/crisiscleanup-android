@@ -42,9 +42,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.appcomponent.ui.AppTopBar
 import com.crisiscleanup.core.common.TutorialStep
@@ -81,6 +81,7 @@ import com.google.accompanist.permissions.shouldShowRationale
 
 @Composable
 internal fun MenuRoute(
+    viewModel: MenuViewModel,
     openAuthentication: () -> Unit = {},
     openInviteTeammate: () -> Unit = {},
     openRequestRedeploy: () -> Unit = {},
@@ -97,6 +98,7 @@ internal fun MenuRoute(
         openLists = openLists,
         openIncidentCache = openIncidentCache,
         openSyncLogs = openSyncLogs,
+        viewModel = viewModel,
     )
 }
 
@@ -110,7 +112,7 @@ private fun MenuScreen(
     openLists: () -> Unit = {},
     openIncidentCache: () -> Unit = {},
     openSyncLogs: () -> Unit = {},
-    viewModel: MenuViewModel = hiltViewModel(),
+    viewModel: MenuViewModel,
 ) {
     val t = LocalAppTranslator.current
     val translationCount by t.translationCount.collectAsStateWithLifecycle()
@@ -189,7 +191,9 @@ private fun MenuScreen(
     Column {
         AppTopBar(
             incidentDropdownModifier = incidentDropdownModifier,
-            accountToggleModifier = accountToggleModifier,
+            accountToggleModifier = accountToggleModifier
+                .testTag("menuAccountToggle"),
+            incidentSelectTestTag = "menuIncidentSelect",
             dataProvider = viewModel.appTopBarDataProvider,
             openAuthentication = openAuthentication,
             onOpenIncidents = openIncidentsSelect,
@@ -380,7 +384,7 @@ private fun MenuScreen(
 
             if (viewModel.isDebuggable) {
                 item {
-                    MenuScreenNonProductionView()
+                    MenuScreenNonProductionView(viewModel)
                 }
             }
 
@@ -389,6 +393,20 @@ private fun MenuScreen(
                     CrisisCleanupTextButton(
                         onClick = openSyncLogs,
                         text = "See sync logs",
+                    )
+                }
+
+                item {
+                    CrisisCleanupTextButton(
+                        onClick = viewModel::checkInactivity,
+                        text = "Check inactivity",
+                    )
+                }
+
+                item {
+                    CrisisCleanupTextButton(
+                        onClick = viewModel::clearAppData,
+                        text = "Clear app data",
                     )
                 }
             }
@@ -401,7 +419,7 @@ private fun MenuScreen(
         val selectedIncidentId by viewModel.incidentSelector.incidentId.collectAsStateWithLifecycle()
         val setSelected = remember(viewModel) {
             { incident: Incident ->
-                viewModel.loadSelectIncidents.selectIncident(incident)
+                viewModel.incidentSelector.selectIncident(incident)
             }
         }
         SelectIncidentDialog(
@@ -626,7 +644,7 @@ private fun GettingStartedSection(
 
 @Composable
 internal fun MenuScreenNonProductionView(
-    viewModel: MenuViewModel = hiltViewModel(),
+    viewModel: MenuViewModel,
 ) {
     val databaseText = viewModel.databaseVersionText
     Text(
@@ -659,13 +677,17 @@ private fun TermsPrivacyView(
         horizontalArrangement = Arrangement.Center,
     ) {
         CrisisCleanupTextButton(
-            Modifier.actionHeight(),
+            Modifier
+                .actionHeight()
+                .testTag("menuTermsAction"),
             text = t("publicNav.terms"),
         ) {
             uriHandler.openUri(termsOfServiceUrl)
         }
         CrisisCleanupTextButton(
-            Modifier.actionHeight(),
+            Modifier
+                .actionHeight()
+                .testTag("menuPrivacyAction"),
             text = t("nav.privacy"),
         ) {
             uriHandler.openUri(privacyPolicyUrl)

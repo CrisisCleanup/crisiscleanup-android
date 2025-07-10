@@ -22,6 +22,9 @@ object Sync {
 class SyncInitializer : Initializer<Sync> {
     override fun create(context: Context): Sync {
         scheduleSync(context)
+        scheduleSyncWorksites(context)
+        scheduleSyncMedia(context)
+        scheduleInactiveCheckup(context)
 
         return Sync
     }

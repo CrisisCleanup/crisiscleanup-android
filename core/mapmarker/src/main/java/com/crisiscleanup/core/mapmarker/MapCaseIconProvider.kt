@@ -21,6 +21,7 @@ interface MapCaseIconProvider {
         isDuplicate: Boolean = false,
         isFilteredOut: Boolean = false,
         isVisited: Boolean = false,
+        hasPhotos: Boolean = false,
         isAssignedTeam: Boolean = false,
     ): BitmapDescriptor?
 
@@ -31,6 +32,7 @@ interface MapCaseIconProvider {
         isDuplicate: Boolean = false,
         isFilteredOut: Boolean = false,
         isVisited: Boolean = false,
+        hasPhotos: Boolean = false,
         isAssignedTeam: Boolean = false,
     ): Bitmap?
 }

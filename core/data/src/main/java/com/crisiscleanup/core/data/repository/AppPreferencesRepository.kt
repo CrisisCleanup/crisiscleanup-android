@@ -50,6 +50,8 @@ interface AppPreferencesRepository {
 
     suspend fun setCasesMapBounds(bounds: IncidentCoordinateBounds)
     suspend fun setTeamMapBounds(bounds: IncidentCoordinateBounds)
+
+    suspend fun setWorkScreenView(isTableView: Boolean)
 }
 
 @Singleton
@@ -110,5 +112,9 @@ class AppPreferencesRepositoryImpl @Inject constructor(
 
     override suspend fun setTeamMapBounds(bounds: IncidentCoordinateBounds) {
         preferencesDataSource.saveTeamMapBounds(bounds)
+    }
+
+    override suspend fun setWorkScreenView(isTableView: Boolean) {
+        preferencesDataSource.saveWorkScreenView(isTableView)
     }
 }

@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,28 +27,21 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.commoncase.model.WorksiteGoogleMapMark
 import com.crisiscleanup.core.commoncase.ui.CaseMapOverlayElements
 import com.crisiscleanup.core.commoncase.ui.CasesAction
 import com.crisiscleanup.core.commoncase.ui.CasesDownloadProgress
 import com.crisiscleanup.core.commoncase.ui.CasesMapView
+import com.crisiscleanup.core.commoncase.ui.MapLayersView
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupButton
-import com.crisiscleanup.core.designsystem.component.CrisisCleanupIconButton
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.component.ExplainLocationPermissionDialog
-import com.crisiscleanup.core.designsystem.component.roundedOutline
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
-import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
-import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
-import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
-import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
-import com.crisiscleanup.core.domain.IncidentsData
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBounds
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraBoundsDefault
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
@@ -58,6 +49,7 @@ import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoomDefault
 import com.crisiscleanup.core.model.data.DataProgressMetrics
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.Incident
+import com.crisiscleanup.core.model.data.IncidentsData
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.core.model.data.zeroDataProgress
@@ -73,7 +65,7 @@ import com.crisiscleanup.core.commonassets.R as commonAssetsR
 
 @Composable
 internal fun CasesRoute(
-    viewModel: CasesViewModel = hiltViewModel(),
+    viewModel: CasesViewModel,
     onCasesAction: (CasesAction) -> Unit = { },
     createNewCase: (Long) -> Unit = {},
     viewCase: (Long, Long) -> Boolean = { _, _ -> false },
@@ -165,6 +157,7 @@ internal fun CasesRoute(
             }
         }
         CasesScreen(
+            viewModel,
             dataProgress = dataProgressMetrics,
             disasterResId = disasterResId,
             onSelectIncident = onIncidentSelect,
@@ -202,7 +195,7 @@ internal fun CasesRoute(
             val selectedIncidentId by viewModel.incidentSelector.incidentId.collectAsStateWithLifecycle()
             val setSelected = remember(viewModel) {
                 { incident: Incident ->
-                    viewModel.loadSelectIncidents.selectIncident(incident)
+                    viewModel.incidentSelector.selectIncident(incident)
                 }
             }
             SelectIncidentDialog(
@@ -231,12 +224,12 @@ internal fun CasesRoute(
         )
     }
 
-    NonProductionDialog()
+    NonProductionDialog(viewModel)
 }
 
 @Composable
 private fun NonProductionDialog(
-    viewModel: CasesViewModel = hiltViewModel(),
+    viewModel: CasesViewModel,
 ) {
     var showDialog by remember { mutableStateOf(false) }
     if (viewModel.visualAlertManager.takeNonProductionAppAlert()) {
@@ -314,7 +307,8 @@ internal fun NoIncidentsScreen(
 }
 
 @Composable
-private fun CasesScreen(
+internal fun CasesScreen(
+    viewModel: CasesViewModel,
     dataProgress: DataProgressMetrics = zeroDataProgress,
     onSelectIncident: () -> Unit = {},
     @DrawableRes disasterResId: Int = commonAssetsR.drawable.ic_disaster_other,
@@ -349,6 +343,7 @@ private fun CasesScreen(
     Box {
         if (isTableView) {
             CasesTableView(
+                viewModel,
                 isLoadingData = isLoadingData,
                 isTableDataTransient = isTableDataTransient,
                 disasterResId = disasterResId,
@@ -411,64 +406,6 @@ private fun CasesScreen(
         )
 
         CasesDownloadProgress(dataProgress)
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun MapLayersView(
-    isVisible: Boolean,
-    onDismiss: () -> Unit,
-    isSatelliteMapType: Boolean,
-    onToggleSatelliteType: (Boolean) -> Unit,
-) {
-    if (isVisible) {
-        val t = LocalAppTranslator.current
-
-        ModalBottomSheet(
-            onDismissRequest = onDismiss,
-            tonalElevation = 0.dp,
-        ) {
-            Column(
-                listItemModifier,
-                verticalArrangement = listItemSpacedByHalf,
-            ) {
-                Text(
-                    t("~~Map type"),
-                    style = LocalFontStyles.current.header3,
-                )
-
-                val selectedOutline = Modifier.roundedOutline(
-                    width = 3.dp,
-                    color = primaryBlueColor,
-                )
-
-                Row(horizontalArrangement = listItemSpacedBy) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = listItemSpacedByHalf,
-                    ) {
-                        CrisisCleanupIconButton(
-                            if (isSatelliteMapType) Modifier else selectedOutline,
-                            imageVector = CrisisCleanupIcons.NormalMap,
-                            onClick = { onToggleSatelliteType(false) },
-                        )
-                        Text(t("~~Default"))
-                    }
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = listItemSpacedByHalf,
-                    ) {
-                        CrisisCleanupIconButton(
-                            if (isSatelliteMapType) selectedOutline else Modifier,
-                            imageVector = CrisisCleanupIcons.SatelliteMap,
-                            onClick = { onToggleSatelliteType(true) },
-                        )
-                        Text(t("~~Satellite"))
-                    }
-                }
-            }
-        }
     }
 }
 

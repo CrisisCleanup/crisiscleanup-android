@@ -37,6 +37,7 @@ fun WorksiteMapMark.asWorksiteGoogleMapMark(
             isDuplicate = isDuplicate,
             isFilteredOut = isFilteredOut,
             isVisited = isVisited,
+            hasPhotos = hasPhotos,
             isAssignedTeam = isAssignedTeam,
         ),
         mapIconOffset = Offset(0.5f + xOffset, 0.5f + yOffset),

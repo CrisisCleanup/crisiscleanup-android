@@ -25,4 +25,6 @@ data class UserData(
 
     val casesMapBounds: IncidentCoordinateBounds,
     val teamMapBounds: IncidentCoordinateBounds,
+
+    val isWorkScreenTableView: Boolean,
 )

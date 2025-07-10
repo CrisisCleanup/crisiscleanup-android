@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import androidx.annotation.DrawableRes
 import androidx.core.graphics.alpha
+import androidx.core.graphics.createBitmap
 import androidx.core.graphics.get
 import androidx.core.graphics.red
 import com.crisiscleanup.core.common.AndroidResourceProvider
@@ -19,11 +20,7 @@ fun AndroidResourceProvider.createDrawableBitmap(
     bottomBounds: Int,
 ): Pair<Bitmap, Canvas> {
     val drawable = getDrawable(iconResId)
-    val output = Bitmap.createBitmap(
-        bitmapSize,
-        bitmapSize,
-        Bitmap.Config.ARGB_8888,
-    )
+    val output = createBitmap(bitmapSize, bitmapSize)
     val canvas = Canvas(output)
 
     drawable.setBounds(

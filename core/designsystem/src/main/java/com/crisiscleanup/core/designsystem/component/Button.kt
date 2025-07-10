@@ -41,6 +41,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
+import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.cancelButtonContainerColor
 import com.crisiscleanup.core.designsystem.theme.cancelButtonContentColor
@@ -129,8 +130,7 @@ fun BusyButton(
         elevation = if (indicateBusy) null else ButtonDefaults.elevatedButtonElevation(),
     ) {
         if (indicateBusy) {
-            // TODO Common dimensions
-            CircularProgressIndicator(Modifier.size(24.dp))
+            CircularProgressIndicator(Modifier.size(LocalDimensions.current.buttonSpinnerSize))
         } else {
             Text(textResId, text, style)
         }
@@ -144,6 +144,7 @@ fun CrisisCleanupButton(
     enabled: Boolean = true,
     @StringRes textResId: Int = 0,
     text: String = "",
+    indicateBusy: Boolean = false,
     colors: ButtonColors = primaryButtonColors(),
     elevation: ButtonElevation? = ButtonDefaults.buttonElevation(),
 ) {
@@ -155,7 +156,11 @@ fun CrisisCleanupButton(
         shape = roundedRectangleButtonShape(),
         elevation = elevation,
     ) {
-        Text(textResId, text)
+        if (indicateBusy) {
+            CircularProgressIndicator(Modifier.size(LocalDimensions.current.buttonSpinnerSize))
+        } else {
+            Text(textResId, text)
+        }
     }
 }
 
@@ -207,6 +212,7 @@ fun CrisisCleanupOutlinedButton(
     text: String = "",
     onClick: () -> Unit = {},
     enabled: Boolean = false,
+    indicateBusy: Boolean = false,
     borderColor: Color = LocalContentColor.current,
     fontWeight: FontWeight? = null,
     style: TextStyle = LocalFontStyles.current.header4,
@@ -226,7 +232,9 @@ fun CrisisCleanupOutlinedButton(
         border = border,
         contentPadding = contentPadding,
     ) {
-        if (buttonText.isNotBlank()) {
+        if (indicateBusy) {
+            CircularProgressIndicator(Modifier.size(LocalDimensions.current.buttonSpinnerSize))
+        } else if (buttonText.isNotBlank()) {
             Text(
                 buttonText,
                 fontWeight = fontWeight,
@@ -299,6 +307,7 @@ fun CrisisCleanupFab(
 fun WorkTypeAction(
     text: String,
     enabled: Boolean,
+    indicateBusy: Boolean = false,
     onClick: () -> Unit = {},
 ) = CrisisCleanupOutlinedButton(
     // TODO Common dimensions
@@ -308,12 +317,21 @@ fun WorkTypeAction(
     text = text,
     onClick = onClick,
     enabled = enabled,
+    indicateBusy = indicateBusy,
 )
+
+@Composable
+fun WorkTypeBusyAction(
+    text: String,
+    enabled: Boolean,
+    onClick: () -> Unit = {},
+) = WorkTypeAction(text, enabled = enabled, indicateBusy = !enabled, onClick)
 
 @Composable
 fun WorkTypePrimaryAction(
     text: String,
     enabled: Boolean,
+    indicateBusy: Boolean = false,
     onClick: () -> Unit = {},
 ) = CrisisCleanupButton(
     // TODO Common dimensions
@@ -323,6 +341,7 @@ fun WorkTypePrimaryAction(
     text = text,
     onClick = onClick,
     enabled = enabled,
+    indicateBusy = indicateBusy,
     elevation = ButtonDefaults.buttonElevation(
         defaultElevation = 1.dp,
     ),

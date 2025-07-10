@@ -325,9 +325,10 @@ class LoginWithPhoneViewModel @Inject constructor(
                     }
                 }
 
+                val authUserId = selectedAccount.value.userId
                 val accountData = accountDataRepository.accountData.first()
                 val authResult = attemptAuthentication(
-                    selectedUserId,
+                    authUserId,
                     otpId = oneTimePasswordId,
                     accountData,
                 )

@@ -74,7 +74,7 @@ import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_DETAIL_WEIGHT
 import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_LIST_WEIGHT
 import com.crisiscleanup.core.designsystem.component.LeadingIconChip
 import com.crisiscleanup.core.designsystem.component.TemporaryDialog
-import com.crisiscleanup.core.designsystem.component.WorkTypeAction
+import com.crisiscleanup.core.designsystem.component.WorkTypeBusyAction
 import com.crisiscleanup.core.designsystem.component.WorkTypePrimaryAction
 import com.crisiscleanup.core.designsystem.component.actionEdgeSpace
 import com.crisiscleanup.core.designsystem.component.fabPlusSpaceHeight
@@ -513,7 +513,7 @@ private fun ColumnScope.ExistingCaseContent(
                 2 -> CaseNotesView(worksite)
             }
         }
-        BusyIndicatorFloatingTopCenter(isLoading)
+        BusyIndicatorFloatingTopCenter(isLoading && pagerState.currentPage > 0)
     }
 
     val closeKeyboard = rememberCloseKeyboard()
@@ -730,6 +730,7 @@ private fun LazyListScope.propertyInfoItems(
 
                 if (showJumpToCaseOnMap) {
                     val t = LocalAppTranslator.current
+                    val actionDescription = t("actions.jump_to_case")
                     Row(
                         Modifier
                             .clickable(onClick = onJumpToCaseOnMap)
@@ -739,15 +740,16 @@ private fun LazyListScope.propertyInfoItems(
                         horizontalArrangement = listItemSpacedBy,
                     ) {
                         Image(
+                            // TODO Common dimension
                             modifier = Modifier.size(24.dp),
                             painter = painterResource(R.drawable.ic_jump_to_case_on_map),
-                            contentDescription = t("actions.jump_to_case"),
+                            contentDescription = actionDescription,
                         )
 
                         if (distanceAwayText.isNotBlank()) {
                             Text(distanceAwayText, style = MaterialTheme.typography.bodyLarge)
                         } else {
-                            Text("~~Back to map, centered on this Case.")
+                            Text(actionDescription)
                         }
                     }
                 }
@@ -786,16 +788,21 @@ private fun LazyListScope.workItems(
                 val t = LocalAppTranslator.current
                 val isEditable = LocalCaseEditor.current.isEditable
                 if (profile.unclaimed.isNotEmpty()) {
-                    WorkTypePrimaryAction(t("actions.claim_all_alt"), isEditable, claimAll)
+                    WorkTypePrimaryAction(
+                        t("actions.claim_all_alt"),
+                        enabled = isEditable,
+                        indicateBusy = !isEditable,
+                        claimAll,
+                    )
                 }
                 if (profile.releasableCount > 0) {
-                    WorkTypeAction(
+                    WorkTypeBusyAction(
                         t("actions.release_all"),
                         isEditable && isFullEditMode,
                         releaseAll,
                     )
                 } else if (profile.requestableCount > 0) {
-                    WorkTypeAction(
+                    WorkTypeBusyAction(
                         t("actions.request_all"),
                         isEditable && isFullEditMode,
                         requestAll,

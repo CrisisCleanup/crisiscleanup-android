@@ -394,6 +394,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 // TODO If not preloaded and times out try caching around coordinates
                 val shortResult = cacheWorksitesCore(
                     incidentId,
+                    syncPlan.timestamp,
                     isPaused,
                     syncStats,
                     worksitesCoreStatsUpdater,
@@ -406,6 +407,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 ) {
                     cacheWorksitesCore(
                         incidentId,
+                        syncPlan.timestamp,
                         false,
                         syncStats,
                         worksitesCoreStatsUpdater,
@@ -465,6 +467,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
                 val additionalResult = cacheAdditionalWorksiteData(
                     incidentId,
+                    syncPlan.timestamp,
                     isPaused,
                     syncStats,
                     worksitesAdditionalStatsUpdater,
@@ -476,6 +479,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 ) {
                     cacheAdditionalWorksiteData(
                         incidentId,
+                        syncPlan.timestamp,
                         false,
                         syncStats,
                         worksitesAdditionalStatsUpdater,
@@ -758,8 +762,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     !savedWorksiteIds.contains(it.id)
                 }
                 if (deduplicateWorksites.isEmpty()) {
-                    val duplicateCount = networkData.size - deduplicateWorksites.size
-                    log("$duplicateCount duplicate(s), before")
+                    log("${networkData.size} duplicate(s), before")
                     break
                 }
 
@@ -845,6 +848,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
     private suspend fun cacheWorksitesCore(
         incidentId: Long,
+        syncStart: Instant,
         isPaused: Boolean,
         syncParameters: IncidentDataSyncParameters,
         statsUpdater: IncidentDataPullStatsUpdater,
@@ -888,6 +892,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         val afterResult = cacheWorksitesAfter(
             IncidentCacheStage.WorksitesCore,
             incidentId,
+            syncStart,
             isPaused,
             unmeteredDataCountThreshold = 9000,
             timeMarkers,
@@ -978,8 +983,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     !savedWorksiteIds.contains(it.id)
                 }
                 if (deduplicateWorksites.isEmpty()) {
-                    val duplicateCount = networkData.size - deduplicateWorksites.size
-                    log("$duplicateCount duplicate(s), before")
+                    log("${networkData.size} duplicate(s), before")
                     break
                 }
 
@@ -1016,6 +1020,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
     private suspend fun <T, U> cacheWorksitesAfter(
         stage: IncidentCacheStage,
         incidentId: Long,
+        syncStart: Instant,
         isPaused: Boolean,
         unmeteredDataCountThreshold: Int,
         timeMarkers: IncidentDataSyncParameters.SyncTimeMarker,
@@ -1054,7 +1059,17 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 result.data ?: emptyList()
             }
 
+            fun updateUpdatedAfter(timestamp: Instant) {
+                if (stage == IncidentCacheStage.WorksitesCore) {
+                    syncParameterDao.updateUpdatedAfter(incidentId, timestamp)
+                } else {
+                    syncParameterDao.updateAdditionalUpdatedAfter(incidentId, timestamp)
+                }
+            }
+
             if (networkData.isEmpty()) {
+                updateUpdatedAfter(syncStart)
+
                 log("Cached $savedCount/$initialCount after. No Cases after $afterTimeMarker")
             } else {
                 downloadSpeedTracker.averageSpeed()?.let {
@@ -1069,8 +1084,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     !savedWorksiteIds.contains(it.id)
                 }
                 if (deduplicateWorksites.isEmpty()) {
-                    val duplicateCount = networkData.size - deduplicateWorksites.size
-                    log("$duplicateCount duplicate(s) after")
+                    log("${networkData.size} duplicate(s) after")
                     break
                 }
 
@@ -1082,11 +1096,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 queryCount = (queryCount * 2).coerceAtMost(maxQueryCount)
                 afterTimeMarker = networkData.last().updatedAt
 
-                if (stage == IncidentCacheStage.WorksitesCore) {
-                    syncParameterDao.updateUpdatedAfter(incidentId, afterTimeMarker)
-                } else {
-                    syncParameterDao.updateAdditionalUpdatedAfter(incidentId, afterTimeMarker)
-                }
+                updateUpdatedAfter(afterTimeMarker)
 
                 log("Cached ${deduplicateWorksites.size} ($savedCount/$initialCount) after, up to $afterTimeMarker")
             }
@@ -1152,6 +1162,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
     private suspend fun cacheAdditionalWorksiteData(
         incidentId: Long,
+        syncStart: Instant,
         isPaused: Boolean,
         syncParameters: IncidentDataSyncParameters,
         statsUpdater: IncidentDataPullStatsUpdater,
@@ -1199,6 +1210,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         val afterResult = cacheWorksitesAfter(
             IncidentCacheStage.WorksitesAdditional,
             incidentId,
+            syncStart,
             isPaused,
             unmeteredDataCountThreshold = 3000,
             timeMarkers,

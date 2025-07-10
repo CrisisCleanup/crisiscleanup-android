@@ -2,6 +2,7 @@ package com.crisiscleanup.core.database.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
+import androidx.room.Junction
 import androidx.room.Relation
 import com.crisiscleanup.core.model.data.WorkTypeStatusClaim
 import com.crisiscleanup.core.model.data.Worksite
@@ -117,6 +118,25 @@ data class PopulatedWorksiteMapVisual(
         entityColumn = "worksite_id",
     )
     val formData: List<WorksiteFormDataEntity>,
+
+    // Has photo
+    @ColumnInfo("network_photo_count")
+    val networkPhotoCount: Int,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "id",
+        associateBy = Junction(
+            value = WorksiteNetworkFileCrossRef::class,
+            parentColumn = "worksite_id",
+            entityColumn = "network_file_id",
+        ),
+    )
+    val fileImages: List<NetworkFileLocalImageEntity>,
+    @Relation(
+        parentColumn = "id",
+        entityColumn = "worksite_id",
+    )
+    val localImages: List<WorksiteLocalImageEntity>,
 )
 
 private val highPriorityFlagLiteral = WorksiteFlagType.HighPriority.literal
@@ -136,6 +156,9 @@ fun PopulatedWorksiteMapVisual.asExternalModel(isFilteredOut: Boolean = false) =
     },
     isDuplicate = flags.any { it.reasonT == duplicateFlagLiteral },
     isFilteredOut = isFilteredOut,
+    hasPhotos = networkPhotoCount > 0 ||
+        fileImages.any { !it.isDeleted } ||
+        localImages.isNotEmpty(),
 )
 
 data class PopulatedNetworkIdWorksiteId(

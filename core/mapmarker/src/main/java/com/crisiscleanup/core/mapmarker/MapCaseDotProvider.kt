@@ -85,6 +85,7 @@ class InMemoryDotProvider @Inject constructor(
         isDuplicate: Boolean,
         isFilteredOut: Boolean,
         isVisited: Boolean,
+        hasPhotos: Boolean,
         isAssignedTeam: Boolean,
     ): BitmapDescriptor? {
         val cacheKey = DotCacheKey(statusClaim, isDuplicate, isFilteredOut, isAssignedTeam)
@@ -104,6 +105,7 @@ class InMemoryDotProvider @Inject constructor(
         isDuplicate: Boolean,
         isFilteredOut: Boolean,
         isVisited: Boolean,
+        hasPhotos: Boolean,
         isAssignedTeam: Boolean,
     ): Bitmap? {
         val cacheKey = DotCacheKey(statusClaim, isDuplicate, isFilteredOut, isAssignedTeam)

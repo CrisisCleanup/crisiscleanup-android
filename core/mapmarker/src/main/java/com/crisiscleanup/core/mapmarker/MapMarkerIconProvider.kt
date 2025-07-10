@@ -3,6 +3,7 @@ package com.crisiscleanup.core.mapmarker
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import androidx.annotation.DrawableRes
+import androidx.core.graphics.createBitmap
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -57,11 +58,7 @@ class CrisisCleanupDrawableResourceBitmapProvider @Inject constructor(
         val heightPx = resourceProvider.dpToPx(height).toInt()
 
         val drawable = resourceProvider.getDrawable(drawableResId)
-        val output = Bitmap.createBitmap(
-            widthPx,
-            heightPx,
-            Bitmap.Config.ARGB_8888,
-        )
+        val output = createBitmap(widthPx, heightPx)
         val canvas = Canvas(output)
 
         drawable.setBounds(0, 0, canvas.width, canvas.height)

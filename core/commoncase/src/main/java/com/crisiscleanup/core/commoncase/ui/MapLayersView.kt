@@ -39,7 +39,7 @@ fun MapLayersView(
                 verticalArrangement = listItemSpacedByHalf,
             ) {
                 Text(
-                    t("~~Map type"),
+                    t("worksiteMap.toggle_map_type"),
                     style = LocalFontStyles.current.header3,
                 )
 
@@ -58,7 +58,7 @@ fun MapLayersView(
                             imageVector = CrisisCleanupIcons.NormalMap,
                             onClick = { onToggleSatelliteType(false) },
                         )
-                        Text(t("~~Default"))
+                        Text(t("worksiteMap.street_map"))
                     }
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -69,7 +69,7 @@ fun MapLayersView(
                             imageVector = CrisisCleanupIcons.SatelliteMap,
                             onClick = { onToggleSatelliteType(true) },
                         )
-                        Text(t("~~Satellite"))
+                        Text(t("worksiteMap.satellite_map"))
                     }
                 }
             }

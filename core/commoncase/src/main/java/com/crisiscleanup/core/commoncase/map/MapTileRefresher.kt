@@ -17,13 +17,26 @@ class MapTileRefresher(
     private var tileRefreshedInstant = Instant.epochZero
 
     fun resetTiles(incidentId: Long) {
-        tileRefreshedInstant = Instant.epochZero
-        mapTileRenderer.setIncident(incidentId, 0, true)
-        casesMapTileManager.clearTiles()
+        redrawDotsOverlay(incidentId, 0, Instant.epochZero)
     }
 
     // Attempts to clear/refresh map tiles minimally during data loads and incident changes
     // For progressively generating map tiles of larger incidents
+
+    private fun redrawDotsOverlay(
+        incidentId: Long,
+        worksitesCount: Int,
+        timestamp: Instant,
+    ) {
+        tileRefreshedInstant = timestamp
+        mapTileRenderer.setIncident(incidentId, worksitesCount, true)
+        casesMapTileManager.clearTiles()
+    }
+
+    private fun redrawDotsOverlay(idCount: IncidentIdWorksiteCount) {
+        redrawDotsOverlay(idCount.id, idCount.totalCount, Clock.System.now())
+    }
+
     suspend fun refreshTiles(
         idCount: IncidentIdWorksiteCount,
         pullStats: IncidentDataPullStats,
@@ -37,9 +50,7 @@ class MapTileRefresher(
         val now = Clock.System.now()
 
         if (pullStats.isEnded) {
-            tileRefreshedInstant = now
-            mapTileRenderer.setIncident(idCount.id, idCount.totalCount, true)
-            casesMapTileManager.clearTiles()
+            redrawDotsOverlay(idCount)
             return@coroutineScope
         }
 
@@ -54,9 +65,7 @@ class MapTileRefresher(
             now - pullStats.startTime > tileClearRefreshInterval &&
             sinceLastRefresh > tileClearRefreshInterval
         if (refreshTiles) {
-            tileRefreshedInstant = now
-            mapTileRenderer.setIncident(idCount.id, idCount.totalCount, true)
-            casesMapTileManager.clearTiles()
+            redrawDotsOverlay(idCount)
         }
     }
 }

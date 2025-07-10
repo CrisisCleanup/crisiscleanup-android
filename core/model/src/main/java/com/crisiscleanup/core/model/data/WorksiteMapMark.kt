@@ -17,6 +17,7 @@ data class WorksiteMapMark(
      * FALSE renders the mark as usual.
      */
     val isFilteredOut: Boolean = false,
+    val hasPhotos: Boolean = false,
 )
 
 val EmptyWorksiteMapMark = WorksiteMapMark(

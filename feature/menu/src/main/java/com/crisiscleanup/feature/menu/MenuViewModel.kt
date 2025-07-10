@@ -1,5 +1,6 @@
 package com.crisiscleanup.feature.menu
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.appcomponent.AppTopBarDataProvider
@@ -20,6 +21,7 @@ import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.incidentcache.DataDownloadSpeedMonitor
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.AppDataManagementRepository
 import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupAccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentCacheRepository
@@ -27,7 +29,9 @@ import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.SyncLogRepository
 import com.crisiscleanup.core.model.data.InitialIncidentWorksitesCachePreferences
 import com.crisiscleanup.core.ui.TutorialViewTracker
+import com.crisiscleanup.sync.initializers.scheduleInactiveCheckup
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.combine
@@ -47,6 +51,7 @@ class MenuViewModel @Inject constructor(
     private val accountDataRefresher: AccountDataRefresher,
     private val appVersionProvider: AppVersionProvider,
     private val appPreferencesRepository: AppPreferencesRepository,
+    private val appDataManagementRepository: AppDataManagementRepository,
     appSettingsProvider: AppSettingsProvider,
     dataDownloadSpeedMonitor: DataDownloadSpeedMonitor,
     private val appEnv: AppEnv,
@@ -55,6 +60,7 @@ class MenuViewModel @Inject constructor(
     val tutorialViewTracker: TutorialViewTracker,
     private val databaseVersionProvider: DatabaseVersionProvider,
     translator: KeyResourceTranslator,
+    @ApplicationContext private val context: Context,
     @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel() {
@@ -72,11 +78,9 @@ class MenuViewModel @Inject constructor(
         incidentSelector,
         translator,
         accountDataRepository,
-        appPreferencesRepository,
         viewModelScope,
     )
     val incidentsData = appTopBarDataProvider.incidentsData
-    val loadSelectIncidents = appTopBarDataProvider.loadSelectIncidents
     val isLoadingIncidents = incidentsRepository.isLoading
 
     val hotlineIncidents = incidentsRepository.hotlineIncidents
@@ -205,6 +209,18 @@ class MenuViewModel @Inject constructor(
     fun setMenuTutorialDone(isDone: Boolean = true) {
         viewModelScope.launch(ioDispatcher) {
             appPreferencesRepository.setMenuTutorialDone(isDone)
+        }
+    }
+
+    fun checkInactivity() {
+        if (isNotProduction) {
+            scheduleInactiveCheckup(context)
+        }
+    }
+
+    fun clearAppData() {
+        if (isNotProduction) {
+            appDataManagementRepository.clearAppData()
         }
     }
 }

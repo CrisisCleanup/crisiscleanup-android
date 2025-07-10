@@ -8,13 +8,14 @@ import com.crisiscleanup.core.database.model.IncidentLocationEntity
 import com.crisiscleanup.core.database.model.PopulatedIncident
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.model.data.Incident
+import com.crisiscleanup.core.testing.util.nowTruncateMillis
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
-import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.time.Duration.Companion.seconds
 
 class IncidentDaoTest {
     private lateinit var db: TestCrisisCleanupDatabase
@@ -120,13 +121,14 @@ class IncidentDaoTest {
      */
     @Test
     fun saveIncidentPhoneNumbers() = runTest {
-        val nowInstant = Clock.System.now()
+        val nowInstant = nowTruncateMillis
         fun phoneIncidentEntity(
             id: Long,
             phoneNumber: String?,
+            startAt: Instant = nowInstant,
         ) = IncidentEntity(
             id = id,
-            startAt = nowInstant,
+            startAt = startAt,
             activePhoneNumber = phoneNumber,
             name = "",
             shortName = "",
@@ -144,20 +146,25 @@ class IncidentDaoTest {
         incidentDao.upsertIncidents(existingIncidents)
 
         // Save
+        val updatedInstant = nowTruncateMillis.plus(6.seconds)
         incidentDao.upsertIncidents(
             listOf(
                 // Not defined to multiple numbers
-                phoneIncidentEntity(1, "phone,changed"),
+                phoneIncidentEntity(1, "phone,changed", updatedInstant),
                 // Multiple numbers to not defined
-                phoneIncidentEntity(4, null),
+                phoneIncidentEntity(4, null, updatedInstant),
                 // New incidents
-                phoneIncidentEntity(5, "new-incident"),
-                phoneIncidentEntity(6, "phone-1, phone-2"),
+                phoneIncidentEntity(5, "new-incident", updatedInstant),
+                phoneIncidentEntity(6, "phone-1, phone-2", updatedInstant),
             ),
         )
 
         // Assert
-        fun expectedIncident(id: Long, phoneNumbers: List<String>) = Incident(
+        fun expectedIncident(
+            id: Long,
+            phoneNumbers: List<String>,
+            startAt: Instant = updatedInstant,
+        ) = Incident(
             id,
             "",
             "",
@@ -166,21 +173,21 @@ class IncidentDaoTest {
             phoneNumbers,
             emptyList(),
             false,
+            startAt = startAt,
         )
 
         val expecteds = listOf(
             expectedIncident(1, listOf("phone", "changed")),
-            expectedIncident(2, listOf("one", "two")),
-            expectedIncident(3, listOf()),
+            expectedIncident(2, listOf("one", "two"), startAt = nowInstant),
+            expectedIncident(3, listOf(), startAt = nowInstant),
             expectedIncident(4, listOf()),
             expectedIncident(5, listOf("new-incident")),
             expectedIncident(6, listOf("phone-1", "phone-2")),
-        ).reversed()
-        val savedIncidents =
-            incidentDao.streamIncidents().first().map(PopulatedIncident::asExternalModel)
-        for (i in expecteds.indices) {
-            assertEquals(expecteds[i], savedIncidents[i], "$i")
-        }
+        )
+        val savedIncidents = incidentDao.streamIncidents().first()
+            .map(PopulatedIncident::asExternalModel)
+            .sortedBy(Incident::id)
+        assertEquals(expecteds, savedIncidents)
     }
 
     /**

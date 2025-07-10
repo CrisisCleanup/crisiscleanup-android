@@ -4,10 +4,8 @@ import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.commonassets.ui.getDisasterIcon
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRepository
-import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.data.repository.IncidentCacheRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
-import com.crisiscleanup.core.domain.LoadSelectIncidents
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
@@ -21,18 +19,9 @@ class AppTopBarDataProvider(
     incidentSelector: IncidentSelector,
     private val translator: KeyResourceTranslator,
     accountDataRepository: AccountDataRepository,
-    appPreferencesRepository: AppPreferencesRepository,
     coroutineScope: CoroutineScope,
 ) {
-
-    val loadSelectIncidents = LoadSelectIncidents(
-        incidentsRepository = incidentsRepository,
-        accountDataRepository = accountDataRepository,
-        incidentSelector = incidentSelector,
-        appPreferencesRepository = appPreferencesRepository,
-        coroutineScope = coroutineScope,
-    )
-    val incidentsData = loadSelectIncidents.data
+    val incidentsData = incidentSelector.data
 
     val disasterIconResId = incidentSelector.incident.map { getDisasterIcon(it.disaster) }
         .stateIn(

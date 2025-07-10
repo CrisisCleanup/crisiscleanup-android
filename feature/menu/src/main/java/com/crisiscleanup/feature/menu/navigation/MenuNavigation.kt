@@ -5,6 +5,8 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 import com.crisiscleanup.core.appnav.RouteConstant.MENU_ROUTE
+import com.crisiscleanup.core.appnav.sharedViewModel
+import com.crisiscleanup.feature.menu.MenuViewModel
 import com.crisiscleanup.feature.menu.ui.MenuRoute
 
 fun NavController.navigateToMenu(navOptions: NavOptions? = null) {
@@ -12,6 +14,7 @@ fun NavController.navigateToMenu(navOptions: NavOptions? = null) {
 }
 
 fun NavGraphBuilder.menuScreen(
+    navController: NavController,
     openAuthentication: () -> Unit = {},
     openInviteTeammate: () -> Unit = {},
     openRequestRedeploy: () -> Unit = {},
@@ -20,8 +23,10 @@ fun NavGraphBuilder.menuScreen(
     openIncidentCache: () -> Unit = {},
     openSyncLogs: () -> Unit = {},
 ) {
-    composable(route = MENU_ROUTE) {
+    composable(route = MENU_ROUTE) { backStackEntry ->
+        val viewModel = backStackEntry.sharedViewModel<MenuViewModel>(navController, MENU_ROUTE)
         MenuRoute(
+            viewModel,
             openAuthentication = openAuthentication,
             openInviteTeammate = openInviteTeammate,
             openRequestRedeploy = openRequestRedeploy,

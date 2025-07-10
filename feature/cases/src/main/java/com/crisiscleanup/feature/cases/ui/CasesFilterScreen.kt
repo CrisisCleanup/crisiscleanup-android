@@ -166,7 +166,7 @@ internal fun CasesFilterRoute(
         val closeDialog = { confirmAbandonFilterChange = false }
         CrisisCleanupAlertDialog(
             onDismissRequest = closeDialog,
-            title = t("~~Filter changes"),
+            title = t("worksiteFilters.filter_changes"),
             confirmButton = {
                 CrisisCleanupTextButton(
                     text = t("actions.apply_filters"),
@@ -178,11 +178,11 @@ internal fun CasesFilterRoute(
             },
             dismissButton = {
                 CrisisCleanupTextButton(
-                    text = t("~~Abandon"),
+                    text = t("actions.abandon"),
                     onClick = onBack,
                 )
             },
-            text = t("~~Filters have changed. Would you like to apply or abandon the changes?"),
+            text = t("worksiteFilters.filter_changes_confirmation"),
         )
     }
 }

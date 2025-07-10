@@ -9,6 +9,8 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPuller
+import com.crisiscleanup.core.data.di.CasesFilterType
+import com.crisiscleanup.core.data.di.CasesFilterTypes
 import com.crisiscleanup.core.database.dao.IncidentDaoPlus
 import com.crisiscleanup.core.database.dao.IncidentDataSyncParameterDao
 import com.crisiscleanup.core.database.dao.IncidentOrganizationDaoPlus
@@ -20,9 +22,10 @@ import com.crisiscleanup.core.database.dao.fts.rebuildOrganizationFts
 import com.crisiscleanup.core.database.dao.fts.rebuildPersonContactFts
 import com.crisiscleanup.core.database.dao.fts.rebuildTeamFts
 import com.crisiscleanup.core.database.dao.fts.rebuildWorksiteTextFts
+import com.crisiscleanup.core.model.data.CasesFilter
+import com.crisiscleanup.core.model.data.InitialIncidentWorksitesCachePreferences
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,6 +45,7 @@ interface AppDataManagementRepository {
     suspend fun rebuildFts()
 
     fun clearAppData()
+    suspend fun backgroundClearAppData(refreshBackendData: Boolean): Boolean
 }
 
 enum class ClearAppDataStep {
@@ -69,13 +73,15 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
     private val incidentCacheRepository: IncidentCacheRepository,
     private val languageTranslationsRepository: LanguageTranslationsRepository,
     private val workTypeStatusRepository: WorkTypeStatusRepository,
+    @CasesFilterType(CasesFilterTypes.Cases) private val casesFilterRepository: CasesFilterRepository,
+    @CasesFilterType(CasesFilterTypes.TeamCases) private val teamCasesFilterRepository: CasesFilterRepository,
+    private val appMetricsRepository: AppMetricsRepository,
     private val accountEventBus: AccountEventBus,
     @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : AppDataManagementRepository {
-    private val _clearingAppDataStep = MutableStateFlow(ClearAppDataStep.None)
-    override val clearingAppDataStep: Flow<ClearAppDataStep> = _clearingAppDataStep
+    override val clearingAppDataStep = MutableStateFlow(ClearAppDataStep.None)
     override val isAppDataCleared = clearingAppDataStep.map { it == ClearAppDataStep.Cleared }
 
     override var clearAppDataError: ClearAppDataStep = ClearAppDataStep.None
@@ -92,75 +98,75 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
     }
 
     override fun clearAppData() {
-        if (!isClearingAppData.compareAndSet(false, true)) {
-            return
-        }
-
         externalScope.launch(ioDispatcher) {
+            backgroundClearAppData(true)
+        }
+    }
+
+    override suspend fun backgroundClearAppData(refreshBackendData: Boolean): Boolean =
+        withContext(ioDispatcher) {
+            if (!isClearingAppData.compareAndSet(false, true)) {
+                return@withContext false
+            }
+
             clearAppDataError = ClearAppDataStep.None
 
             try {
                 if (incidentsRepository.incidentCount == 0L) {
-                    return@launch
+                    return@withContext true
                 }
 
                 accountDataRepository.clearAccountTokens()
 
-                _clearingAppDataStep.value = ClearAppDataStep.StopSyncPull
-                externalScope.launch(ioDispatcher) {
-                    stopSyncPull()
-                }
-                withContext(Dispatchers.IO) {
-                    for (i in 0..9) {
-                        TimeUnit.SECONDS.sleep(6)
-
-                        if (isSyncPullStopped()) {
-                            break
-                        }
+                clearingAppDataStep.value = ClearAppDataStep.StopSyncPull
+                stopSyncPull()
+                for (i in 0..19) {
+                    TimeUnit.SECONDS.sleep(3)
+                    if (isSyncPullStopped()) {
+                        break
                     }
                 }
 
-                _clearingAppDataStep.value = ClearAppDataStep.ClearData
-                for (i in 0..<3) {
+                clearingAppDataStep.value = ClearAppDataStep.ClearData
+                for (i in 0..<6) {
                     clearPersistedAppData()
 
-                    withContext(Dispatchers.IO) {
-                        TimeUnit.SECONDS.sleep(2)
-                    }
-
+                    TimeUnit.SECONDS.sleep(1)
                     if (isPersistedAppDataCleared()) {
                         break
                     }
                 }
 
-                _clearingAppDataStep.value = ClearAppDataStep.FinalClear
+                clearingAppDataStep.value = ClearAppDataStep.FinalClear
 
-                withContext(Dispatchers.IO) {
-                    TimeUnit.SECONDS.sleep(3)
-                }
+                TimeUnit.SECONDS.sleep(3)
 
                 ensureActive()
 
                 if (!isPersistedAppDataCleared()) {
                     clearAppDataError = ClearAppDataStep.DatabaseNotCleared
                     logger.logCapture("Unable to clear app data")
-                    return@launch
+                    return@withContext false
                 }
 
                 accountEventBus.onLogout()
 
-                _clearingAppDataStep.value = ClearAppDataStep.Cleared
+                clearingAppDataStep.value = ClearAppDataStep.Cleared
 
-                languageTranslationsRepository.loadLanguages(true)
-                workTypeStatusRepository.loadStatuses(true)
+                if (refreshBackendData) {
+                    languageTranslationsRepository.loadLanguages(true)
+                    workTypeStatusRepository.loadStatuses(true)
+                }
+
+                return@withContext true
             } catch (e: Exception) {
                 logger.logException(e)
+                return@withContext false
             } finally {
-                _clearingAppDataStep.value = ClearAppDataStep.None
+                clearingAppDataStep.value = ClearAppDataStep.None
                 isClearingAppData.getAndSet(false)
             }
         }
-    }
 
     private fun stopSyncPull() {
         // TODO Stop all including
@@ -174,11 +180,17 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
     }
 
     private suspend fun clearPersistedAppData() {
-        // TODO Clear/reset other persistent data sources relating to incidents
         databaseOperator.clearBackendDataTables()
+        // App preferences resets on logout
+        // Account info clears on logout
+        casesFilterRepository.changeFilters(CasesFilter())
+        teamCasesFilterRepository.changeFilters(CasesFilter())
+        incidentCacheRepository.updateCachePreferences(InitialIncidentWorksitesCachePreferences)
+        appMetricsRepository.setAppOpen()
     }
 
-    private fun isPersistedAppDataCleared() = incidentsRepository.incidentCount == 0L &&
-        worksiteChangeRepository.worksiteChangeCount == 0L &&
-        incidentDataSyncParameterDao.getSyncStatCount() == 0
+    private fun isPersistedAppDataCleared() =
+        incidentsRepository.incidentCount == 0L &&
+            worksiteChangeRepository.worksiteChangeCount == 0L &&
+            incidentDataSyncParameterDao.getSyncStatCount() == 0
 }

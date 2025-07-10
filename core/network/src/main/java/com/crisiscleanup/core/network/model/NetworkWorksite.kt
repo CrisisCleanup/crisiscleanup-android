@@ -24,7 +24,7 @@ data class NetworkWorksiteFull(
     @SerialName("case_number")
     val caseNumber: String,
     val city: String,
-    val county: String,
+    val county: String?,
     val email: String? = null,
     val events: List<NetworkEvent>,
     val favorite: NetworkType?,
@@ -174,7 +174,7 @@ data class NetworkWorksiteShort(
     @SerialName("case_number")
     val caseNumber: String,
     val city: String,
-    val county: String,
+    val county: String?,
     // Full does not have this field. Updates should not overwrite
     @Serializable(InstantSerializer::class)
     @SerialName("created_at")
@@ -282,7 +282,7 @@ data class NetworkWorksitePage(
     @SerialName("case_number")
     val caseNumber: String,
     val city: String,
-    val county: String,
+    val county: String?,
     // Full does not have this field. Updates should not overwrite
     @Serializable(InstantSerializer::class)
     @SerialName("created_at")
@@ -314,6 +314,8 @@ data class NetworkWorksitePage(
     val what3words: String? = null,
     @SerialName("work_types")
     private val workTypes: List<NetworkWorksiteFull.WorkTypeShort>,
+    @SerialName("photos_count")
+    val photoCount: Int? = null,
 ) : WorksiteDataSubset {
     @Transient
     var newestWorkTypes: List<NetworkWorksiteFull.WorkTypeShort> = emptyList()
@@ -347,7 +349,7 @@ data class NetworkWorksiteCoreData(
     @SerialName("case_number")
     val caseNumber: String,
     val city: String,
-    val county: String,
+    val county: String?,
     val email: String? = null,
     val favorite: NetworkType?,
     val flags: List<NetworkFlag>,

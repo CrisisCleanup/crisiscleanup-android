@@ -71,7 +71,7 @@ interface WorksiteDao {
                key_work_type_type, key_work_type_org, key_work_type_status,
                COUNT(wt.id) AS work_type_count,
                favorite_id,
-               w.created_at, is_local_favorite, reported_by, svi, updated_at
+               w.created_at, is_local_favorite, reported_by, svi, updated_at, network_photo_count
         FROM worksites w LEFT JOIN work_types wt ON w.id=wt.worksite_id
         WHERE incident_id=:incidentId AND
               (longitude BETWEEN :longitudeWest AND :longitudeEast) AND
@@ -243,13 +243,15 @@ interface WorksiteDao {
         name            =:name,
         phone1          =COALESCE(:phone1, phone1),
         phone2          =COALESCE(:phone2, phone2),
+        phone_search    =COALESCE(:phoneSearch, phone_search),
         plus_code       =COALESCE(:plusCode, plus_code),
         postal_code     =:postalCode,
         reported_by     =COALESCE(:reportedBy, reported_by),
         state           =:state,
         svi             =:svi,
         what3Words      =COALESCE(:what3Words, what3Words),
-        updated_at      =:updatedAt
+        updated_at      =:updatedAt,
+        network_photo_count =COALESCE(:photoCount, network_photo_count)
         WHERE id=:id AND network_id=:networkId
         """,
     )
@@ -274,6 +276,7 @@ interface WorksiteDao {
         name: String,
         phone1: String?,
         phone2: String?,
+        phoneSearch: String?,
         plusCode: String?,
         postalCode: String,
         reportedBy: Long?,
@@ -281,6 +284,7 @@ interface WorksiteDao {
         svi: Float?,
         what3Words: String?,
         updatedAt: Instant,
+        photoCount: Int?,
     )
 
     @Transaction
@@ -298,7 +302,8 @@ interface WorksiteDao {
         plus_code   =COALESCE(plus_code, :plusCode),
         svi         =COALESCE(svi, :svi),
         reported_by =COALESCE(reported_by, :reportedBy),
-        what3Words  =COALESCE(what3Words, :what3Words)
+        what3Words  =COALESCE(what3Words, :what3Words),
+        network_photo_count =COALESCE(:photoCount, network_photo_count)
         WHERE id=:id
         """,
     )
@@ -315,6 +320,7 @@ interface WorksiteDao {
         svi: Float?,
         reportedBy: Long?,
         what3Words: String?,
+        photoCount: Int?,
     )
 
     @Transaction
@@ -617,15 +623,15 @@ interface WorksiteDao {
     @Query(
         """
         SELECT docid
-        FROM worksite_text_fts_b
-        WHERE worksite_text_fts_b MATCH :query
+        FROM worksite_text_fts_c
+        WHERE case_number MATCH :query
         LIMIT 1
         """,
     )
     fun matchSingleWorksiteTextFts(query: String): List<Long>
 
     @Transaction
-    @Query("INSERT INTO worksite_text_fts_b(worksite_text_fts_b) VALUES ('rebuild')")
+    @Query("INSERT INTO worksite_text_fts_c(worksite_text_fts_c) VALUES ('rebuild')")
     fun rebuildWorksiteTextFts()
 
     // TODO Is it possible to filter by incident_id with FTS match more efficiently?
@@ -633,10 +639,10 @@ interface WorksiteDao {
     @Query(
         """
         SELECT w.*,
-        matchinfo(worksite_text_fts_b, 'pcnalx') AS match_info
-        FROM worksite_text_fts_b f
+        matchinfo(worksite_text_fts_c, 'pcnalx') AS match_info
+        FROM worksite_text_fts_c f
         INNER JOIN worksites w ON f.docid=w.id
-        WHERE worksite_text_fts_b MATCH :query
+        WHERE worksite_text_fts_c MATCH :query
         LIMIT :limit
         """,
     )

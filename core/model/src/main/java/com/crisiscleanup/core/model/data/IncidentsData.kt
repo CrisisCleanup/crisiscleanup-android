@@ -1,13 +1,14 @@
-package com.crisiscleanup.core.domain
-
-import com.crisiscleanup.core.model.data.Incident
+package com.crisiscleanup.core.model.data
 
 sealed interface IncidentsData {
     data object Loading : IncidentsData
 
     data class Incidents(
         val incidents: List<Incident>,
-    ) : IncidentsData
+        val selected: Incident,
+    ) : IncidentsData {
+        val selectedId: Long = selected.id
+    }
 
     data object Empty : IncidentsData
 }

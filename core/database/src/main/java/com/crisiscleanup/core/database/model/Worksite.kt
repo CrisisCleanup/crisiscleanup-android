@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.database.model
 
+import com.crisiscleanup.core.common.PhoneNumberUtil.searchablePhoneNumbers
 import com.crisiscleanup.core.common.UuidGenerator
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.Worksite
@@ -35,6 +36,7 @@ fun Worksite.asEntities(
         name = name,
         phone1 = phone1,
         phone2 = phone2,
+        phoneSearch = searchablePhoneNumbers(phone1, phone2),
         plusCode = plusCode,
         postalCode = postalCode,
         reportedBy = reportedBy,
@@ -43,6 +45,7 @@ fun Worksite.asEntities(
         what3Words = what3Words ?: "",
         updatedAt = modifiedAt,
         isLocalFavorite = isLocalFavorite,
+        photoCount = null,
     )
 
     val flagsEntities = flags?.map { flag ->

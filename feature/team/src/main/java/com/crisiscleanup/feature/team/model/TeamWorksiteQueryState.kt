@@ -8,11 +8,9 @@ import com.crisiscleanup.core.model.data.EmptyIncident
 
 internal data class TeamWorksiteQueryState(
     override val incidentId: Long,
-    override val q: String,
     override val zoom: Float,
     override val coordinateBounds: CoordinateBounds,
     val isListView: Boolean,
-    override val isZoomInteractive: Boolean,
     override val filters: CasesFilter,
     override val teamCaseIds: Set<Long>,
 ) : CasesQueryState {
@@ -21,11 +19,9 @@ internal data class TeamWorksiteQueryState(
 
 internal val WorksiteQueryStateDefault = TeamWorksiteQueryState(
     incidentId = EmptyIncident.id,
-    q = "",
     zoom = 0f,
     coordinateBounds = CoordinateBoundsDefault,
     isListView = false,
-    isZoomInteractive = false,
     filters = CasesFilter(),
     teamCaseIds = emptySet(),
 )

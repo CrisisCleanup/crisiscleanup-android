@@ -13,6 +13,7 @@ import com.crisiscleanup.feature.caseeditor.model.asCaseLocation
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
@@ -45,6 +46,7 @@ internal class LocationSearchManager(
         isSearchingCoordinateAddress,
     ) { b0, b1, b2 -> b0 || b1 || b2 }
 
+    @OptIn(FlowPreview::class)
     private val searchQuery = locationInputData.locationQuery
         .debounce(100)
         .map(String::trim)

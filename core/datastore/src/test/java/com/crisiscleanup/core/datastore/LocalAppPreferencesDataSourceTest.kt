@@ -8,7 +8,9 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.yield
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -58,6 +60,10 @@ class LocalAppPreferencesDataSourceTest {
 
         try {
             testBody()
+
+            advanceUntilIdle()
+            yield()
+
             val attempts = values.map(UserData::syncAttempt)
             onAttempts(attempts)
         } finally {
@@ -102,7 +108,10 @@ class LocalAppPreferencesDataSourceTest {
                 SyncAttempt(20158, 20158, 0),
             )
             for (i in expecteds.indices) {
-                assertEquals(expecteds[i], attempts[i])
+                // Without print statements this will fail at times due to no attempts...
+                val attempt = attempts[i]
+                val expected = expecteds[i]
+                assertEquals(expected, attempt)
             }
         }
     }

@@ -15,11 +15,8 @@ import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
-import com.crisiscleanup.core.data.repository.AccountDataRepository
-import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.ListsRepository
-import com.crisiscleanup.core.domain.LoadSelectIncidents
 import com.crisiscleanup.core.model.data.CrisisCleanupList
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyList
@@ -42,9 +39,7 @@ class ViewListViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     listsRepository: ListsRepository,
     private val incidentsRepository: IncidentsRepository,
-    accountDataRepository: AccountDataRepository,
     private val incidentSelector: IncidentSelector,
-    appPreferencesRepository: AppPreferencesRepository,
     private val translator: KeyResourceTranslator,
     @Logger(CrisisCleanupLoggers.Lists) private val logger: AppLogger,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
@@ -52,14 +47,6 @@ class ViewListViewModel @Inject constructor(
     private val viewListArgs = ViewListArgs(savedStateHandle)
 
     private val listId = viewListArgs.listId
-
-    private val loadSelectIncidents = LoadSelectIncidents(
-        incidentsRepository = incidentsRepository,
-        accountDataRepository = accountDataRepository,
-        incidentSelector = incidentSelector,
-        appPreferencesRepository = appPreferencesRepository,
-        coroutineScope = viewModelScope,
-    )
 
     val viewState = listsRepository.streamList(listId)
         .mapLatest { list ->
@@ -138,8 +125,12 @@ class ViewListViewModel @Inject constructor(
         isChangingIncident = true
         viewModelScope.launch(ioDispatcher) {
             try {
-                loadSelectIncidents.persistIncident(changeIncident)
-                openWorksiteId = ExistingWorksiteIdentifier(changeIncident.id, changeWorksite.id)
+                if (incidentSelector.submitIncidentChange(changeIncident)) {
+                    openWorksiteId =
+                        ExistingWorksiteIdentifier(changeIncident.id, changeWorksite.id)
+                } else {
+                    // TODO Alert no permission to this Incident
+                }
             } finally {
                 isChangingIncident = false
             }

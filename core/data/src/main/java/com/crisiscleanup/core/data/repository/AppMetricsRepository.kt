@@ -27,7 +27,6 @@ interface AppMetricsRepository {
     suspend fun setEarlybirdEnd(end: BuildEndOfLife)
 
     suspend fun setAppOpen(
-        appVersion: Long,
         timestamp: Instant = Clock.System.now(),
     )
 
@@ -49,11 +48,8 @@ class AppMetricsRepositoryImpl @Inject constructor(
         dataSource.setEarlybirdEnd(end)
     }
 
-    override suspend fun setAppOpen(
-        appVersion: Long,
-        timestamp: Instant,
-    ) {
-        dataSource.setAppOpen(appVersion, timestamp)
+    override suspend fun setAppOpen(timestamp: Instant) {
+        dataSource.setAppOpen(timestamp)
     }
 
     override fun saveAppSupportInfo() {

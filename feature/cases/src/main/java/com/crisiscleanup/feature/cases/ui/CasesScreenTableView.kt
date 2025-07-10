@@ -38,7 +38,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.core.common.ParsedPhoneNumber
 import com.crisiscleanup.core.commonassets.R
@@ -74,7 +73,7 @@ import kotlinx.coroutines.delay
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun BoxScope.CasesTableView(
-    viewModel: CasesViewModel = hiltViewModel(),
+    viewModel: CasesViewModel,
     isLoadingData: Boolean = false,
     isTableDataTransient: Boolean = false,
     @DrawableRes disasterResId: Int = R.drawable.ic_disaster_other,

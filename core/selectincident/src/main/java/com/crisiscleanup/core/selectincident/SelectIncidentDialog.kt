@@ -37,8 +37,8 @@ import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
-import com.crisiscleanup.core.domain.IncidentsData
 import com.crisiscleanup.core.model.data.Incident
+import com.crisiscleanup.core.model.data.IncidentsData
 import kotlinx.coroutines.launch
 
 @Composable

@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.data.model
 
+import com.crisiscleanup.core.common.PhoneNumberUtil.searchablePhoneNumbers
 import com.crisiscleanup.core.database.model.WorksiteEntities
 import com.crisiscleanup.core.database.model.WorksiteEntity
 import com.crisiscleanup.core.database.model.WorksiteFlagEntity
@@ -26,7 +27,7 @@ fun NetworkWorksiteFull.asEntity() = WorksiteEntity(
     caseNumber = caseNumber,
     caseNumberOrder = parseCaseNumberOrder(caseNumber),
     city = city,
-    county = county,
+    county = county ?: "",
     email = email,
     favoriteId = favorite?.id,
     keyWorkTypeType = newestKeyWorkType?.workType ?: "",
@@ -37,6 +38,7 @@ fun NetworkWorksiteFull.asEntity() = WorksiteEntity(
     name = name,
     phone1 = phone1,
     phone2 = phone2,
+    phoneSearch = searchablePhoneNumbers(phone1, phone2),
     plusCode = plusCode,
     postalCode = postalCode ?: "",
     reportedBy = reportedBy,
@@ -44,6 +46,9 @@ fun NetworkWorksiteFull.asEntity() = WorksiteEntity(
     svi = svi,
     what3Words = what3words,
     updatedAt = updatedAt,
+    photoCount = files.map(NetworkFile::mimeContentType)
+        .filter { it?.startsWith("image/") == true }
+        .size,
 )
 
 // Copy similar changes from [NetworkWorksiteFull.asEntity] above
@@ -56,7 +61,7 @@ fun NetworkWorksiteCoreData.asEntity() = WorksiteEntity(
     caseNumber = caseNumber,
     caseNumberOrder = parseCaseNumberOrder(caseNumber),
     city = city,
-    county = county,
+    county = county ?: "",
     email = email,
     favoriteId = favorite?.id,
     keyWorkTypeType = "",
@@ -67,6 +72,7 @@ fun NetworkWorksiteCoreData.asEntity() = WorksiteEntity(
     name = name,
     phone1 = phone1,
     phone2 = phone2,
+    phoneSearch = searchablePhoneNumbers(phone1, phone2),
     plusCode = plusCode,
     postalCode = postalCode ?: "",
     reportedBy = reportedBy,
@@ -74,6 +80,7 @@ fun NetworkWorksiteCoreData.asEntity() = WorksiteEntity(
     svi = svi,
     what3Words = what3words,
     updatedAt = updatedAt,
+    photoCount = null,
 )
 
 fun NetworkWorksiteShort.asEntity() = WorksiteEntity(
@@ -84,7 +91,7 @@ fun NetworkWorksiteShort.asEntity() = WorksiteEntity(
     caseNumber = caseNumber,
     caseNumberOrder = parseCaseNumberOrder(caseNumber),
     city = city,
-    county = county,
+    county = county ?: "",
     createdAt = createdAt,
     favoriteId = favoriteId,
     keyWorkTypeType = newestKeyWorkType?.workType ?: "",
@@ -102,9 +109,11 @@ fun NetworkWorksiteShort.asEntity() = WorksiteEntity(
     email = null,
     phone1 = null,
     phone2 = null,
+    phoneSearch = null,
     plusCode = null,
     reportedBy = null,
     what3Words = null,
+    photoCount = null,
 )
 
 fun NetworkWorksitePage.asEntity() = WorksiteEntity(
@@ -115,7 +124,7 @@ fun NetworkWorksitePage.asEntity() = WorksiteEntity(
     caseNumber = caseNumber,
     caseNumberOrder = parseCaseNumberOrder(caseNumber),
     city = city,
-    county = county,
+    county = county ?: "",
     createdAt = createdAt,
     favoriteId = favoriteId,
     keyWorkTypeType = newestKeyWorkType?.workType ?: "",
@@ -133,9 +142,11 @@ fun NetworkWorksitePage.asEntity() = WorksiteEntity(
     email = email,
     phone1 = phone1,
     phone2 = phone2,
+    phoneSearch = searchablePhoneNumbers(phone1, phone2),
     plusCode = plusCode,
     reportedBy = reportedBy,
     what3Words = what3words,
+    photoCount = photoCount,
 )
 
 fun KeyDynamicValuePair.asWorksiteEntity() = WorksiteFormDataEntity(

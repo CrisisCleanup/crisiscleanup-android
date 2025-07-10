@@ -181,7 +181,7 @@ private fun LoginWithPhoneScreen(
             .listItemPadding()
             .actionHeight()
             .testTag("phoneLoginRequestPhoneNumber"),
-        enabled = true,
+        enabled = phoneNumber.isBlank(),
         action = viewModel::requestPhoneNumber,
     )
 

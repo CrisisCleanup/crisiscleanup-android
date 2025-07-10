@@ -440,12 +440,12 @@ private fun ConfirmOldIncidentDialog(
 ) {
     val t = LocalAppTranslator.current
     val confirmContinueKey = if (isCreateWorksite) {
-        "~~{incident_name} was created {relative_time}. Continue creating a Case for {incident_name}?"
+        "caseForm.old_incident_case_create_confirm"
     } else {
-        "~~{incident_name} was created {relative_time}. Continue editing this Case for {incident_name}?"
+        "caseForm.old_incident_case_edit_confirm"
     }
     CrisisCleanupAlertDialog(
-        title = t("~~Old Incident"),
+        title = t("caseForm.old_incident"),
         confirmButton = {
             CrisisCleanupTextButton(
                 text = t("actions.yes"),

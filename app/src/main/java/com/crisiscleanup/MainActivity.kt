@@ -175,6 +175,12 @@ class MainActivity : ComponentActivity() {
                 logUnprocessedExternalUri(it)
             }
         }
+
+        if (savedInstanceState == null) {
+            lifecycleScope.launch {
+                appMetricsRepository.setAppOpen()
+            }
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -194,7 +200,7 @@ class MainActivity : ComponentActivity() {
         super.onStart()
         syncPuller.appPullIncidentData()
         visualAlertManager.setNonProductionAppAlert(true)
-        viewModel.onAppOpen()
+        viewModel.onAppFocus()
 
         endOfLifeRepository.saveEndOfLifeData()
         appMetricsRepository.saveAppSupportInfo()

@@ -55,7 +55,6 @@ import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.OrganizationsRepository
 import com.crisiscleanup.core.data.repository.WorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.WorksitesRepository
-import com.crisiscleanup.core.domain.LoadSelectIncidents
 import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
 import com.crisiscleanup.core.mapmarker.MapCaseIconProvider
 import com.crisiscleanup.core.mapmarker.model.MapViewCameraZoom
@@ -73,7 +72,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.TileProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -97,7 +95,6 @@ import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 import com.crisiscleanup.core.commonassets.R as commonAssetsR
 
-@OptIn(FlowPreview::class)
 @HiltViewModel
 class CasesViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
@@ -132,14 +129,7 @@ class CasesViewModel @Inject constructor(
     @Logger(CrisisCleanupLoggers.Cases) private val logger: AppLogger,
     val appEnv: AppEnv,
 ) : ViewModel(), TrimMemoryListener {
-    val loadSelectIncidents = LoadSelectIncidents(
-        incidentsRepository = incidentsRepository,
-        accountDataRepository = accountDataRepository,
-        incidentSelector = incidentSelector,
-        appPreferencesRepository = appPreferencesRepository,
-        coroutineScope = viewModelScope,
-    )
-    val incidentsData = loadSelectIncidents.data
+    val incidentsData = incidentSelector.data
     val enableIncidentSelect = incidentsRepository.isFirstLoad
         .map(Boolean::not)
         .stateIn(
@@ -161,6 +151,7 @@ class CasesViewModel @Inject constructor(
     private val qsm = CasesQueryStateManager(
         incidentSelector,
         filterRepository,
+        appPreferencesRepository,
         viewModelScope,
     )
 
@@ -219,6 +210,10 @@ class CasesViewModel @Inject constructor(
 
     fun setContentViewType(isTableView: Boolean) {
         this.isTableView.value = isTableView
+
+        viewModelScope.launch {
+            appPreferencesRepository.setWorkScreenView(isTableView)
+        }
 
         if (!isTableView) {
             mapBoundsManager.restoreBounds()

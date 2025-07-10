@@ -26,6 +26,7 @@ import com.crisiscleanup.feature.caseeditor.navigation.TransferWorkTypeArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -89,6 +90,7 @@ class TransferWorkTypeViewModel @Inject constructor(
 
     val errorMessageReason = MutableStateFlow("")
     private val errorMessageWorkType = MutableStateFlow("")
+    @OptIn(FlowPreview::class)
     val errorMessage = combine(
         errorMessageReason,
         errorMessageWorkType,

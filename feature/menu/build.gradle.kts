@@ -11,6 +11,7 @@ android {
 dependencies {
     implementation(projects.core.appComponent)
     implementation(projects.core.selectincident)
+    implementation(projects.sync.work)
 
     implementation(libs.accompanist.permissions)
 }

@@ -7,6 +7,7 @@ import com.crisiscleanup.feature.caseeditor.model.PropertyInputData
 import com.crisiscleanup.feature.caseeditor.model.asCaseLocation
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
@@ -35,6 +36,7 @@ class ResidentNameSearchManager(
 
     private var stopSearching = MutableStateFlow(disableNameSearch)
 
+    @OptIn(FlowPreview::class)
     private val searchQuery = propertyInputData.residentName
         .debounce(100)
         .filter { !stopSearching.value }

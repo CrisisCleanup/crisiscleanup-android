@@ -5,11 +5,13 @@ import android.app.NotificationManager
 import android.content.Context
 import androidx.core.app.NotificationCompat
 import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.ForegroundInfo
 import androidx.work.NetworkType
 import androidx.work.WorkManager
 import com.crisiscleanup.sync.R
+import com.crisiscleanup.sync.workers.InactivityWorker
 import com.crisiscleanup.sync.workers.SyncMediaWorker
 import com.crisiscleanup.sync.workers.SyncWorker
 import com.crisiscleanup.sync.workers.SyncWorksitesWorker
@@ -26,6 +28,7 @@ private const val SYNC_NOTIFICATION_CHANNEL_ID = "SyncNotificationChannel"
 internal const val SYNC_WORK_NAME = "SyncWorkName"
 internal const val SYNC_MEDIA_WORK_NAME = "SyncMediaWorkName"
 private const val SYNC_WORKSITES_WORK_NAME = "SyncWorksitesWorkName"
+private const val INACTIVE_CHECKUP_NAME = "InactiveCheckupName"
 
 @Deprecated("Obsolete")
 private const val SYNC_WORKSITES_FULL_WORK_NAME = "SyncWorksitesFullWorkName"
@@ -56,6 +59,16 @@ fun scheduleSyncWorksites(context: Context) {
             SYNC_WORKSITES_WORK_NAME,
             ExistingWorkPolicy.KEEP,
             SyncWorksitesWorker.oneTimeSyncWork(),
+        )
+    }
+}
+
+fun scheduleInactiveCheckup(context: Context) {
+    WorkManager.getInstance(context).apply {
+        enqueueUniquePeriodicWork(
+            INACTIVE_CHECKUP_NAME,
+            ExistingPeriodicWorkPolicy.KEEP,
+            InactivityWorker.periodicWork(),
         )
     }
 }
