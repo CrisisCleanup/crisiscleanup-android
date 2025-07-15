@@ -15,7 +15,6 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class SandboxActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         MapsInitializer.initialize(this, MapsInitializer.Renderer.LATEST) {}
 
@@ -24,6 +23,8 @@ class SandboxActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
+            enableEdgeToEdge()
+
             CrisisCleanupTheme {
                 SandboxApp(
                     windowSizeClass = calculateWindowSizeClass(this),
