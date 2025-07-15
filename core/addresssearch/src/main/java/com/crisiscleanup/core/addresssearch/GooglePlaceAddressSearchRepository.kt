@@ -2,8 +2,10 @@ package com.crisiscleanup.core.addresssearch
 
 import android.content.Context
 import android.location.Geocoder
+import android.os.Build
 import android.util.LruCache
 import com.crisiscleanup.core.addresssearch.model.KeySearchAddress
+import com.crisiscleanup.core.addresssearch.model.asLocationAddress
 import com.crisiscleanup.core.common.AppSettingsProvider
 import com.crisiscleanup.core.common.combineTrimText
 import com.crisiscleanup.core.common.log.AppLogger
@@ -25,6 +27,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
@@ -32,6 +35,8 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.time.Duration.Companion.hours
 
 class GooglePlaceAddressSearchRepository @Inject constructor(
@@ -75,7 +80,35 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
             )
         }
 
-    override suspend fun getAddress(coordinates: LatLng) = geocoder.getAddress(coordinates)
+    override suspend fun getAddress(coordinates: LatLng): LocationAddress? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            val results = geocoder.getFromLocation(coordinates.latitude, coordinates.longitude, 1)
+            return results?.firstOrNull()?.asLocationAddress()?.copy(
+                latitude = coordinates.latitude,
+                longitude = coordinates.longitude,
+            )
+        } else {
+            return suspendCancellableCoroutine { continuation ->
+                val listener = Geocoder.GeocodeListener { results ->
+                    val firstAddress = results.firstOrNull()?.asLocationAddress()?.copy(
+                        latitude = coordinates.latitude,
+                        longitude = coordinates.longitude,
+                    )
+                    continuation.resume(firstAddress)
+                }
+                try {
+                    geocoder.getFromLocation(
+                        coordinates.latitude,
+                        coordinates.longitude,
+                        1,
+                        listener,
+                    )
+                } catch (e: Exception) {
+                    continuation.resumeWithException(e)
+                }
+            }
+        }
+    }
 
     override fun startSearchSession() {
         val token = AutocompleteSessionToken.newInstance()
@@ -142,7 +175,7 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
     override suspend fun getPlaceAddress(placeId: String): LocationAddress? {
         val sessionToken = getSessionToken()
         val placeFields = listOf(
-            Place.Field.LAT_LNG,
+            Place.Field.LOCATION,
             Place.Field.ADDRESS_COMPONENTS,
         )
 
@@ -162,7 +195,7 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
                 "postal_code",
             )
             with(response.place) {
-                latLng?.let { coordinates ->
+                location?.let { coordinates ->
                     addressComponents?.asList()?.let { components ->
                         val addressComponentLookup = mutableMapOf<String, String>()
                         components.forEach {
