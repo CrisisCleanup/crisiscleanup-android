@@ -1,6 +1,5 @@
 package com.crisiscleanup.core.mapmarker
 
-import androidx.lifecycle.AtomicReference
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LocationsRepository
 import com.crisiscleanup.core.mapmarker.model.IncidentBounds
@@ -10,6 +9,7 @@ import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.IncidentLocation
 import com.crisiscleanup.core.model.data.IncidentLocationBounder
 import com.google.android.gms.maps.model.LatLng
+import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 
 class CrisisCleanupIncidentLocationBounder @Inject constructor(

@@ -2,26 +2,28 @@ package com.crisiscleanup.core.designsystem.component
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material.ripple.RippleAlpha
-import androidx.compose.material.ripple.RippleTheme
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonElevation
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.FloatingActionButtonElevation
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.RippleConfiguration
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.contentColorFor
@@ -85,6 +87,7 @@ private val fabPlusSpaceHeight = 48.dp.plus(actionEdgeSpace.times(2))
 fun Modifier.actionHeight() = this.heightIn(min = 48.dp)
 fun Modifier.actionSize() = this.size(48.dp)
 fun Modifier.actionSmallSize() = this.size(44.dp)
+fun Modifier.actionSmallWidth() = this.size(width = 44.dp, height = 0.dp)
 fun Modifier.fabPlusSpaceHeight() = this.size(fabPlusSpaceHeight)
 
 @Composable
@@ -213,6 +216,7 @@ fun CrisisCleanupOutlinedButton(
     borderColor: Color = LocalContentColor.current,
     fontWeight: FontWeight? = null,
     style: TextStyle = LocalFontStyles.current.header4,
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
     trailingContent: (@Composable () -> Unit)? = null,
 ) {
     val border = BorderStroke(
@@ -226,6 +230,7 @@ fun CrisisCleanupOutlinedButton(
         enabled = enabled,
         shape = roundedRectangleButtonShape(),
         border = border,
+        contentPadding = contentPadding,
     ) {
         if (indicateBusy) {
             CircularProgressIndicator(Modifier.size(LocalDimensions.current.buttonSpinnerSize))
@@ -240,14 +245,6 @@ fun CrisisCleanupOutlinedButton(
     }
 }
 
-private val NoRippleTheme = object : RippleTheme {
-    @Composable
-    override fun defaultColor() = Color.Transparent
-
-    @Composable
-    override fun rippleAlpha() = RippleAlpha(0f, 0f, 0f, 0f)
-}
-
 private val fabElevationZero: FloatingActionButtonElevation
     @Composable
     get() = FloatingActionButtonDefaults.elevation(
@@ -257,6 +254,15 @@ private val fabElevationZero: FloatingActionButtonElevation
         hoveredElevation = 0.dp,
     )
 
+@OptIn(ExperimentalMaterial3Api::class)
+private val disabledRippleConfiguration: RippleConfiguration
+    @Composable
+    get() = RippleConfiguration(
+        color = Color.Transparent,
+        rippleAlpha = RippleAlpha(0f, 0f, 0f, 0f),
+    )
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CrisisCleanupFab(
     onClick: () -> Unit,
@@ -268,26 +274,31 @@ fun CrisisCleanupFab(
     elevation: FloatingActionButtonElevation = FloatingActionButtonDefaults.elevation(),
     iconContent: @Composable () -> Unit = {},
 ) {
-    CompositionLocalProvider(
-        LocalRippleTheme provides if (enabled) LocalRippleTheme.current else NoRippleTheme,
-    ) {
-        // TODO Complex conditions below are due to some bug when shape is not a circle.
-        //      Container color would not need the condition if elevation changed as expected.
-        //      Elevation does not change as expected when shape is not a circle.
-        //      File a bug or wait for fixes in the future.
+    if (enabled) {
         FloatingActionButton(
             modifier = modifier,
-            containerColor = if (enabled || shape != CircleShape) containerColor else disabledButtonContainerColor,
-            contentColor = if (enabled) contentColor else disabledButtonContentColor,
-            elevation = if (enabled) elevation else fabElevationZero,
+            containerColor = containerColor,
+            contentColor = contentColor,
+            elevation = elevation,
             shape = shape,
-            onClick = {
-                if (enabled) {
-                    onClick()
-                }
-            },
+            onClick = onClick,
         ) {
             iconContent()
+        }
+    } else {
+        CompositionLocalProvider(
+            LocalRippleConfiguration provides disabledRippleConfiguration,
+        ) {
+            FloatingActionButton(
+                modifier = modifier,
+                containerColor = disabledButtonContainerColor,
+                contentColor = disabledButtonContentColor,
+                elevation = fabElevationZero,
+                shape = shape,
+                onClick = {},
+            ) {
+                iconContent()
+            }
         }
     }
 }
