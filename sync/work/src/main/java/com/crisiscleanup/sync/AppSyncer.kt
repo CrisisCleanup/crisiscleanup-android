@@ -63,24 +63,33 @@ class AppSyncer @Inject constructor(
         applicationScope,
     )
 
-    private suspend fun hasValidAccountTokens() =
-        accountDataRepository.accountData.first().areTokensValid
-
-    private suspend fun isNotOnline() = networkMonitor.isNotOnline.first()
-
-    private suspend fun onSyncPreconditions(): SyncResult? {
-        if (isNotOnline()) {
+    private suspend fun isNotOnline(): SyncResult? {
+        val isOnline = networkMonitor.isOnline.first()
+        if (!isOnline) {
             return SyncResult.NotAttempted("Not online")
         }
 
+        return null
+    }
+
+    private suspend fun isAccountTokensInvalid(): SyncResult? {
         accountDataRepository.updateAccountTokens()
-        if (!hasValidAccountTokens()) {
+        val hasValidAccountTokens = accountDataRepository.accountData.first().areTokensValid
+        if (!hasValidAccountTokens) {
             return SyncResult.InvalidAccountTokens
         }
 
-        // Other constraints are not important.
-        // When app is running assume sync is necessary.
-        // When app is in background assume Work constraints have been defined.
+        return null
+    }
+
+    private suspend fun noPushConditions(): SyncResult? {
+        isNotOnline()?.let {
+            return it
+        }
+
+        isAccountTokensInvalid()?.let {
+            return it
+        }
 
         return null
     }
@@ -113,7 +122,7 @@ class AppSyncer @Inject constructor(
         cacheFullWorksites: Boolean,
         restartCacheCheckpoint: Boolean,
     ): SyncResult {
-        onSyncPreconditions()?.let {
+        isAccountTokensInvalid()?.let {
             return it
         }
 
@@ -173,8 +182,8 @@ class AppSyncer @Inject constructor(
     }
 
     override suspend fun syncPullLanguage(): SyncResult {
-        if (isNotOnline()) {
-            return SyncResult.NotAttempted("not-online")
+        isNotOnline()?.let {
+            return it
         }
 
         return try {
@@ -192,8 +201,8 @@ class AppSyncer @Inject constructor(
     }
 
     override suspend fun syncPullStatuses(): SyncResult {
-        if (isNotOnline()) {
-            return SyncResult.NotAttempted("not-online")
+        isNotOnline()?.let {
+            return it
         }
 
         return try {
@@ -206,7 +215,7 @@ class AppSyncer @Inject constructor(
 
     override fun appPushWorksite(worksiteId: Long, scheduleMediaSync: Boolean) {
         applicationScope.launch(ioDispatcher) {
-            onSyncPreconditions()?.let {
+            noPushConditions()?.let {
                 return@launch
             }
 
@@ -225,7 +234,7 @@ class AppSyncer @Inject constructor(
     }
 
     override suspend fun syncPushWorksites(): SyncResult {
-        onSyncPreconditions()?.let {
+        noPushConditions()?.let {
             return it
         }
 
@@ -238,7 +247,7 @@ class AppSyncer @Inject constructor(
     }
 
     override suspend fun syncPushMedia(): SyncResult {
-        onSyncPreconditions()?.let {
+        noPushConditions()?.let {
             return it
         }
 
