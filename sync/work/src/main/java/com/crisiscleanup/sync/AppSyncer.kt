@@ -63,7 +63,7 @@ class AppSyncer @Inject constructor(
         applicationScope,
     )
 
-    private suspend fun isNotOnline(): SyncResult? {
+    private suspend fun onlinePrecondition(): SyncResult? {
         val isOnline = networkMonitor.isOnline.first()
         if (!isOnline) {
             return SyncResult.NotAttempted("Not online")
@@ -72,7 +72,7 @@ class AppSyncer @Inject constructor(
         return null
     }
 
-    private suspend fun isAccountTokensInvalid(): SyncResult? {
+    private suspend fun accountTokenPrecondition(): SyncResult? {
         accountDataRepository.updateAccountTokens()
         val hasValidAccountTokens = accountDataRepository.accountData.first().areTokensValid
         if (!hasValidAccountTokens) {
@@ -82,12 +82,12 @@ class AppSyncer @Inject constructor(
         return null
     }
 
-    private suspend fun noPushConditions(): SyncResult? {
-        isNotOnline()?.let {
+    private suspend fun pushPrecondition(): SyncResult? {
+        onlinePrecondition()?.let {
             return it
         }
 
-        isAccountTokensInvalid()?.let {
+        accountTokenPrecondition()?.let {
             return it
         }
 
@@ -122,7 +122,7 @@ class AppSyncer @Inject constructor(
         cacheFullWorksites: Boolean,
         restartCacheCheckpoint: Boolean,
     ): SyncResult {
-        isAccountTokensInvalid()?.let {
+        accountTokenPrecondition()?.let {
             return it
         }
 
@@ -182,7 +182,7 @@ class AppSyncer @Inject constructor(
     }
 
     override suspend fun syncPullLanguage(): SyncResult {
-        isNotOnline()?.let {
+        onlinePrecondition()?.let {
             return it
         }
 
@@ -201,7 +201,7 @@ class AppSyncer @Inject constructor(
     }
 
     override suspend fun syncPullStatuses(): SyncResult {
-        isNotOnline()?.let {
+        onlinePrecondition()?.let {
             return it
         }
 
@@ -215,7 +215,7 @@ class AppSyncer @Inject constructor(
 
     override fun appPushWorksite(worksiteId: Long, scheduleMediaSync: Boolean) {
         applicationScope.launch(ioDispatcher) {
-            noPushConditions()?.let {
+            pushPrecondition()?.let {
                 return@launch
             }
 
@@ -234,7 +234,7 @@ class AppSyncer @Inject constructor(
     }
 
     override suspend fun syncPushWorksites(): SyncResult {
-        noPushConditions()?.let {
+        pushPrecondition()?.let {
             return it
         }
 
@@ -247,7 +247,7 @@ class AppSyncer @Inject constructor(
     }
 
     override suspend fun syncPushMedia(): SyncResult {
-        noPushConditions()?.let {
+        pushPrecondition()?.let {
             return it
         }
 
