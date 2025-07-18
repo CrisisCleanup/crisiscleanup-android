@@ -23,18 +23,21 @@ enum class NiaFlavor(val dimension: FlavorDimension, val applicationIdSuffix: St
 
 fun configureFlavors(
     commonExtension: CommonExtension<*, *, *, *, *, *>,
-    flavorConfigurationBlock: ProductFlavor.(flavor: NiaFlavor) -> Unit = {}
+    flavorConfigurationBlock: ProductFlavor.(flavor: NiaFlavor) -> Unit = {},
 ) {
     commonExtension.apply {
-        flavorDimensions += FlavorDimension.contentType.name
+        FlavorDimension.values().forEach { flavorDimension ->
+            flavorDimensions += flavorDimension.name
+        }
+
         productFlavors {
-            NiaFlavor.values().forEach {
-                create(it.name) {
-                    dimension = it.dimension.name
-                    flavorConfigurationBlock(this, it)
+            NiaFlavor.values().forEach { niaFlavor ->
+                register(niaFlavor.name) {
+                    dimension = niaFlavor.dimension.name
+                    flavorConfigurationBlock(this, niaFlavor)
                     if (this@apply is ApplicationExtension && this is ApplicationProductFlavor) {
-                        if (it.applicationIdSuffix != null) {
-                            applicationIdSuffix = it.applicationIdSuffix
+                        if (niaFlavor.applicationIdSuffix != null) {
+                            applicationIdSuffix = niaFlavor.applicationIdSuffix
                         }
                     }
                 }

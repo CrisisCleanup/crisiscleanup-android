@@ -27,7 +27,6 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -37,7 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -51,7 +49,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.crisiscleanup.AuthState
 import com.crisiscleanup.MainActivityViewModel
 import com.crisiscleanup.MainActivityViewState
-import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.TutorialStep
 import com.crisiscleanup.core.designsystem.LayoutProvider
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
@@ -77,12 +74,7 @@ import com.crisiscleanup.feature.authentication.R as authenticationR
 
 @Composable
 fun CrisisCleanupApp(
-    windowSizeClass: WindowSizeClass,
-    networkMonitor: NetworkMonitor,
-    appState: CrisisCleanupAppState = rememberCrisisCleanupAppState(
-        networkMonitor = networkMonitor,
-        windowSizeClass = windowSizeClass,
-    ),
+    appState: CrisisCleanupAppState,
     viewModel: MainActivityViewModel = hiltViewModel(),
 ) {
     CrisisCleanupBackground {
@@ -248,9 +240,6 @@ private fun BoxScope.LoadedContent(
     }
 }
 
-@OptIn(
-    ExperimentalComposeUiApi::class,
-)
 @Composable
 private fun AuthenticateContent(
     snackbarHostState: SnackbarHostState,
@@ -283,7 +272,6 @@ private fun AuthenticateContent(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun AcceptTermsContent(
     snackbarHostState: SnackbarHostState,
@@ -325,9 +313,6 @@ private fun AcceptTermsContent(
     }
 }
 
-@OptIn(
-    ExperimentalComposeUiApi::class,
-)
 @Composable
 private fun NavigableContent(
     snackbarHostState: SnackbarHostState,

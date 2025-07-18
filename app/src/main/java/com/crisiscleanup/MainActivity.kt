@@ -3,6 +3,7 @@ package com.crisiscleanup
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -10,12 +11,12 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
@@ -28,7 +29,6 @@ import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.PhoneNumberPicker
 import com.crisiscleanup.core.common.VisualAlertManager
-import com.crisiscleanup.core.common.event.AccountEventBus
 import com.crisiscleanup.core.common.event.TrimMemoryEventManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -42,7 +42,7 @@ import com.crisiscleanup.core.designsystem.theme.navigationContainerColor
 import com.crisiscleanup.core.model.data.DarkThemeConfig
 import com.crisiscleanup.sync.initializers.scheduleSyncWorksites
 import com.crisiscleanup.ui.CrisisCleanupApp
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.crisiscleanup.ui.rememberCrisisCleanupAppState
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.MapsInitializer.Renderer
 import dagger.hilt.android.AndroidEntryPoint
@@ -66,9 +66,6 @@ class MainActivity : ComponentActivity() {
     internal lateinit var trimMemoryEventManager: TrimMemoryEventManager
 
     private val viewModel: MainActivityViewModel by viewModels()
-
-    @Inject
-    internal lateinit var accountEventBus: AccountEventBus
 
     @Inject
     internal lateinit var syncPuller: SyncPuller
@@ -101,7 +98,6 @@ class MainActivity : ComponentActivity() {
     private val lifecycleObservers = mutableListOf<LifecycleObserver>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         MapsInitializer.initialize(this, Renderer.LATEST) {}
@@ -122,28 +118,27 @@ class MainActivity : ComponentActivity() {
             viewState is Loading || authState is AuthState.Loading
         }
 
-        // Turn off the decor fitting system windows, which allows us to handle insets,
-        // including IME animations
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-
         setContent {
-            val systemUiController = rememberSystemUiController()
             val darkTheme = shouldUseDarkTheme(viewState)
 
-            // Update the dark content of the system bars to match the theme
-            DisposableEffect(systemUiController, darkTheme) {
-                systemUiController.systemBarsDarkContentEnabled = !darkTheme
-                systemUiController.setSystemBarsColor(navigationContainerColor)
-                onDispose {}
-            }
+            val windowSizeClass = calculateWindowSizeClass(this)
+            val appState = rememberCrisisCleanupAppState(
+                networkMonitor = networkMonitor,
+                windowSizeClass = windowSizeClass,
+            )
 
-            CrisisCleanupTheme(
-                darkTheme = darkTheme,
-            ) {
-                CrisisCleanupApp(
-                    windowSizeClass = calculateWindowSizeClass(this),
-                    networkMonitor = networkMonitor,
-                )
+            val barColor = navigationContainerColor.toArgb()
+            enableEdgeToEdge(
+                statusBarStyle = SystemBarStyle.dark(barColor),
+                navigationBarStyle = SystemBarStyle.dark(barColor),
+            )
+
+            CompositionLocalProvider {
+                CrisisCleanupTheme(
+                    darkTheme = darkTheme,
+                ) {
+                    CrisisCleanupApp(appState)
+                }
             }
         }
 
