@@ -30,7 +30,6 @@ import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.PhoneNumberPicker
 import com.crisiscleanup.core.common.VisualAlertManager
-import com.crisiscleanup.core.common.event.AccountEventBus
 import com.crisiscleanup.core.common.event.TrimMemoryEventManager
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -73,9 +72,6 @@ class MainActivity : ComponentActivity() {
     internal lateinit var trimMemoryEventManager: TrimMemoryEventManager
 
     private val viewModel: MainActivityViewModel by viewModels()
-
-    @Inject
-    internal lateinit var accountEventBus: AccountEventBus
 
     @Inject
     internal lateinit var syncPuller: SyncPuller

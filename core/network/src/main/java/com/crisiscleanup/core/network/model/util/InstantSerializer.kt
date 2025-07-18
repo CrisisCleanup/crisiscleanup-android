@@ -1,7 +1,6 @@
 package com.crisiscleanup.core.network.model.util
 
 import kotlinx.datetime.Instant
-import kotlinx.datetime.toInstant
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind.STRING
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor

@@ -120,8 +120,9 @@ object PhoneNumberUtil {
             return it
         }
 
-        if (noShortWords.trim().length in 10..15) {
-            if (noShortWords.length <= 12) {
+        val trimmedLength = noShortWords.trim().length
+        if (trimmedLength in 10..15) {
+            if (trimmedLength <= 12) {
                 separated37Pattern.find(noShortWords)?.let {
                     return singleParsedNumber("${it.groupValues[1]}${it.groupValues[2]}")
                 }

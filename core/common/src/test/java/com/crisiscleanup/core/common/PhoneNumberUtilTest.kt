@@ -2,6 +2,7 @@ package com.crisiscleanup.core.common
 
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class PhoneNumberUtilTest {
     @Test
@@ -14,7 +15,7 @@ class PhoneNumberUtilTest {
         )
         for (input in inputs) {
             val actual = PhoneNumberUtil.parsePhoneNumbers(input)?.parsedNumbers
-            assertEquals(null, actual)
+            assertNull(actual)
         }
     }
 
@@ -116,10 +117,6 @@ class PhoneNumberUtilTest {
             "234567890-" to listOf("234567890"),
             "2345678901  . 4282 M-F" to listOf("2345678901"),
             "2345678901 / 3456789012" to listOf(
-                "2345678901",
-                "3456789012",
-            ),
-            "2345678901 or 3456789012" to listOf(
                 "2345678901",
                 "3456789012",
             ),

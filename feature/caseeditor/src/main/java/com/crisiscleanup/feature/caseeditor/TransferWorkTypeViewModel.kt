@@ -90,6 +90,7 @@ class TransferWorkTypeViewModel @Inject constructor(
 
     val errorMessageReason = MutableStateFlow("")
     private val errorMessageWorkType = MutableStateFlow("")
+
     @OptIn(FlowPreview::class)
     val errorMessage = combine(
         errorMessageReason,
