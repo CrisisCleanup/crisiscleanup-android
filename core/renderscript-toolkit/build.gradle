@@ -5,7 +5,7 @@ plugins {
 android {
     namespace = "com.google.android.renderscript"
 
-    ndkVersion "25.2.9519653"
+    ndkVersion "28.2.13676358"
 
     defaultConfig {
         externalNativeBuild {
