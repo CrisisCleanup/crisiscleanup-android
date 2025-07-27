@@ -28,7 +28,7 @@ data class NetworkWorksiteFull(
     val email: String? = null,
     val events: List<NetworkEvent>,
     val favorite: NetworkType?,
-    val files: List<NetworkFile>,
+    val files: List<NetworkFile> = emptyList(),
     val flags: List<NetworkFlag>,
     @SerialName("form_data")
     val formData: List<KeyDynamicValuePair>,
