@@ -24,4 +24,5 @@ dependencies {
     implementation(libs.libphonenumber)
 
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk.android)
 }

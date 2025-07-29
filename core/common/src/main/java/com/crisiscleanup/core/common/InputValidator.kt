@@ -23,7 +23,9 @@ class CommonInputValidator @Inject constructor(
     private val commonEmailRegex = """\b[^@]+@[^.]+\.[A-Za-z]{2,}\b""".toRegex()
 
     private val nonDigitRegex = """\D""".toRegex()
-    private val phoneUtil = LibPhoneNumber.createInstance(context)
+    private val phoneUtil by lazy {
+        LibPhoneNumber.createInstance(context)
+    }
 
     override fun validateEmailAddress(emailAddress: String) =
         Patterns.EMAIL_ADDRESS.matcher(emailAddress).matches()
