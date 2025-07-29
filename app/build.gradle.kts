@@ -43,7 +43,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
                 "proguard-playservices.pro",
-                "proguard-retrofit2.pro",
                 "proguard-crashlytics.pro",
             )
 

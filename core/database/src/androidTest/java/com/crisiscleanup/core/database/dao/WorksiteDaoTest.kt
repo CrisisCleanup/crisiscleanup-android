@@ -250,7 +250,9 @@ class WorksiteDaoTest {
         assertNotNull(full.autoContactFrequencyT)
         assertNotNull(full.email)
         assertNotNull(full.phone1)
+        assertNotNull(full.phone1Notes)
         assertNotNull(full.phone2)
+        assertNotNull(full.phone2Notes)
         assertNotNull(full.plusCode)
         assertNotNull(full.reportedBy)
         assertNotNull(full.what3Words)
@@ -392,7 +394,9 @@ fun testWorksiteEntity(
     longitude = 0.0,
     name = "",
     phone1 = "",
+    phone1Notes = null,
     phone2 = null,
+    phone2Notes = null,
     phoneSearch = null,
     plusCode = null,
     postalCode = "",
@@ -430,7 +434,9 @@ fun testWorksiteFullEntity(
     longitude = -534.15,
     name = "full worksite",
     phone1 = "345-414-7825",
+    phone1Notes = "phone-notes",
     phone2 = "835-621-8938",
+    phone2Notes = "phone2-notes",
     phoneSearch = null,
     plusCode = "code 123",
     postalCode = "83425",
@@ -468,7 +474,9 @@ fun testWorksiteShortEntity(
     longitude = -157.15,
     name = "short worksite",
     phone1 = null,
+    phone1Notes = null,
     phone2 = null,
+    phone2Notes = null,
     phoneSearch = null,
     plusCode = null,
     postalCode = "83425-shrt",

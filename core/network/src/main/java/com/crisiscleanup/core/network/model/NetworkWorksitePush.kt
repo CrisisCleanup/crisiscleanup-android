@@ -31,7 +31,11 @@ data class NetworkWorksitePush(
     // Notes are followup requests.
     // val notes
     val phone1: String,
+    @SerialName("phone1_notes")
+    val phone1Notes: String?,
     val phone2: String,
+    @SerialName("phone2_notes")
+    val phone2Notes: String?,
     @SerialName("pluscode")
     val plusCode: String?,
     @SerialName("postal_code")

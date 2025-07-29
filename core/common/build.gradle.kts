@@ -21,6 +21,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.datetime)
     implementation(libs.timeago)
+    implementation(libs.libphonenumber)
 
     testImplementation(libs.kotlinx.coroutines.test)
 }

@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -65,8 +66,13 @@ internal fun PropertyFormView(
     val phone1Label = translator("formLabels.phone1")
     ErrorText(inputData.phoneNumberError)
     OutlinedClearableTextField(
-        modifier = listItemModifier.testTag("propertyPhone1TextField"),
-        labelResId = 0,
+        modifier = listItemModifier
+            .onFocusChanged {
+                if (!it.hasFocus) {
+                    inputData.formatPhoneNumber()
+                }
+            }
+            .testTag("propertyPhone1TextField"),
         label = "$phone1Label *",
         value = inputData.phoneNumber,
         onValueChange = updatePhone,
@@ -77,16 +83,46 @@ internal fun PropertyFormView(
         enabled = isEditable,
     )
 
+    val updatePhoneNotes = remember(inputData) { { s: String -> inputData.phoneNotes = s } }
+    OutlinedClearableTextField(
+        modifier = listItemModifier
+            .testTag("propertyPhone1NotesTextField"),
+        label = translator("formLabels.phone1_notes"),
+        value = inputData.phoneNotes,
+        onValueChange = updatePhoneNotes,
+        isError = false,
+        enabled = isEditable,
+    )
+
     val updateAdditionalPhone = remember(inputData) {
         { s: String -> inputData.phoneNumberSecondary = s }
     }
     OutlinedClearableTextField(
-        modifier = listItemModifier.testTag("propertyPhone2TextField"),
+        modifier = listItemModifier
+            .onFocusChanged {
+                if (!it.hasFocus) {
+                    inputData.formatPhoneNumberSecondary()
+                }
+            }
+            .testTag("propertyPhone2TextField"),
         labelResId = 0,
         label = translator("formLabels.phone2"),
         value = inputData.phoneNumberSecondary,
         onValueChange = updateAdditionalPhone,
         keyboardType = KeyboardType.Password,
+        isError = false,
+        enabled = isEditable,
+    )
+
+    val updateAdditionalPhoneNotes = remember(inputData) {
+        { s: String -> inputData.phoneNotesSecondary = s }
+    }
+    OutlinedClearableTextField(
+        modifier = listItemModifier
+            .testTag("propertyPhone2NotesTextField"),
+        label = translator("formLabels.phone2_notes"),
+        value = inputData.phoneNotesSecondary,
+        onValueChange = updateAdditionalPhoneNotes,
         isError = false,
         enabled = isEditable,
     )

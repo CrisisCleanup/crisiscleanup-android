@@ -37,7 +37,9 @@ fun NetworkWorksiteFull.asEntity() = WorksiteEntity(
     longitude = location.coordinates[0],
     name = name,
     phone1 = phone1,
+    phone1Notes = phone1Notes,
     phone2 = phone2,
+    phone2Notes = phone2Notes,
     phoneSearch = searchablePhoneNumbers(phone1, phone2),
     plusCode = plusCode,
     postalCode = postalCode ?: "",
@@ -46,9 +48,9 @@ fun NetworkWorksiteFull.asEntity() = WorksiteEntity(
     svi = svi,
     what3Words = what3words,
     updatedAt = updatedAt,
-    photoCount = files.map(NetworkFile::mimeContentType)
-        .filter { it?.startsWith("image/") == true }
-        .size,
+    photoCount = files?.map(NetworkFile::mimeContentType)
+        ?.filter { it?.startsWith("image/") == true }
+        ?.size,
 )
 
 // Copy similar changes from [NetworkWorksiteFull.asEntity] above
@@ -71,7 +73,9 @@ fun NetworkWorksiteCoreData.asEntity() = WorksiteEntity(
     longitude = location.coordinates[0],
     name = name,
     phone1 = phone1,
+    phone1Notes = phone1Notes,
     phone2 = phone2,
+    phone2Notes = phone2Notes,
     phoneSearch = searchablePhoneNumbers(phone1, phone2),
     plusCode = plusCode,
     postalCode = postalCode ?: "",
@@ -108,7 +112,9 @@ fun NetworkWorksiteShort.asEntity() = WorksiteEntity(
     autoContactFrequencyT = null,
     email = null,
     phone1 = null,
+    phone1Notes = null,
     phone2 = null,
+    phone2Notes = null,
     phoneSearch = null,
     plusCode = null,
     reportedBy = null,
@@ -141,7 +147,9 @@ fun NetworkWorksitePage.asEntity() = WorksiteEntity(
     autoContactFrequencyT = autoContactFrequencyT,
     email = email,
     phone1 = phone1,
+    phone1Notes = phone1Notes,
     phone2 = phone2,
+    phone2Notes = phone2Notes,
     phoneSearch = searchablePhoneNumbers(phone1, phone2),
     plusCode = plusCode,
     reportedBy = reportedBy,
@@ -187,7 +195,7 @@ fun NetworkWorksiteFull.asEntities(): WorksiteEntities {
     val formData = formData.map(KeyDynamicValuePair::asWorksiteEntity)
     val flags = flags.map(NetworkFlag::asEntity)
     val notes = notes.map(NetworkNote::asEntity)
-    val files = files.map(NetworkFile::asEntity)
+    val files = files?.map(NetworkFile::asEntity) ?: emptyList()
     return WorksiteEntities(
         core,
         flags,

@@ -117,8 +117,12 @@ data class WorksiteEntity(
     val longitude: Double,
     val name: String,
     val phone1: String?,
+    @ColumnInfo("phone1_notes", defaultValue = "")
+    val phone1Notes: String?,
     @ColumnInfo(defaultValue = "")
     val phone2: String?,
+    @ColumnInfo("phone2_notes", defaultValue = "")
+    val phone2Notes: String?,
     @ColumnInfo("phone_search", defaultValue = "")
     val phoneSearch: String?,
     @ColumnInfo("plus_code", defaultValue = "")
