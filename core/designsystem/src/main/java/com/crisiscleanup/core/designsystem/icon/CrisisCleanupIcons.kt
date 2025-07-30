@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.CloudSync
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
@@ -72,6 +73,7 @@ object CrisisCleanupIcons {
     val Clear = icons.Clear
     val CloudSync = icons.CloudSync
     val Cloud = icons.Cloud
+    val CloudOff = icons.CloudOff
     val Close = icons.Close
     val Dashboard = R.drawable.ic_dashboard
     val Delete = icons.Delete
