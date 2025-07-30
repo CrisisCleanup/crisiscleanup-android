@@ -403,10 +403,15 @@ private fun MenuScreen(
                 }
 
                 item {
-                    CrisisCleanupTextButton(
-                        onClick = viewModel::clearAppData,
-                        text = "Clear app data",
-                    )
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                    ) {
+                        CrisisCleanupTextButton(
+                            onClick = viewModel::clearAppData,
+                            text = "Clear app data",
+                        )
+                    }
                 }
             }
         }
