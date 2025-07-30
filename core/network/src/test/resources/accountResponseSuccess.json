@@ -1,0 +1,112 @@
+{
+  "id": 18602,
+  "email": "demo@crisiscleanup.org",
+  "permissions": {
+    "create_incident": true,
+    "approve_orgs_full": true,
+    "approve_orgs_preliminary": true,
+    "edit_portal_settings": true,
+    "affiliate_org": true,
+    "invite_users": true,
+    "invite_orgs": true,
+    "remove_workers": true,
+    "phone_agent": true,
+    "advanced_maps": false,
+    "translate": true,
+    "support_agent": true,
+    "manage_crew": false,
+    "manage_cases": true,
+    "view_user_contacts": true,
+    "submit_edu": true,
+    "view_sensitive": "inherit",
+    "move_orgs": true,
+    "view_own_volunteer_locations": true,
+    "view_other_volunteer_locations": true,
+    "move_other_users_worksites": false,
+    "approve_new_user_requests": true,
+    "approve_work_type_transfers": true,
+    "receive_work_type_transfer_requests": true,
+    "unclaim_from_anyone": true,
+    "access_all_incidents": true,
+    "manage_team": true,
+    "is_public_facing": true,
+    "read_work_details": true,
+    "write_work_details": true,
+    "move_other_org_worksites": true,
+    "approve_organization_redeploy": true
+  },
+  "first_name": "Demo",
+  "last_name": "User",
+  "states": {},
+  "preferences": {
+    "dashboard": "phone-volunteer",
+    "hideAppBanner": true,
+    "hideTrainingBanner": true
+  },
+  "organization": {
+    "id": 12,
+    "name": "Demo Recovery Organization",
+    "is_active": true,
+    "roles": [],
+    "type_t": "orgType.survivor_client_services",
+    "affiliates": [
+      582
+    ],
+    "all_affiliates_and_groups": [
+      582
+    ],
+    "primary_location": 263,
+    "secondary_location": 1037
+  },
+  "roles": [
+    1,
+    7,
+    6
+  ],
+  "active_roles": [
+    1,
+    6,
+    7
+  ],
+  "pending_roles": [],
+  "mobile": "2345678901",
+  "social": null,
+  "lineage": [
+    179,
+    null
+  ],
+  "primary_language": 2,
+  "secondary_language": null,
+  "files": [
+    {
+      "tag": null,
+      "title": null,
+      "notes": null,
+      "created_at": "2023-06-28T16:23:26Z",
+      "file_updated_at": "2024-03-19T23:47:11.119619Z",
+      "id": 5,
+      "file": 87278,
+      "filename": "6645713-b99b0bfba6a04d24879b35538d1c8b9f.jpg",
+      "url": "https://crisiscleanup-user-files.s3.amazonaws.com/6645713-b99b0bfba6a04d24879b35538d1c8b9f.jpg?AWSAccessKeyId=AKIASU3RMDS2EGFBJH5O&Signature=Ez3PS71Gedweed%2BWZLT0rF%2BU9AY%3D&Expires=1673376442",
+      "full_url": "full-url",
+      "general_file_url": "general-file",
+      "blog_url": "blog-url",
+      "large_blog_url": "large-blog-url",
+      "large_thumbnail_url": "large-thumbnail",
+      "small_thumbnail_url": "small-thumbnail",
+      "filename_original": "6645713.jpg",
+      "file_type_t": "fileTypes.user_profile_picture",
+      "mime_content_type": "image/jpeg"
+    }
+  ],
+  "referring_user": 856,
+  "accepted_terms": true,
+  "accepted_terms_timestamp": "2025-07-26T19:40:22Z",
+  "beta_features": [],
+  "approved_incidents": [
+    153,
+    5,
+    1
+  ],
+  "mobile_dnis_verified_at": null
+}
