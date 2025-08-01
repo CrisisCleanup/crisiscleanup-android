@@ -801,7 +801,7 @@ class CreateEditCaseViewModel @Inject constructor(
                 val workTypeLookup = editorState.incident.workTypeLookup
                 worksite = workDataEditor.transferWorkTypes(workTypeLookup, worksite!!)
 
-                worksiteProvider.editableWorksite.value = worksite!!
+                worksiteProvider.editableWorksite.value = worksite
             }
         }
 

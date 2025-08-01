@@ -212,7 +212,7 @@ class WorksiteChangeDaoTest {
             testWorksiteNote(41, createdAtB, "note-e"),
         ),
         phone1 = "phone1-change",
-        phone1Notes = "phone1-change",
+        phone1Notes = "phone1-notes-change",
         phone2 = "",
         postalCode = "postal-code-change",
         state = "state-change",
