@@ -40,9 +40,11 @@ import javax.inject.Inject
 
 private interface DataSourceApi {
     @TokenAuthenticationHeader
-    @GET("users/me")
+    @GET("users/{user}")
     suspend fun getProfile(
-        @Tag endpointId: EndpointRequestId = EndpointRequestId.MyProfile,
+        @Path("user")
+        userId: Long,
+        @Tag endpointId: EndpointRequestId = EndpointRequestId.UserProfile,
     ): NetworkAccountProfileResult
 
     @GET("users/me")
@@ -399,7 +401,7 @@ class DataApiClient @Inject constructor(
 ) : CrisisCleanupNetworkDataSource {
     private val networkApi = retrofit.create(DataSourceApi::class.java)
 
-    override suspend fun getProfileData() = networkApi.getProfile()
+    override suspend fun getProfileData(accountId: Long) = networkApi.getProfile(accountId)
 
     override suspend fun getOrganizations(organizations: List<Long>) =
         networkApi.getOrganizations(organizations.joinToString(",")).let {
