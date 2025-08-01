@@ -134,7 +134,16 @@ internal class CasesMapMarkerManager(
                 distanceMeasure,
             )
         }
-            .sortedWith { a, b -> if (a.distanceMeasure - b.distanceMeasure <= 0) -1 else 1 }
+            .sortedWith { a, b ->
+                val deltaDistance = a.distanceMeasure - b.distanceMeasure
+                if (deltaDistance < 0) {
+                    -1
+                } else if (deltaDistance > 0) {
+                    1
+                } else {
+                    if (a.mark.id < b.mark.id) -1 else 1
+                }
+            }
 
         val endIndex = distanceToMiddleSorted.size.coerceAtMost(maxMarkersOnMap)
         val marks = distanceToMiddleSorted
