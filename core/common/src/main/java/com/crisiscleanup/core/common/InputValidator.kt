@@ -40,18 +40,21 @@ class CommonInputValidator @Inject constructor(
                     phoneNumber = "+$value"
                 }
             }
+            // TODO Use region from device
             phoneUtil.parse(phoneNumber, regionCode)?.let { parsed ->
-                val isUsCountryCode = regionCode == "US" && parsed.countryCode == 1
-                val format = if (isUsCountryCode) {
-                    PhoneFormat.NATIONAL
-                } else {
-                    PhoneFormat.INTERNATIONAL
+                if (phoneUtil.isValidNumber(parsed)) {
+                    val isUsCountryCode = regionCode == "US" && parsed.countryCode == 1
+                    val format = if (isUsCountryCode) {
+                        PhoneFormat.NATIONAL
+                    } else {
+                        PhoneFormat.INTERNATIONAL
+                    }
+                    val formatted = phoneUtil.format(parsed, format)
+                    return PhoneNumberValidation(
+                        isValid = true,
+                        formatted = formatted,
+                    )
                 }
-                val formatted = phoneUtil.format(parsed, format)
-                return PhoneNumberValidation(
-                    isValid = true,
-                    formatted = formatted,
-                )
             }
         } catch (e: NumberParseException) {
             exception = e
