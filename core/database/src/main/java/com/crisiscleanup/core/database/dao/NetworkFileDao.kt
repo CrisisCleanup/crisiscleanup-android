@@ -30,6 +30,19 @@ interface NetworkFileDao {
     )
     fun deleteUnspecified(worksiteId: Long, keepIds: Collection<Long>)
 
+    @Transaction
+    @Query(
+        """
+        DELETE FROM worksite_to_network_file
+        WHERE worksite_id=:worksiteId AND network_file_id NOT IN(:ids)
+        """,
+    )
+    fun deleteUnspecifiedCrossReferences(worksiteId: Long, ids: Collection<Long>)
+
+    @Transaction
+    @Query("DELETE FROM worksite_to_network_file WHERE worksite_id=:worksiteId")
+    fun deleteWorksiteNetworkFiles(worksiteId: Long)
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertIgnoreCrossReferences(crossReferences: Collection<WorksiteNetworkFileCrossRef>)
 

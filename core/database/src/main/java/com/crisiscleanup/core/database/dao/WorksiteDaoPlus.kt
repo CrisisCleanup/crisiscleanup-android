@@ -118,13 +118,16 @@ class WorksiteDaoPlus @Inject constructor(
         val networkFileDao = db.networkFileDao()
 
         if (files.isEmpty()) {
-            networkFileDao.deleteUnspecified(worksiteId, emptyList())
+            networkFileDao.deleteWorksiteNetworkFiles(worksiteId)
             return@withTransaction
         }
 
         networkFileDao.upsert(files)
+        // TODO Update corresponding network_file_local_images.is_deleted as necessary
+
         val ids = files.map(NetworkFileEntity::id).toSet()
         networkFileDao.deleteUnspecified(worksiteId, ids)
+        networkFileDao.deleteUnspecifiedCrossReferences(worksiteId, ids)
         val networkFileCrossReferences = ids.map { WorksiteNetworkFileCrossRef(worksiteId, it) }
         networkFileDao.insertIgnoreCrossReferences(networkFileCrossReferences)
     }

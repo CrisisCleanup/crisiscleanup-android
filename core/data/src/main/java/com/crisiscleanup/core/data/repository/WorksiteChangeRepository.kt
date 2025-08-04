@@ -424,7 +424,8 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
             val worksiteFileIds = localImageDaoPlus.getDeletedPhotoNetworkFileIds(worksiteId)
             with(worksiteFileIds) {
                 if (fileIds.isNotEmpty()) {
-                    worksitePhotoChangeSyncer.deletePhotoFiles(worksiteId, fileIds)
+                    val networkWorksiteId = worksiteDao.getWorksiteNetworkId(worksiteId)
+                    worksitePhotoChangeSyncer.deletePhotoFiles(networkWorksiteId, fileIds)
                     syncLogger.log("Deleted photos", fileIds.joinToString(", "))
                 }
             }
