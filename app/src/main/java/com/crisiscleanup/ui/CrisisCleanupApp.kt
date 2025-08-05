@@ -162,7 +162,9 @@ private fun BoxScope.LoadedContent(
             val orgPersistentInvite by viewModel.orgPersistentInvites.collectAsStateWithLifecycle()
 
             if (showPasswordReset) {
-                appState.navController.navigateToPasswordReset(false)
+                LaunchedEffect(Unit) {
+                    appState.navController.navigateToPasswordReset(false)
+                }
             } else if (showMagicLinkLogin) {
                 appState.navController.navigateToMagicLinkLogin()
             } else if (orgUserInviteCode.isNotBlank()) {
@@ -224,7 +226,9 @@ private fun BoxScope.LoadedContent(
         }
 
         if (showPasswordReset) {
-            appState.navController.navigateToPasswordReset(true)
+            LaunchedEffect(Unit) {
+                appState.navController.navigateToPasswordReset(true)
+            }
         }
     }
 
