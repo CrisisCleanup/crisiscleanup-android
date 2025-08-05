@@ -34,6 +34,7 @@ fun WorksiteMapMark.asWorksiteGoogleMapMark(
             isImportant = isHighPriority,
             hasMultipleWorkTypes = workTypeCount > 1,
             isDuplicate = isDuplicate,
+            isMarkedForDelete = isMarkedForDelete,
             isFilteredOut = isFilteredOut,
             isVisited = isVisited,
             hasPhotos = hasPhotos,
