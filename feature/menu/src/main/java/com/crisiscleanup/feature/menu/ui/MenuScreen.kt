@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
@@ -20,6 +21,8 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -67,6 +70,7 @@ import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.neutralFontColor
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
+import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.IncidentWorksitesCachePreferences
 import com.crisiscleanup.core.model.data.TutorialViewId
@@ -717,10 +721,34 @@ private fun AppUpdateView() {
         horizontalArrangement = listItemSpacedBy,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            t("~~A new version of the app is available"),
+        var badgeOffsetX by remember { mutableStateOf(0.dp) }
+        val localDensity = LocalDensity.current
+        BadgedBox(
+            badge = {
+                Badge(
+                    Modifier
+                        .size(20.dp)
+                        .offset(x = badgeOffsetX),
+                    containerColor = primaryOrangeColor,
+                ) {
+                    // TODO: Match content color in menu badge
+                    Icon(
+                        imageVector = CrisisCleanupIcons.AppUpdateAvailable,
+                        contentDescription = null,
+                    )
+                }
+            },
             Modifier.weight(1f),
-        )
+        ) {
+            Text(
+                t("~~A new version of the app is available"),
+                Modifier.onGloballyPositioned {
+                    badgeOffsetX = with(localDensity) {
+                        -it.size.width.div(2).toDp()
+                    }
+                },
+            )
+        }
 
         val context = LocalContext.current
         val playStoreLink =
