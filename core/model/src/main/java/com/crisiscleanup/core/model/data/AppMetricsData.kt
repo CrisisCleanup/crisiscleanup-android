@@ -14,6 +14,7 @@ data class AppMetricsData(
     val minSupportedAppVersion: MinSupportedAppVersion,
 
     val appInstallVersion: Long,
+    val appPublishedVersion: Long,
 )
 
 data class MinSupportedAppVersion(

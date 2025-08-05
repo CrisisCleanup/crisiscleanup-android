@@ -40,6 +40,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
@@ -122,6 +123,8 @@ private fun MenuScreen(
     val openIncidentsSelect = remember(viewModel) {
         { showIncidentPicker = true }
     }
+
+    val isAppUpdateAvailable by viewModel.isAppUpdateAvailable.collectAsStateWithLifecycle(false)
 
     val isSharingAnalytics by viewModel.isSharingAnalytics.collectAsStateWithLifecycle(false)
 
@@ -274,6 +277,12 @@ private fun MenuScreen(
                         viewModel.isNotProduction,
                         toggleGettingStartedSection = viewModel::showGettingStartedVideo,
                     )
+                }
+            }
+
+            if (isAppUpdateAvailable) {
+                item {
+                    AppUpdateView()
                 }
             }
 
@@ -697,6 +706,38 @@ private fun TermsPrivacyView(
         ) {
             uriHandler.openUri(privacyPolicyUrl)
         }
+    }
+}
+
+@Composable
+private fun AppUpdateView() {
+    val t = LocalAppTranslator.current
+    Row(
+        listItemModifier,
+        horizontalArrangement = listItemSpacedBy,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            t("~~A new version of the app is available"),
+            Modifier.weight(1f),
+        )
+
+        val context = LocalContext.current
+        val playStoreLink =
+            "https://play.google.com/store/apps/details?id=${context.packageName}"
+        val uriHandler = LocalUriHandler.current
+        Text(
+            text = t("actions.update"),
+            modifier = Modifier
+                .clickable(
+                    onClick = {
+                        uriHandler.openUri(playStoreLink)
+                    },
+                )
+                .listItemPadding(),
+            style = LocalFontStyles.current.header4,
+            color = primaryBlueColor,
+        )
     }
 }
 

@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.Domain
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -62,6 +63,7 @@ private val icons = Icons.Default
 object CrisisCleanupIcons {
     val Account = icons.PersonOutline
     val Add = icons.Add
+    val AppUpdateAvailable = icons.Download
     val ArrowBack = Icons.AutoMirrored.Filled.ArrowBackIos
     val ArrowBack2 = Icons.AutoMirrored.Filled.ArrowBack
     val ArrowDropDown = icons.ArrowDropDown

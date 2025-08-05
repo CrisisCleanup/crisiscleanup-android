@@ -57,7 +57,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MainActivityViewModel @Inject constructor(
     private val appPreferencesRepository: LocalAppPreferencesRepository,
-    private val appMetricsRepository: LocalAppMetricsRepository,
+    appMetricsRepository: LocalAppMetricsRepository,
     accountDataRepository: AccountDataRepository,
     incidentSelector: IncidentSelector,
     appDataRepository: AppDataManagementRepository,
@@ -90,6 +90,8 @@ class MainActivityViewModel @Inject constructor(
             initialValue = MainActivityViewState.Loading,
             started = SharingStarted.WhileSubscribed(5_000),
         )
+
+    val isAppUpdateAvailable = appMetricsRepository.isAppUpdateAvailable
 
     /**
      * API account tokens need re-issuing

@@ -202,10 +202,13 @@ private fun BoxScope.LoadedContent(
 
         val menuTutorialStep by viewModel.menuTutorialStep.collectAsStateWithLifecycle()
 
+        val isUpdateAvailable by viewModel.isAppUpdateAvailable.collectAsStateWithLifecycle(false)
+
         NavigableContent(
             snackbarHostState,
             appState,
-            isOnboarding,
+            isAppUpdateAvailable = isUpdateAvailable,
+            isOnboarding = isOnboarding,
             menuTutorialStep,
             viewModel.tutorialViewTracker.viewSizePositionLookup,
             viewModel::onMenuTutorialNext,
@@ -317,6 +320,7 @@ private fun AcceptTermsContent(
 private fun NavigableContent(
     snackbarHostState: SnackbarHostState,
     appState: CrisisCleanupAppState,
+    isAppUpdateAvailable: Boolean,
     isOnboarding: Boolean,
     menuTutorialStep: TutorialStep,
     tutorialViewLookup: SnapshotStateMap<TutorialViewId, LayoutSizePosition>,
@@ -348,6 +352,7 @@ private fun NavigableContent(
             ) {
                 AppNavigationBar(
                     appState,
+                    isAppUpdateAvailable,
                     navBarSizePositionModifier.testTag("AppNavigationBottomBar"),
                 )
             }
@@ -378,6 +383,7 @@ private fun NavigableContent(
             if (showNavigation && !layoutBottomNav) {
                 AppNavigationBar(
                     appState,
+                    isAppUpdateAvailable,
                     navBarSizePositionModifier
                         .safeDrawingPadding()
                         .testTag("AppNavigationSideRail"),

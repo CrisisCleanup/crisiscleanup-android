@@ -25,6 +25,7 @@ import com.crisiscleanup.core.data.repository.AppDataManagementRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupAccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentCacheRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
+import com.crisiscleanup.core.data.repository.LocalAppMetricsRepository
 import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.data.repository.SyncLogRepository
 import com.crisiscleanup.core.model.data.InitialIncidentWorksitesCachePreferences
@@ -53,6 +54,7 @@ class MenuViewModel @Inject constructor(
     private val appPreferencesRepository: LocalAppPreferencesRepository,
     private val appDataManagementRepository: AppDataManagementRepository,
     appSettingsProvider: AppSettingsProvider,
+    appMetricsRepository: LocalAppMetricsRepository,
     dataDownloadSpeedMonitor: DataDownloadSpeedMonitor,
     private val appEnv: AppEnv,
     private val syncPuller: SyncPuller,
@@ -70,6 +72,8 @@ class MenuViewModel @Inject constructor(
     val termsOfServiceUrl = appSettingsProvider.termsOfServiceUrl
     val privacyPolicyUrl = appSettingsProvider.privacyPolicyUrl
     val gettingStartedVideoUrl = appSettingsProvider.gettingStartedVideoUrl
+
+    val isAppUpdateAvailable = appMetricsRepository.isAppUpdateAvailable
 
     val appTopBarDataProvider = AppTopBarDataProvider(
         "nav.menu",
