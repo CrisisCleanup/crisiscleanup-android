@@ -137,6 +137,7 @@ class WorkTypeIconProvider @Inject constructor(
         isImportant: Boolean,
         hasMultipleWorkTypes: Boolean,
         isDuplicate: Boolean,
+        isMarkedForDelete: Boolean,
         isFilteredOut: Boolean,
         isVisited: Boolean,
         hasPhotos: Boolean,
@@ -148,12 +149,13 @@ class WorkTypeIconProvider @Inject constructor(
             isFavorite = isFavorite,
             isImportant = isImportant,
             isDuplicate = isDuplicate,
+            isMarkedForDelete = isMarkedForDelete,
             isFilteredOut = isFilteredOut,
             isVisited = isVisited,
             hasPhotos = hasPhotos,
         )
         synchronized(cache) {
-            cache.get(cacheKey)?.let {
+            cache[cacheKey]?.let {
                 return it
             }
         }
@@ -166,6 +168,7 @@ class WorkTypeIconProvider @Inject constructor(
         workType: WorkTypeType,
         hasMultipleWorkTypes: Boolean,
         isDuplicate: Boolean,
+        isMarkedForDelete: Boolean,
         isFilteredOut: Boolean,
         isVisited: Boolean,
         hasPhotos: Boolean,
@@ -173,21 +176,22 @@ class WorkTypeIconProvider @Inject constructor(
         val cacheKey = WorkTypeIconCacheKey(
             statusClaim,
             workType,
-            hasMultipleWorkTypes,
-            isDuplicate,
-            isFilteredOut,
-            isVisited,
-            hasPhotos,
+            hasMultipleWorkTypes = hasMultipleWorkTypes,
+            isDuplicate = isDuplicate,
+            isMarkedForDelete = isMarkedForDelete,
+            isFilteredOut = isFilteredOut,
+            isVisited = isVisited,
+            hasPhotos = hasPhotos,
         )
         synchronized(cache) {
-            bitmapCache.get(cacheKey)?.let {
+            bitmapCache[cacheKey]?.let {
                 return it
             }
         }
 
         cacheIconBitmap(cacheKey)
         synchronized(cache) {
-            bitmapCache.get(cacheKey)?.let {
+            bitmapCache[cacheKey]?.let {
                 return it
             }
             return null
@@ -220,9 +224,10 @@ class WorkTypeIconProvider @Inject constructor(
 
         val colors = getMapMarkerColors(
             cacheKey.statusClaim,
-            cacheKey.isDuplicate,
-            cacheKey.isFilteredOut,
-            cacheKey.isVisited,
+            isDuplicate = cacheKey.isDuplicate,
+            isMarkedForDelete = cacheKey.isMarkedForDelete,
+            isFilteredOut = cacheKey.isFilteredOut,
+            isVisited = cacheKey.isVisited,
             isDot = false,
         )
         val fillAlpha = if (colors.fill.alpha < 1) (colors.fill.alpha * 255).toInt() else 255
@@ -374,6 +379,7 @@ private data class WorkTypeIconCacheKey(
     val isFavorite: Boolean = false,
     val isImportant: Boolean = false,
     val isDuplicate: Boolean = false,
+    val isMarkedForDelete: Boolean = false,
     val isFilteredOut: Boolean = false,
     val isVisited: Boolean = false,
     val hasPhotos: Boolean = false,

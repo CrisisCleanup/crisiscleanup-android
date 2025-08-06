@@ -14,12 +14,9 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
-import com.crisiscleanup.core.model.data.OrgData
-import com.crisiscleanup.core.model.data.emptyOrgData
 import com.crisiscleanup.core.network.CrisisCleanupAuthApi
+import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.CrisisCleanupNetworkException
-import com.crisiscleanup.core.network.model.condenseMessages
-import com.crisiscleanup.core.network.model.profilePictureUrl
 import com.crisiscleanup.feature.authentication.model.AuthenticationState
 import com.crisiscleanup.feature.authentication.model.LoginInputData
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,13 +27,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import javax.inject.Inject
 
 @HiltViewModel
 class AuthenticationViewModel @Inject constructor(
     private val accountDataRepository: AccountDataRepository,
     private val authApiClient: CrisisCleanupAuthApi,
+    private val dataApiClient: CrisisCleanupNetworkDataSource,
     private val inputValidator: InputValidator,
     private val accountEventBus: AccountEventBus,
     private val translator: KeyResourceTranslator,
@@ -140,56 +137,31 @@ class AuthenticationViewModel @Inject constructor(
         isAuthenticating.value = true
         viewModelScope.launch(ioDispatcher) {
             try {
-                val result = authApiClient.login(emailAddress, password)
                 val oauthResult = authApiClient.oauthLogin(emailAddress, password)
-                val hasError =
-                    result.errors?.isNotEmpty() == true || oauthResult.accessToken.isBlank()
+                val hasError = oauthResult.accessToken.isBlank()
                 if (hasError) {
                     errorMessage.value = translator("info.unknown_error")
 
-                    val logErrorMessage =
-                        result.errors?.condenseMessages?.ifBlank { "Server error" }
-                    logger.logException(Exception(logErrorMessage))
+                    logger.logException(Exception("OAuth server error"))
                 } else {
                     val refreshToken = oauthResult.refreshToken
                     val accessToken = oauthResult.accessToken
-                    val expirySeconds = Clock.System.now().epochSeconds + oauthResult.expiresIn
 
-                    val claims = result.claims!!
-                    val profilePicUri = claims.files?.profilePictureUrl ?: ""
+                    dataApiClient.getProfile(accessToken)?.let { profile ->
+                        // TODO Test coverage
+                        val organization = profile.organization
+                        if (organization.isActive == false) {
+                            accountEventBus.onAccountInactiveOrganization(profile.id)
+                        } else {
+                            accountDataRepository.setAccount(
+                                profile,
+                                refreshToken = refreshToken,
+                                accessToken = accessToken,
+                                expiresIn = oauthResult.expiresIn,
+                            )
 
-                    // TODO Test coverage
-                    val organization = result.organizations
-                    if (organization?.isActive == false) {
-                        accountEventBus.onAccountInactiveOrganization(claims.id)
-                    } else {
-                        val orgData =
-                            if (organization?.isActive == true && organization.id >= 0 && organization.name.isNotEmpty()) {
-                                OrgData(
-                                    organization.id,
-                                    organization.name,
-                                )
-                            } else {
-                                emptyOrgData
-                            }
-
-                        accountDataRepository.setAccount(
-                            refreshToken = refreshToken,
-                            accessToken = accessToken,
-                            id = claims.id,
-                            email = claims.email,
-                            phone = claims.mobile,
-                            firstName = claims.firstName,
-                            lastName = claims.lastName,
-                            expirySeconds = expirySeconds,
-                            profilePictureUri = profilePicUri,
-                            org = orgData,
-                            hasAcceptedTerms = claims.hasAcceptedTerms == true,
-                            approvedIncidentIds = claims.approvedIncidents,
-                            activeRoles = claims.activeRoles,
-                        )
-
-                        isAuthenticateSuccessful.value = true
+                            isAuthenticateSuccessful.value = true
+                        }
                     }
                 }
             } catch (e: Exception) {

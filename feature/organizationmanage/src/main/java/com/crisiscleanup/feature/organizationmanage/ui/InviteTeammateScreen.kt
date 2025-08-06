@@ -90,14 +90,14 @@ fun InviteTeammateRoute(
     val hasValidTokens by viewModel.hasValidTokens.collectAsStateWithLifecycle()
 
     val t = LocalAppTranslator.current
-    Column {
+    Column(Modifier.fillMaxSize()) {
         TopAppBarBackAction(
             title = t("nav.invite_teammates"),
             onAction = onBack,
         )
 
         if (isLoading) {
-            Box {
+            Box(Modifier.fillMaxSize()) {
                 BusyIndicatorFloatingTopCenter(true)
             }
         } else if (isInviteSent) {

@@ -14,7 +14,7 @@ data class NetworkAccountProfileResult(
     @SerialName("accepted_terms_timestamp")
     val acceptedTermsTimestamp: Instant?,
     val files: List<NetworkFile>?,
-    val organization: NetworkOrganizationShort,
+    val organization: NetworkOrganizationShort?,
     @SerialName("active_roles")
-    val activeRoles: Set<Int>,
+    val activeRoles: Set<Int>?,
 )

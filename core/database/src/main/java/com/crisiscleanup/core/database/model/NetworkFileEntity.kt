@@ -57,6 +57,7 @@ data class NetworkFileEntity(
 data class WorksiteNetworkFileCrossRef(
     @ColumnInfo("worksite_id")
     val worksiteId: Long,
+    // NetworkFile.id not NetworkFile.fileId
     @ColumnInfo("network_file_id")
     val networkFileId: Long,
 )

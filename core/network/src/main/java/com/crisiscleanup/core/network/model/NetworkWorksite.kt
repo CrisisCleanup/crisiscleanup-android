@@ -28,7 +28,7 @@ data class NetworkWorksiteFull(
     val email: String? = null,
     val events: List<NetworkEvent>,
     val favorite: NetworkType?,
-    val files: List<NetworkFile>,
+    val files: List<NetworkFile>? = emptyList(),
     val flags: List<NetworkFlag>,
     @SerialName("form_data")
     val formData: List<KeyDynamicValuePair>,
@@ -39,7 +39,11 @@ data class NetworkWorksiteFull(
     val name: String,
     val notes: List<NetworkNote>,
     val phone1: String,
+    @SerialName("phone1_notes")
+    val phone1Notes: String? = null,
     val phone2: String?,
+    @SerialName("phone2_notes")
+    val phone2Notes: String? = null,
     @SerialName("pluscode")
     val plusCode: String? = null,
     @SerialName("postal_code")
@@ -48,8 +52,6 @@ data class NetworkWorksiteFull(
     val reportedBy: Long?,
     val state: String,
     val svi: Float?,
-//    @SerialName("time")
-//    val times: List<Time>,
     @Serializable(InstantSerializer::class)
     @SerialName("updated_at")
     val updatedAt: Instant,
@@ -108,18 +110,6 @@ data class NetworkWorksiteFull(
     data class Location(
         val type: String,
         val coordinates: List<Double>,
-    )
-
-    @Serializable
-    data class Time(
-        val id: Long,
-        @SerialName("created_by_name")
-        val createdByName: String?,
-        @SerialName("created_by_org")
-        val createdByOrg: Long?,
-        val seconds: Int,
-        val volunteers: Int,
-        val worksite: Int,
     )
 
     @Serializable
@@ -298,7 +288,11 @@ data class NetworkWorksitePage(
     val location: NetworkWorksiteFull.Location,
     val name: String,
     val phone1: String,
+    @SerialName("phone1_notes")
+    val phone1Notes: String? = null,
     val phone2: String?,
+    @SerialName("phone2_notes")
+    val phone2Notes: String? = null,
     @SerialName("postal_code")
     val postalCode: String?,
     @SerialName("pluscode")
@@ -360,7 +354,11 @@ data class NetworkWorksiteCoreData(
     val name: String,
     val notes: List<NetworkNote>,
     val phone1: String,
+    @SerialName("phone1_notes")
+    val phone1Notes: String? = null,
     val phone2: String?,
+    @SerialName("phone2_notes")
+    val phone2Notes: String? = null,
     @SerialName("pluscode")
     val plusCode: String? = null,
     @SerialName("postal_code")

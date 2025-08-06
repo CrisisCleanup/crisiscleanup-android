@@ -57,6 +57,7 @@ kotlinxCoroutinesPlayServices = "1.10.2"
 kotlinxDatetime = "0.6.2"
 kotlinxSerializationJson = "1.9.0"
 ksp = "2.1.10-1.0.31"
+libphonenumber = "9.0.5"
 mlkitBarcodeScanning = "17.3.0"
 mockk = "1.14.4"
 moduleGraph = "2.9.0"
@@ -169,6 +170,7 @@ kotlinx-coroutines-playservices = { group = "org.jetbrains.kotlinx", name = "kot
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+libphonenumber = { group = "io.michaelrocks", name = "libphonenumber-android", version.ref = "libphonenumber" }
 lint-api = { group = "com.android.tools.lint", name = "lint-api", version.ref = "androidTools" }
 lint-checks = { group = "com.android.tools.lint", name = "lint-checks", version.ref = "androidTools" }
 lint-tests = { group = "com.android.tools.lint", name = "lint-tests", version.ref = "androidTools" }

@@ -12,10 +12,10 @@ import com.crisiscleanup.core.data.repository.LocalAppPreferencesRepository
 import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.OrgData
 import com.crisiscleanup.core.model.data.emptyAccountData
-import com.crisiscleanup.core.network.model.NetworkAuthOrganization
-import com.crisiscleanup.core.network.model.NetworkAuthResult
-import com.crisiscleanup.core.network.model.NetworkAuthUserClaims
-import com.crisiscleanup.core.network.retrofit.AuthApiClient
+import com.crisiscleanup.core.network.CrisisCleanupAuthApi
+import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
+import com.crisiscleanup.core.network.model.NetworkOrganizationShort
+import com.crisiscleanup.core.network.model.NetworkUserProfile
 import com.crisiscleanup.core.testing.model.UserDataNone
 import com.crisiscleanup.core.testing.util.MainDispatcherRule
 import com.crisiscleanup.feature.authentication.AuthenticateScreenViewState.Loading
@@ -53,7 +53,10 @@ class AuthenticationViewModelTest {
     lateinit var accountDataRepository: AccountDataRepository
 
     @MockK
-    lateinit var authApiClient: AuthApiClient
+    lateinit var authApiClient: CrisisCleanupAuthApi
+
+    @MockK
+    lateinit var dataApiClient: CrisisCleanupNetworkDataSource
 
     @MockK
     lateinit var inputValidator: InputValidator
@@ -157,6 +160,7 @@ class AuthenticationViewModelTest {
     private fun buildViewModel() = AuthenticationViewModel(
         accountDataRepository,
         authApiClient,
+        dataApiClient,
         inputValidator,
         accountEventBus,
         translator,
@@ -216,21 +220,18 @@ class AuthenticationViewModelTest {
 
         // Authenticate
 
-        coEvery { authApiClient.login("email@address.com", "password") } returns NetworkAuthResult(
-            accessToken = "access-token",
-            claims = NetworkAuthUserClaims(
-                id = 534,
-                email = "email@address.com",
-                mobile = "9876543210",
-                firstName = "first-name",
-                lastName = "last-name",
-                approvedIncidents = setOf(53),
-                hasAcceptedTerms = true,
-                acceptedTermsTimestamp = Clock.System.now().minus(1.days),
-                files = null,
-                activeRoles = emptySet(),
-            ),
-            organizations = NetworkAuthOrganization(
+        coEvery { dataApiClient.getProfile("access-token") } returns NetworkUserProfile(
+            id = 534,
+            email = "email@address.com",
+            mobile = "9876543210",
+            firstName = "first-name",
+            lastName = "last-name",
+            approvedIncidents = setOf(53),
+            hasAcceptedTerms = true,
+            acceptedTermsTimestamp = Clock.System.now().minus(1.days),
+            files = null,
+            activeRoles = emptySet(),
+            organization = NetworkOrganizationShort(
                 id = 813,
                 name = "org",
                 isActive = true,

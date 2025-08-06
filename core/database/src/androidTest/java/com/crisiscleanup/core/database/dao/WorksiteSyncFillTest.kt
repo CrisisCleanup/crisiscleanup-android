@@ -144,7 +144,7 @@ class WorksiteSyncFillTest {
             reportedBy = 7835,
             state = "${coreA.state}-update",
             svi = coreA.svi!! * 2,
-            what3Words = "${coreA.what3Words}-update",
+            what3Words = coreA.what3Words,
             updatedAt = coreA.updatedAt.plus(99.seconds),
         )
         val entitiesA = WorksiteEntities(

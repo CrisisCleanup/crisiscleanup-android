@@ -10,6 +10,7 @@ data class WorksiteMapMark(
     val isFavorite: Boolean = false,
     val isHighPriority: Boolean = false,
     val isDuplicate: Boolean = false,
+    val isMarkedForDelete: Boolean = false,
     /**
      * Is this mark excluded by filters
      *

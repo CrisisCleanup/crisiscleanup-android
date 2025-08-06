@@ -1,8 +1,6 @@
 package com.crisiscleanup.core.network.retrofit
 
 import com.crisiscleanup.core.network.CrisisCleanupAuthApi
-import com.crisiscleanup.core.network.model.NetworkAuthPayload
-import com.crisiscleanup.core.network.model.NetworkAuthResult
 import com.crisiscleanup.core.network.model.NetworkCodeAuthResult
 import com.crisiscleanup.core.network.model.NetworkOauthPayload
 import com.crisiscleanup.core.network.model.NetworkOauthResult
@@ -20,10 +18,6 @@ import javax.inject.Singleton
 import kotlin.random.Random
 
 private interface AuthApi {
-    @ThrowClientErrorHeader
-    @POST("api-token-auth")
-    suspend fun login(@Body body: NetworkAuthPayload): NetworkAuthResult
-
     @ThrowClientErrorHeader
     @POST("api-mobile-auth")
     suspend fun oauthLogin(@Body body: NetworkOauthPayload): NetworkOauthResult
@@ -56,17 +50,6 @@ class AuthApiClient @Inject constructor(
     private fun tryRandomSleep() {
         val sleepMs = 1_000_000L + Random.nextLong(100_000L, 500_000L)
         Thread.sleep(sleepMs)
-    }
-
-    override suspend fun login(email: String, password: String): NetworkAuthResult {
-        for (i in 0..<3) {
-            val loginResult = networkApi.login(NetworkAuthPayload(email, password))
-            if (loginResult.claims != null) {
-                return loginResult
-            }
-            tryRandomSleep()
-        }
-        throw Exception("Failed to login with email and password")
     }
 
     override suspend fun oauthLogin(email: String, password: String): NetworkOauthResult {

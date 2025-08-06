@@ -37,5 +37,8 @@ dependencies {
 
     androidTestImplementation(projects.core.testing)
     androidTestImplementation(libs.room.testing)
-    androidTestImplementation(libs.mockk.android)
+    androidTestImplementation(libs.mockk.android) {
+        exclude(group = "net.bytebuddy", module = "byte-buddy")
+        exclude(group = "net.bytebuddy", module = "byte-buddy-agent")
+    }
 }

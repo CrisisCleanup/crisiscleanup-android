@@ -1,7 +1,6 @@
 package com.crisiscleanup.core.network.model.util
 
 import kotlinx.datetime.Instant
-import kotlinx.datetime.toInstant
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind.STRING
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -11,7 +10,7 @@ import kotlinx.serialization.encoding.Encoder
 
 object InstantSerializer : KSerializer<Instant> {
     override fun deserialize(decoder: Decoder): Instant =
-        decoder.decodeString().toInstant()
+        Instant.parse(decoder.decodeString())
 
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor(
         serialName = "Instant",

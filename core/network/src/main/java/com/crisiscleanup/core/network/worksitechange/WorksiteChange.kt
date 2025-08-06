@@ -38,8 +38,8 @@ data class WorksiteChange(
         requestWorkTypes?.hasValue == true || releaseWorkTypes?.hasValue == true
 
     // v2
-    @Deprecated("Use isWorkTypeTransferChange")
-    val isWorkTypeTransfer = isWorkTypeTransferChange
+    // @Deprecated("Use isWorkTypeTransferChange")
+    // val isWorkTypeTransfer = isWorkTypeTransferChange
 }
 
 data class SyncWorksiteChange(

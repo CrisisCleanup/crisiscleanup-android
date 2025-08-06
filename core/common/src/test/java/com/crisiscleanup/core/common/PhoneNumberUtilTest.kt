@@ -48,6 +48,25 @@ class PhoneNumberUtilTest {
     }
 
     @Test
+    fun commonFormats() {
+        val inputs = listOf(
+            "(234) 567-8901",
+            "(234) 567.8901",
+            "(234) 567 8901",
+            "1(234) 567-8901",
+            "1(234) 567.8901",
+            "1 (234) 567 8901",
+            "+1(234) 567-8901",
+            "+1 (234) 567.8901",
+            "+1 (234) 567 8901",
+        )
+        for (input in inputs) {
+            val actual = PhoneNumberUtil.parsePhoneNumbers(input)?.parsedNumbers
+            assertEquals(listOf("2345678901"), actual)
+        }
+    }
+
+    @Test
     fun compact334() {
         val inputs = listOf(
             "234 567 8901",

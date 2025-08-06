@@ -223,9 +223,10 @@ class CaseDotsMapTileRenderer @Inject constructor(
                 mapCaseDotProvider.getIconBitmap(
                     it.statusClaim,
                     it.workType,
-                    it.workTypeCount > 1,
-                    it.isDuplicate,
-                    it.isFilteredOut,
+                    hasMultipleWorkTypes = it.workTypeCount > 1,
+                    isDuplicate = it.isDuplicate,
+                    isMarkedForDelete = it.isMarkedForDelete,
+                    isFilteredOut = it.isFilteredOut,
                 )?.let { dotBitmap ->
                     coordinates.fromLatLng(it.latitude, it.longitude)?.let { xyNorm ->
                         val (xNorm, yNorm) = xyNorm

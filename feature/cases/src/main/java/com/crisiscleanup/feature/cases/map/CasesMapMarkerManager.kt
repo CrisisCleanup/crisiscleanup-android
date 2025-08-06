@@ -6,6 +6,7 @@ import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.data.repository.WorksitesRepository
 import com.crisiscleanup.core.model.data.WorksiteMapMark
+import com.crisiscleanup.feature.cases.CasesConstant
 import com.crisiscleanup.feature.cases.map.CoordinateUtil.getMiddleCoordinate
 import com.crisiscleanup.feature.cases.map.CoordinateUtil.lerpLatitude
 import com.crisiscleanup.feature.cases.map.CoordinateUtil.lerpLongitude
@@ -133,7 +134,16 @@ internal class CasesMapMarkerManager(
                 distanceMeasure,
             )
         }
-            .sortedWith { a, b -> if (a.distanceMeasure - b.distanceMeasure <= 0) -1 else 1 }
+            .sortedWith { a, b ->
+                val deltaDistance = a.distanceMeasure - b.distanceMeasure
+                if (deltaDistance < 0) {
+                    -1
+                } else if (deltaDistance > 0) {
+                    1
+                } else {
+                    if (a.mark.id < b.mark.id) -1 else 1
+                }
+            }
 
         val endIndex = distanceToMiddleSorted.size.coerceAtMost(maxMarkersOnMap)
         val marks = distanceToMiddleSorted
@@ -149,7 +159,7 @@ internal class CasesMapMarkerManager(
     val zeroOffset = Pair(0f, 0f)
 
     private val denseMarkCountThreshold = 15
-    private val denseMarkZoomThreshold = 14
+    private val denseMarkZoomThreshold = CasesConstant.MAP_MARKERS_ZOOM_LEVEL + 4
     private val denseDegreeThreshold = 0.0001
     private val denseScreenOffsetScale = 0.6f
     suspend fun denseMarkerOffsets(

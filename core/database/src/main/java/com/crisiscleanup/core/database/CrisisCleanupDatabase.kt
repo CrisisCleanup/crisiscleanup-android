@@ -119,7 +119,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         TeamMemberCrossRef::class,
         IncidentDataSyncParametersEntity::class,
     ],
-    version = 46,
+    version = 47,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -166,6 +166,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 43, to = 44),
         AutoMigration(from = 44, to = 45),
         AutoMigration(from = 45, to = 46, spec = Schema45To46::class),
+        AutoMigration(from = 46, to = 47),
     ],
     exportSchema = true,
 )

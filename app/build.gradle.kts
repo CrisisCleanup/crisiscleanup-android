@@ -14,7 +14,7 @@ plugins {
 
 android {
     defaultConfig {
-        val buildVersion = 256
+        val buildVersion = 264
         applicationId = "com.crisiscleanup"
         versionCode = buildVersion
         versionName = "0.9.${buildVersion - 168}"
@@ -43,7 +43,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
                 "proguard-playservices.pro",
-                "proguard-retrofit2.pro",
                 "proguard-crashlytics.pro",
             )
 

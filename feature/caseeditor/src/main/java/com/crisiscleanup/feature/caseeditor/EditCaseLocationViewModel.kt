@@ -411,6 +411,9 @@ internal class EditableLocationDataEditor(
         if (isMoveLocationOnMapMode.get()) {
             projection?.let {
                 if (hasEnteredMoveLocationMapMode) {
+                    if (isActiveChange) {
+                        isMapLoaded = true
+                    }
                     if (isMapLoaded) {
                         val center = it.visibleRegion.latLngBounds.center
                         locationInputData.coordinates.value = center

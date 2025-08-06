@@ -1,16 +1,20 @@
 package com.crisiscleanup.core.common
 
+import android.content.Context
+import io.mockk.impl.annotations.MockK
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class InputValidatorTest {
+    @MockK
+    lateinit var context: Context
     private lateinit var inputValidator: InputValidator
 
     @Before
     fun setup() {
-        inputValidator = CommonInputValidator()
+        inputValidator = CommonInputValidator(context)
     }
 
     @Test

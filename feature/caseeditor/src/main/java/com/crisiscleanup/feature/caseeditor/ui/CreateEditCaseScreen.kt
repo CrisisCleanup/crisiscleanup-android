@@ -353,7 +353,7 @@ private fun ColumnScope.FullEditView(
                     .fillMaxSize(),
                 state = sectionSliderState.contentListState,
             ) {
-                if (editSections.isNotEmpty()) {
+                if (editSections.isNotEmpty() && sectionCollapseStates.isNotEmpty()) {
                     fullEditContent(
                         caseData,
                         viewModel,

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
@@ -20,6 +21,8 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -40,6 +43,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
@@ -66,6 +70,7 @@ import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.neutralFontColor
 import com.crisiscleanup.core.designsystem.theme.primaryBlueColor
+import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.IncidentWorksitesCachePreferences
 import com.crisiscleanup.core.model.data.TutorialViewId
@@ -122,6 +127,8 @@ private fun MenuScreen(
     val openIncidentsSelect = remember(viewModel) {
         { showIncidentPicker = true }
     }
+
+    val isAppUpdateAvailable by viewModel.isAppUpdateAvailable.collectAsStateWithLifecycle(false)
 
     val isSharingAnalytics by viewModel.isSharingAnalytics.collectAsStateWithLifecycle(false)
 
@@ -277,6 +284,12 @@ private fun MenuScreen(
                 }
             }
 
+            if (isAppUpdateAvailable) {
+                item {
+                    AppUpdateView()
+                }
+            }
+
             item {
                 IncidentCacheView(
                     incidentCachePreferences,
@@ -403,10 +416,15 @@ private fun MenuScreen(
                 }
 
                 item {
-                    CrisisCleanupTextButton(
-                        onClick = viewModel::clearAppData,
-                        text = "Clear app data",
-                    )
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                    ) {
+                        CrisisCleanupTextButton(
+                            onClick = viewModel::clearAppData,
+                            text = "Clear app data",
+                        )
+                    }
                 }
             }
         }
@@ -692,6 +710,62 @@ private fun TermsPrivacyView(
         ) {
             uriHandler.openUri(privacyPolicyUrl)
         }
+    }
+}
+
+@Composable
+private fun AppUpdateView() {
+    val t = LocalAppTranslator.current
+    Row(
+        listItemModifier,
+        horizontalArrangement = listItemSpacedBy,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        var badgeOffsetX by remember { mutableStateOf(0.dp) }
+        val localDensity = LocalDensity.current
+        BadgedBox(
+            badge = {
+                Badge(
+                    Modifier
+                        .size(20.dp)
+                        .offset(x = badgeOffsetX),
+                    containerColor = primaryOrangeColor,
+                ) {
+                    // TODO: Match content color in menu badge
+                    Icon(
+                        imageVector = CrisisCleanupIcons.AppUpdateAvailable,
+                        contentDescription = null,
+                    )
+                }
+            },
+            Modifier.weight(1f),
+        ) {
+            Text(
+                t("~~A new version of the app is available"),
+                Modifier.onGloballyPositioned {
+                    badgeOffsetX = with(localDensity) {
+                        -it.size.width.div(2).toDp()
+                    }
+                },
+            )
+        }
+
+        val context = LocalContext.current
+        val playStoreLink =
+            "https://play.google.com/store/apps/details?id=${context.packageName}"
+        val uriHandler = LocalUriHandler.current
+        Text(
+            text = t("actions.update"),
+            modifier = Modifier
+                .clickable(
+                    onClick = {
+                        uriHandler.openUri(playStoreLink)
+                    },
+                )
+                .listItemPadding(),
+            style = LocalFontStyles.current.header4,
+            color = primaryBlueColor,
+        )
     }
 }
 

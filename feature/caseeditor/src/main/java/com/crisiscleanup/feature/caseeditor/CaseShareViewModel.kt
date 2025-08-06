@@ -190,7 +190,7 @@ class CaseShareViewModel @Inject constructor(
                     return
                 }
             } else {
-                if (!inputValidator.validatePhoneNumber(contact)) {
+                if (!inputValidator.validatePhoneNumber(contact).isValid) {
                     contactErrorMessage =
                         translator("info.enter_valid_phone")
                     return

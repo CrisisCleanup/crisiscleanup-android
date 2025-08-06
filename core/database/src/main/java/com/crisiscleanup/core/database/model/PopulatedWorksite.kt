@@ -59,7 +59,9 @@ fun PopulatedWorksite.asExternalModel(): Worksite {
             longitude = longitude,
             name = name,
             phone1 = phone1 ?: "",
+            phone1Notes = phone1Notes ?: "",
             phone2 = phone2 ?: "",
+            phone2Notes = phone2Notes ?: "",
             plusCode = plusCode,
             postalCode = postalCode,
             reportedBy = reportedBy,
@@ -141,6 +143,7 @@ data class PopulatedWorksiteMapVisual(
 
 private val highPriorityFlagLiteral = WorksiteFlagType.HighPriority.literal
 private val duplicateFlagLiteral = WorksiteFlagType.Duplicate.literal
+private val markedForDeleteFlagLiteral = WorksiteFlagType.MarkForDeletion.literal
 fun PopulatedWorksiteMapVisual.asExternalModel(isFilteredOut: Boolean = false) = WorksiteMapMark(
     id = id,
     latitude = latitude,
@@ -155,6 +158,7 @@ fun PopulatedWorksiteMapVisual.asExternalModel(isFilteredOut: Boolean = false) =
             it.reasonT == highPriorityFlagLiteral
     },
     isDuplicate = flags.any { it.reasonT == duplicateFlagLiteral },
+    isMarkedForDelete = flags.any { it.reasonT == markedForDeleteFlagLiteral },
     isFilteredOut = isFilteredOut,
     hasPhotos = networkPhotoCount > 0 ||
         fileImages.any { !it.isDeleted } ||
