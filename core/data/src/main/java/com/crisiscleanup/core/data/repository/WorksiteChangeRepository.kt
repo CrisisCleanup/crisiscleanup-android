@@ -427,11 +427,13 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
 
     private suspend fun syncPhotoChanges(worksiteId: Long) {
         try {
-            val (networkWorksiteId, deleteFileIds) =
-                localImageDaoPlus.getDeletedPhotoNetworkFileIds(worksiteId)
-            if (deleteFileIds.isNotEmpty()) {
-                worksitePhotoChangeSyncer.deletePhotoFiles(networkWorksiteId, deleteFileIds)
-                syncLogger.log("Deleted photos", deleteFileIds.joinToString(", "))
+            val worksiteFileIds = localImageDaoPlus.getDeletedPhotoNetworkFileIds(worksiteId)
+            with(worksiteFileIds) {
+                if (fileIds.isNotEmpty()) {
+                    val networkWorksiteId = worksiteDao.getWorksiteNetworkId(worksiteId)
+                    worksitePhotoChangeSyncer.deletePhotoFiles(networkWorksiteId, fileIds)
+                    syncLogger.log("Deleted photos", fileIds.joinToString(", "))
+                }
             }
         } catch (e: Exception) {
             syncLogger.log("Delete photo error", e.message ?: "")

@@ -23,6 +23,8 @@ enum class RequestHeaderKey {
 enum class EndpointRequestId {
     MyProfile,
     MyProfileNoAuth,
+    UserProfile,
+    UserProfileNoAuth,
     Incidents,
     IncidentsNoAuth,
     Worksites,

@@ -43,6 +43,7 @@ class LocalAppMetricsDataSource @Inject constructor(
                 ),
 
                 appInstallVersion = it.appInstallVersion,
+                appPublishedVersion = it.appPublishedVersion,
             )
         }
 
@@ -73,7 +74,10 @@ class LocalAppMetricsDataSource @Inject constructor(
         }
     }
 
-    suspend fun setMinSupportedAppVersion(supportedAppVersion: MinSupportedAppVersion) {
+    suspend fun setAppVersions(
+        supportedAppVersion: MinSupportedAppVersion,
+        publishedVersion: Long,
+    ) {
         val builder = AppMinUseProto.newBuilder()
         builder.minVersion = supportedAppVersion.minBuild
         builder.title = supportedAppVersion.title
@@ -82,6 +86,7 @@ class LocalAppMetricsDataSource @Inject constructor(
         appMetrics.updateData {
             it.copy {
                 minBuildSupport = builder.build()
+                appPublishedVersion = publishedVersion
             }
         }
     }

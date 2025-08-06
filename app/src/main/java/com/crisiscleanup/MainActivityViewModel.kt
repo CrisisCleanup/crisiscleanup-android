@@ -91,6 +91,8 @@ class MainActivityViewModel @Inject constructor(
             started = ReplaySubscribed3,
         )
 
+    val isAppUpdateAvailable = appMetricsRepository.isAppUpdateAvailable
+
     /**
      * API account tokens need re-issuing
      */

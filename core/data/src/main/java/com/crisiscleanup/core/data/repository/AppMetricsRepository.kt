@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.common.AppEnv
+import com.crisiscleanup.core.common.AppVersionProvider
 import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
@@ -15,6 +16,7 @@ import com.crisiscleanup.core.network.appsupport.AppSupportClient
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -23,6 +25,7 @@ import javax.inject.Singleton
 
 interface AppMetricsRepository {
     val metrics: Flow<AppMetricsData>
+    val isAppUpdateAvailable: Flow<Boolean>
 
     suspend fun setEarlybirdEnd(end: BuildEndOfLife)
 
@@ -37,12 +40,17 @@ interface AppMetricsRepository {
 class AppMetricsRepositoryImpl @Inject constructor(
     private val dataSource: LocalAppMetricsDataSource,
     private val appSupportNetworkDataSource: AppSupportClient,
+    appVersionProvider: AppVersionProvider,
     private val appEnv: AppEnv,
     @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : AppMetricsRepository {
     override val metrics: Flow<AppMetricsData> = dataSource.metrics
+
+    override val isAppUpdateAvailable = metrics.mapLatest {
+        appVersionProvider.versionCode < it.appPublishedVersion
+    }
 
     override suspend fun setEarlybirdEnd(end: BuildEndOfLife) {
         dataSource.setEarlybirdEnd(end)
@@ -58,13 +66,14 @@ class AppMetricsRepositoryImpl @Inject constructor(
                 try {
                     appSupportNetworkDataSource.getAppSupportInfo(appEnv.isNotProduction)
                         ?.let { info ->
-                            dataSource.setMinSupportedAppVersion(
+                            dataSource.setAppVersions(
                                 MinSupportedAppVersion(
                                     minBuild = info.minBuildVersion,
                                     title = info.title ?: "",
                                     message = info.message,
                                     link = info.link ?: "",
                                 ),
+                                publishedVersion = info.publishedVersion ?: 0,
                             )
                         }
                 } catch (e: Exception) {

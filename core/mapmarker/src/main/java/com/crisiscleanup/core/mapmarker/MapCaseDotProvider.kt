@@ -58,8 +58,9 @@ class InMemoryDotProvider @Inject constructor(
     ): BitmapDescriptor? {
         val colors = getMapMarkerColors(
             cacheKey.statusClaim,
-            cacheKey.isDuplicate,
-            cacheKey.isFilteredOut,
+            isDuplicate = cacheKey.isDuplicate,
+            isMarkedForDelete = cacheKey.isMarkedForDelete,
+            isFilteredOut = cacheKey.isFilteredOut,
             isVisited = false,
             isDot = true,
         )
@@ -83,12 +84,18 @@ class InMemoryDotProvider @Inject constructor(
         isImportant: Boolean,
         hasMultipleWorkTypes: Boolean,
         isDuplicate: Boolean,
+        isMarkedForDelete: Boolean,
         isFilteredOut: Boolean,
         isVisited: Boolean,
         hasPhotos: Boolean,
         isAssignedTeam: Boolean,
     ): BitmapDescriptor? {
-        val cacheKey = DotCacheKey(statusClaim, isDuplicate, isFilteredOut, isAssignedTeam)
+        val cacheKey = DotCacheKey(
+            statusClaim,
+            isDuplicate = isDuplicate,
+            isMarkedForDelete = isMarkedForDelete,
+            isFilteredOut = isFilteredOut,
+        )
         synchronized(cache) {
             cache[cacheKey]?.let {
                 return it
@@ -103,12 +110,18 @@ class InMemoryDotProvider @Inject constructor(
         workType: WorkTypeType,
         hasMultipleWorkTypes: Boolean,
         isDuplicate: Boolean,
+        isMarkedForDelete: Boolean,
         isFilteredOut: Boolean,
         isVisited: Boolean,
         hasPhotos: Boolean,
         isAssignedTeam: Boolean,
     ): Bitmap? {
-        val cacheKey = DotCacheKey(statusClaim, isDuplicate, isFilteredOut, isAssignedTeam)
+        val cacheKey = DotCacheKey(
+            statusClaim,
+            isDuplicate = isDuplicate,
+            isMarkedForDelete = isMarkedForDelete,
+            isFilteredOut = isFilteredOut,
+        )
         synchronized(cache) {
             bitmapCache[cacheKey]?.let {
                 return it
@@ -178,6 +191,7 @@ data class DotDrawProperties(
 private data class DotCacheKey(
     val statusClaim: WorkTypeStatusClaim,
     val isDuplicate: Boolean = false,
+    val isMarkedForDelete: Boolean = false,
     val isFilteredOut: Boolean = false,
     val isAssignedTeam: Boolean = false,
 )

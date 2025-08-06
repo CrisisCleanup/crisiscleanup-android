@@ -364,7 +364,7 @@ internal fun PhotosSection(
                             )
                         } else if (!photo.isNetworkImage) {
                             SurfaceIcon(
-                                CrisisCleanupIcons.Cloud,
+                                CrisisCleanupIcons.CloudOff,
                                 halfWhite,
                                 Modifier
                                     .align(Alignment.TopEnd)

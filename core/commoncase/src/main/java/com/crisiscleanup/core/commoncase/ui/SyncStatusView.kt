@@ -33,7 +33,7 @@ fun SyncStatusView(
     } else if (isPendingSync) {
         CrisisCleanupIconButton(
             onClick = scheduleSync,
-            imageVector = CrisisCleanupIcons.Cloud,
+            imageVector = CrisisCleanupIcons.CloudOff,
             contentDescription = t("info.is_pending_sync"),
             tint = primaryOrangeColor,
             modifier = Modifier.testTag("isPendingSyncAction"),

@@ -222,8 +222,8 @@ class AppSyncer @Inject constructor(
     }
 
     override suspend fun syncPullEquipment(): SyncResult {
-        if (isNotOnline()) {
-            return SyncResult.NotAttempted("not-online")
+        onlinePrecondition()?.let {
+            return it
         }
 
         return try {

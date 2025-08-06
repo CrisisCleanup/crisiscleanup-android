@@ -45,16 +45,18 @@ class AccountDataRefresher @Inject constructor(
         }
 
         logger.logCapture("Syncing $syncTag")
+
+        val accountId = accountDataRepository.accountData.first().id
         try {
-            val profile = networkDataSource.getProfileData()
-            if (profile.organization.isActive == false) {
+            val profile = networkDataSource.getProfileData(accountId)
+            if (profile.organization?.isActive == false) {
                 accountEventBus.onAccountInactiveOrganization(dataSource.accountData.first().id)
             } else if (profile.hasAcceptedTerms != null) {
                 dataSource.update(
                     profile.files?.profilePictureUrl,
                     profile.hasAcceptedTerms!!,
                     profile.approvedIncidents!!,
-                    profile.activeRoles,
+                    profile.activeRoles!!,
                 )
 
                 accountDataUpdateTime = Clock.System.now()

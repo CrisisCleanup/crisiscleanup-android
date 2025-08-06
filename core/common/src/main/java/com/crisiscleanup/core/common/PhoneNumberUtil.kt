@@ -9,6 +9,9 @@ object PhoneNumberUtil {
     private val isTenDigitNumberPattern = """^\s*\d{10}\s*$""".toRegex()
     private val isOneTenDigitNumberPattern = """^\s*1\d{10}\s*$""".toRegex()
 
+    private val commonPhoneFormat1Pattern =
+        """^\+?1?\s?\((\d{3})\)\s*(\d{3})[. -](\d{4})\s*$""".toRegex()
+
     private val inParenthesisPattern = """\((\d{3})\)""".toRegex()
     private val leadingOnePattern = """(?:^|\b)\+?1\s""".toRegex()
     private val compact334DelimiterPattern =
@@ -57,6 +60,12 @@ object PhoneNumberUtil {
 
         if (noNumbersPattern.matches(raw)) {
             return null
+        }
+
+        commonPhoneFormat1Pattern.matchEntire(raw)?.let {
+            with(it.groupValues) {
+                return singleParsedNumber("${get(1)}${get(2)}${get(3)}")
+            }
         }
 
         val unparenthesized = raw.replace(inParenthesisPattern, "$1")

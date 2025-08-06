@@ -33,7 +33,7 @@ import com.crisiscleanup.core.network.model.NetworkWorksitesPageResult
 import kotlinx.datetime.Instant
 
 interface CrisisCleanupNetworkDataSource {
-    suspend fun getProfileData(): NetworkAccountProfileResult
+    suspend fun getProfileData(accountId: Long): NetworkAccountProfileResult
 
     suspend fun getOrganizations(organizations: Collection<Long>): List<NetworkIncidentOrganization>
 

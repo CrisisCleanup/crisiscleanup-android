@@ -39,6 +39,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Tag
 import java.net.URL
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -65,6 +66,7 @@ private interface RegisterApi {
     @GET("users/{user}")
     suspend fun noAuthUser(
         @Path("user") userId: Long,
+        @Tag endpointId: EndpointRequestId = EndpointRequestId.UserProfileNoAuth,
     ): NetworkUser
 
     @GET("organizations/{organizationId}")

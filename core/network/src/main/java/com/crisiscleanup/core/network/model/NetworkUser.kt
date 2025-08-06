@@ -37,6 +37,7 @@ data class NetworkOrganizationUser(
     }
 }
 
+// UPDATE NetworkAccountTest in conjunction with changes here
 @Serializable
 data class NetworkUserProfile(
     val id: Long,

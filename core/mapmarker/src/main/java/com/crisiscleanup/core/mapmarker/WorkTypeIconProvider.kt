@@ -11,10 +11,7 @@ import android.graphics.RectF
 import android.graphics.drawable.Drawable
 import androidx.collection.LruCache
 import androidx.compose.ui.geometry.Offset
-import androidx.core.graphics.alpha
 import androidx.core.graphics.createBitmap
-import androidx.core.graphics.get
-import androidx.core.graphics.set
 import com.crisiscleanup.core.common.AndroidResourceProvider
 import com.crisiscleanup.core.model.data.WorkTypeStatusClaim
 import com.crisiscleanup.core.model.data.WorkTypeType
@@ -116,6 +113,7 @@ class WorkTypeIconProvider @Inject constructor(
         isImportant: Boolean,
         hasMultipleWorkTypes: Boolean,
         isDuplicate: Boolean,
+        isMarkedForDelete: Boolean,
         isFilteredOut: Boolean,
         isVisited: Boolean,
         hasPhotos: Boolean,
@@ -128,6 +126,7 @@ class WorkTypeIconProvider @Inject constructor(
             isFavorite = isFavorite,
             isImportant = isImportant,
             isDuplicate = isDuplicate,
+            isMarkedForDelete = isMarkedForDelete,
             isFilteredOut = isFilteredOut,
             isVisited = isVisited,
             hasPhotos = hasPhotos,
@@ -147,6 +146,7 @@ class WorkTypeIconProvider @Inject constructor(
         workType: WorkTypeType,
         hasMultipleWorkTypes: Boolean,
         isDuplicate: Boolean,
+        isMarkedForDelete: Boolean,
         isFilteredOut: Boolean,
         isVisited: Boolean,
         hasPhotos: Boolean,
@@ -157,6 +157,7 @@ class WorkTypeIconProvider @Inject constructor(
             workType,
             hasMultipleWorkTypes = hasMultipleWorkTypes,
             isDuplicate = isDuplicate,
+            isMarkedForDelete = isMarkedForDelete,
             isFilteredOut = isFilteredOut,
             isVisited = isVisited,
             hasPhotos = hasPhotos,
@@ -212,9 +213,10 @@ class WorkTypeIconProvider @Inject constructor(
 
         val colors = getMapMarkerColors(
             cacheKey.statusClaim,
-            cacheKey.isDuplicate,
-            cacheKey.isFilteredOut,
-            cacheKey.isVisited,
+            isDuplicate = cacheKey.isDuplicate,
+            isMarkedForDelete = cacheKey.isMarkedForDelete,
+            isFilteredOut = cacheKey.isFilteredOut,
+            isVisited = cacheKey.isVisited,
             isDot = false,
         )
         output.applyColors(
@@ -304,6 +306,7 @@ class WorkTypeIconProvider @Inject constructor(
         val isFavorite: Boolean = false,
         val isImportant: Boolean = false,
         val isDuplicate: Boolean = false,
+        val isMarkedForDelete: Boolean = false,
         val isFilteredOut: Boolean = false,
         val isVisited: Boolean = false,
         val hasPhotos: Boolean = false,

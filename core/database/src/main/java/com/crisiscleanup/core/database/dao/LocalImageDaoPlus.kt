@@ -7,6 +7,7 @@ import com.crisiscleanup.core.database.model.NetworkFileLocalImageEntity
 import com.crisiscleanup.core.database.model.PopulatedLocalImageDescription
 import com.crisiscleanup.core.database.model.WorksiteLocalImageEntity
 import com.crisiscleanup.core.database.model.WorksiteNetworkFileCrossRef
+import com.crisiscleanup.core.model.data.NetworkWorksiteFileIds
 import com.crisiscleanup.core.model.data.PhotoChangeDataProvider
 import javax.inject.Inject
 
@@ -60,10 +61,12 @@ class LocalImageDaoPlus @Inject constructor(
 
     // PhotoChangeDataProvider
 
-    override suspend fun getDeletedPhotoNetworkFileIds(worksiteId: Long): Pair<Long, List<Long>> =
-        db.withTransaction {
-            val networkWorksiteId = db.worksiteDao().getWorksiteNetworkId(worksiteId)
-            val deletedFileIds = db.networkFileDao().getDeletedPhotoNetworkFileIds(worksiteId)
-            Pair(networkWorksiteId, deletedFileIds)
-        }
+    override suspend fun getDeletedPhotoNetworkFileIds(worksiteId: Long) = db.withTransaction {
+        val networkWorksiteId = db.worksiteDao().getWorksiteNetworkId(worksiteId)
+        val deletedFileIds = db.networkFileDao().getDeletedPhotoNetworkFileIds(worksiteId)
+        NetworkWorksiteFileIds(
+            worksiteId = networkWorksiteId,
+            fileIds = deletedFileIds,
+        )
+    }
 }

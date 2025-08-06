@@ -150,7 +150,7 @@ class WorksiteChangeProcessor(
         } else {
             changeSetOperator.getChangeSet(
                 getNetworkWorksite(),
-                deltaChange.start!!,
+                deltaChange.start,
                 deltaChange.change,
                 flagIdMap,
                 noteIdMap,
@@ -213,7 +213,7 @@ class WorksiteChangeProcessor(
             } else {
                 changeSet.worksite?.let {
                     worksite = writeApiClient.saveWorksite(changeCreatedAt, changeSyncUuid, it)
-                    networkWorksiteId = worksite!!.id
+                    networkWorksiteId = worksite.id
                     networkWorksiteCache = worksite
 
                     result = result.copy(isPartiallySynced = true)

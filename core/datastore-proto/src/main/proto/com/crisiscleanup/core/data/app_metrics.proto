@@ -17,4 +17,5 @@ message AppMetrics {
   AppMinUseProto minBuildSupport = 5;
 
   int64 appInstallVersion = 6;
+  int64 appPublishedVersion = 7;
 }
