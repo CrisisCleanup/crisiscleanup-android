@@ -24,6 +24,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -78,6 +79,7 @@ import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.cases.CasesFilterViewModel
 import com.crisiscleanup.feature.cases.CollapsibleFilterSection
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import java.time.ZoneId
@@ -164,6 +166,7 @@ internal fun CasesFilterRoute(
 
     if (confirmAbandonFilterChange) {
         val closeDialog = { confirmAbandonFilterChange = false }
+        val coroutineScope = rememberCoroutineScope()
         CrisisCleanupAlertDialog(
             onDismissRequest = closeDialog,
             title = t("worksiteFilters.filter_changes"),
@@ -171,8 +174,10 @@ internal fun CasesFilterRoute(
                 CrisisCleanupTextButton(
                     text = t("actions.apply_filters"),
                     onClick = {
-                        viewModel.applyFilters(filters)
-                        onBack()
+                        coroutineScope.launch {
+                            viewModel.applyFilters(filters)
+                            onBack()
+                        }
                     },
                 )
             },
@@ -1066,14 +1071,17 @@ fun BottomActionBar(
 
         val applyFilters = t("actions.apply_filters")
         val applyText = if (hasFilters) "$applyFilters ($filterCount)" else applyFilters
+        val coroutineScope = rememberCoroutineScope()
         BusyButton(
             Modifier
                 .testTag("filterApplyFiltersBtn")
                 .weight(1f),
             text = applyText,
             onClick = {
-                viewModel.applyFilters(filters)
-                onBack()
+                coroutineScope.launch {
+                    viewModel.applyFilters(filters)
+                    onBack()
+                }
             },
         )
     }
