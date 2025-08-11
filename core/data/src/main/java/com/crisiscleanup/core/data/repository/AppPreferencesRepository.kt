@@ -81,4 +81,8 @@ class AppPreferencesRepository @Inject constructor(
     override suspend fun setWorkScreenView(isTableView: Boolean) {
         preferencesDataSource.saveWorkScreenView(isTableView)
     }
+
+    override suspend fun setSyncMediaImmediate(syncImmediate: Boolean) {
+        preferencesDataSource.saveSyncMediaImmediate(syncImmediate)
+    }
 }

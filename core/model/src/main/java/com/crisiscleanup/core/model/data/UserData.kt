@@ -27,4 +27,6 @@ data class UserData(
     val teamMapBounds: IncidentCoordinateBounds,
 
     val isWorkScreenTableView: Boolean,
+
+    val isSyncMediaImmediate: Boolean,
 )

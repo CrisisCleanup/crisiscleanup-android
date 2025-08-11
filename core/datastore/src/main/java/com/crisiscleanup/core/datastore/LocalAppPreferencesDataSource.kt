@@ -60,6 +60,8 @@ class LocalAppPreferencesDataSource @Inject constructor(
                 teamMapBounds = it.teamMapBounds.asExternalModel(),
 
                 isWorkScreenTableView = it.isWorkScreenTableView,
+
+                isSyncMediaImmediate = it.syncMediaImmediate,
             )
         }
 
@@ -190,6 +192,12 @@ class LocalAppPreferencesDataSource @Inject constructor(
     suspend fun saveWorkScreenView(isTableView: Boolean) {
         userPreferences.updateData {
             it.copy { isWorkScreenTableView = isTableView }
+        }
+    }
+
+    suspend fun saveSyncMediaImmediate(syncImmediate: Boolean) {
+        userPreferences.updateData {
+            it.copy { syncMediaImmediate = syncImmediate }
         }
     }
 }

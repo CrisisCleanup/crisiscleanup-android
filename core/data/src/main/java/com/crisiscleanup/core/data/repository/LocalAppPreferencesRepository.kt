@@ -40,4 +40,6 @@ interface LocalAppPreferencesRepository {
     suspend fun setTeamMapBounds(bounds: IncidentCoordinateBounds)
 
     suspend fun setWorkScreenView(isTableView: Boolean)
+
+    suspend fun setSyncMediaImmediate(syncImmediate: Boolean)
 }
