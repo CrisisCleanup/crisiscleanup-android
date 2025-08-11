@@ -1,9 +1,6 @@
 package com.crisiscleanup.sync.initializers
 
 import android.content.Context
-import androidx.startup.AppInitializer
-import androidx.startup.Initializer
-import androidx.work.WorkManagerInitializer
 
 object Sync {
     // This method is initializes sync, the process that keeps the app's data current.
