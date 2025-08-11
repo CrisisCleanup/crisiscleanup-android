@@ -1,21 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
-
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- TODO Move into core/notifications module -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-
-    <application>
-        <provider
-            android:name="androidx.startup.InitializationProvider"
-            android:authorities="${applicationId}.androidx-startup"
-            android:exported="false"
-            tools:node="merge">
-            <!--  TODO: b/2173216 Disable auto sync startup till it works well with instrumented tests   -->
-            <meta-data
-                android:name="com.crisiscleanup.sync.initializers.SyncInitializer"
-                android:value="androidx.startup"
-                tools:node="remove" />
-        </provider>
-
-    </application>
-
 </manifest>
