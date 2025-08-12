@@ -183,9 +183,7 @@ class MenuViewModel @Inject constructor(
     fun syncPhotosImmediately(syncImmediate: Boolean) {
         viewModelScope.launch(ioDispatcher) {
             appPreferencesRepository.setSyncMediaImmediate(syncImmediate)
-            if (syncImmediate) {
-                syncPusher.scheduleSyncMedia()
-            }
+            syncPusher.scheduleSyncMedia()
         }
     }
 
