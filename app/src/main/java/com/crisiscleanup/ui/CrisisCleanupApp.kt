@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.slideIn
 import androidx.compose.animation.slideOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -58,6 +59,7 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
+import com.crisiscleanup.core.designsystem.theme.navigationContainerColor
 import com.crisiscleanup.core.model.data.TutorialViewId
 import com.crisiscleanup.core.ui.AppLayoutArea
 import com.crisiscleanup.core.ui.LayoutSizePosition
@@ -340,9 +342,11 @@ private fun NavigableContent(
     }
 
     Scaffold(
-        modifier = Modifier.semantics {
-            testTagsAsResourceId = true
-        },
+        modifier = Modifier
+            .background(navigationContainerColor)
+            .semantics {
+                testTagsAsResourceId = true
+            },
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -396,7 +400,7 @@ private fun NavigableContent(
             }
 
             val isKeyboardOpen = rememberIsKeyboardOpen()
-            Column {
+            Column(Modifier.background(Color.White)) {
                 val snackbarAreaHeight =
                     if (!showNavigation &&
                         snackbarHostState.currentSnackbarData != null &&
