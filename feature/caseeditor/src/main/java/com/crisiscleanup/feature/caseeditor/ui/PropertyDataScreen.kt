@@ -2,6 +2,7 @@ package com.crisiscleanup.feature.caseeditor.ui
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -15,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Size
@@ -31,6 +33,7 @@ import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.commoncase.ui.ExistingCaseLocationsDropdownItems
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupRadioButton
+import com.crisiscleanup.core.designsystem.component.HelpAction
 import com.crisiscleanup.core.designsystem.component.HelpRow
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.WithHelpDialog
@@ -40,6 +43,7 @@ import com.crisiscleanup.core.designsystem.theme.listItemHeight
 import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.model.data.AutoContactFrequency
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.feature.caseeditor.CasePropertyDataEditor
@@ -51,43 +55,63 @@ internal fun PropertyFormView(
     editor: CasePropertyDataEditor,
     focusOnOpen: Boolean = false,
 ) {
-    val translator = LocalAppTranslator.current
+    val t = LocalAppTranslator.current
     val isEditable = LocalCaseEditor.current.isEditable
 
     val inputData = editor.propertyInputData
 
     PropertyFormResidentNameView(editor, isEditable, focusOnOpen)
 
-    // TODO Apply mask with dashes if input is purely numbers (and dashes)
     val updatePhone = remember(inputData) { { s: String -> inputData.phoneNumber = s } }
     val clearPhoneError = remember(inputData) { { inputData.phoneNumberError = "" } }
     val isPhoneError = inputData.phoneNumberError.isNotEmpty()
     val focusPhone = isPhoneError
-    val phone1Label = translator("formLabels.phone1")
+    val phone1Label = t("formLabels.phone1")
     ErrorText(inputData.phoneNumberError)
-    OutlinedClearableTextField(
-        modifier = listItemModifier
-            .onFocusChanged {
-                if (!it.hasFocus) {
-                    inputData.formatPhoneNumber()
+    Row(
+        listItemModifier,
+        horizontalArrangement = listItemSpacedByHalf,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        OutlinedClearableTextField(
+            modifier = Modifier
+                .weight(1f)
+                .onFocusChanged {
+                    if (!it.hasFocus) {
+                        inputData.formatPhoneNumber()
+                    }
                 }
-            }
-            .testTag("propertyPhone1TextField"),
-        label = "$phone1Label *",
-        value = inputData.phoneNumber,
-        onValueChange = updatePhone,
-        keyboardType = KeyboardType.Password,
-        isError = isPhoneError,
-        hasFocus = focusPhone,
-        onNext = clearPhoneError,
-        enabled = isEditable,
-    )
+                .testTag("propertyPhone1TextField"),
+            label = "$phone1Label *",
+            value = inputData.phoneNumber,
+            onValueChange = updatePhone,
+            keyboardType = KeyboardType.Password,
+            isError = isPhoneError,
+            hasFocus = focusPhone,
+            onNext = clearPhoneError,
+            enabled = isEditable,
+        )
+
+        val phoneNumberFormatHint = t("caseForm.phone_number_format")
+        WithHelpDialog(
+            viewModel,
+            helpTitle = t("~~Phone number format"),
+            helpText = phoneNumberFormatHint,
+        ) { showHelp ->
+            HelpAction(
+                phoneNumberFormatHint,
+                showHelp,
+                // TODO Common dimensions
+                Modifier.padding(top = 8.dp),
+            )
+        }
+    }
 
     val updatePhoneNotes = remember(inputData) { { s: String -> inputData.phoneNotes = s } }
     OutlinedClearableTextField(
         modifier = listItemModifier
             .testTag("propertyPhone1NotesTextField"),
-        label = translator("formLabels.phone1_notes"),
+        label = t("formLabels.phone1_notes"),
         value = inputData.phoneNotes,
         onValueChange = updatePhoneNotes,
         isError = false,
@@ -106,7 +130,7 @@ internal fun PropertyFormView(
             }
             .testTag("propertyPhone2TextField"),
         labelResId = 0,
-        label = translator("formLabels.phone2"),
+        label = t("formLabels.phone2"),
         value = inputData.phoneNumberSecondary,
         onValueChange = updateAdditionalPhone,
         keyboardType = KeyboardType.Password,
@@ -120,7 +144,7 @@ internal fun PropertyFormView(
     OutlinedClearableTextField(
         modifier = listItemModifier
             .testTag("propertyPhone2NotesTextField"),
-        label = translator("formLabels.phone2_notes"),
+        label = t("formLabels.phone2_notes"),
         value = inputData.phoneNotesSecondary,
         onValueChange = updateAdditionalPhoneNotes,
         isError = false,
@@ -136,7 +160,7 @@ internal fun PropertyFormView(
     OutlinedClearableTextField(
         modifier = listItemModifier.testTag("propertyEmailTextField"),
         labelResId = 0,
-        label = translator("formLabels.email"),
+        label = t("formLabels.email"),
         value = inputData.email,
         onValueChange = updateEmail,
         keyboardType = KeyboardType.Email,
@@ -148,11 +172,11 @@ internal fun PropertyFormView(
         onEnter = closeKeyboard,
     )
 
-    val autoContactFrequencyLabel = translator("casesVue.auto_contact_frequency")
+    val autoContactFrequencyLabel = t("casesVue.auto_contact_frequency")
     WithHelpDialog(
         viewModel,
         helpTitle = autoContactFrequencyLabel,
-        helpText = translator("casesVue.auto_contact_frequency_help"),
+        helpText = t("casesVue.auto_contact_frequency_help"),
     ) { showHelp ->
         HelpRow(
             autoContactFrequencyLabel,
