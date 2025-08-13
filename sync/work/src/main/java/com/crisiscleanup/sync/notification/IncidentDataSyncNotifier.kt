@@ -107,6 +107,7 @@ internal class IncidentDataSyncNotifier @Inject constructor(
                                     stopSyncIntent,
                                 )
                                 .setOnlyAlertOnce(true)
+                                .setSilent(true)
                                 .build(),
                         )
                     } else if (isEnded) {
