@@ -7,10 +7,21 @@ tags:
   - pull-request
 env:
   SEARCH_QUERY: '11'
+  INCIDENT_REGEX: ".*(flood|tornado).*"
 onFlowStart:
   - runFlow: ../auth-tests/login.yaml
 ---
 # wait for incidents to load
+- waitForAnimationToEnd:
+    timeout: 5000
+# Pick a random incident from incident selector
+- tapOn:
+    id: "workIncidentSelectorFab"
+- scrollUntilVisible:
+    element: ${INCIDENT_REGEX}
+- tapOn:
+    text: ${INCIDENT_REGEX}
+    index: 0
 - waitForAnimationToEnd:
     timeout: 5000
 # start searching after loading spinner is invisible
