@@ -267,10 +267,9 @@ class MainActivityViewModel @Inject constructor(
             return
         }
 
-        if (isUpdatingTermsAcceptance.value) {
+        if (!isUpdatingTermsAcceptance.compareAndSet(expect = false, update = true)) {
             return
         }
-        isUpdatingTermsAcceptance.value = true
         viewModelScope.launch(ioDispatcher) {
             try {
                 val isAccepted = accountUpdateRepository.acceptTerms()

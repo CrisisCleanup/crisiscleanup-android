@@ -232,11 +232,9 @@ class CaseShareViewModel @Inject constructor(
             return
         }
 
-        if (isSharing.value) {
+        if (!isSharing.compareAndSet(expect = false, update = true)) {
             return
         }
-        isSharing.value = true
-
         viewModelScope.launch(ioDispatcher) {
             try {
                 isShared.value = worksitesRepository.shareWorksite(

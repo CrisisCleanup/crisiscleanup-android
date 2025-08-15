@@ -92,10 +92,9 @@ class PasswordRecoverViewModel @Inject constructor(
             return
         }
 
-        if (isInitiatingPasswordReset.value) {
+        if (!isInitiatingPasswordReset.compareAndSet(expect = false, update = true)) {
             return
         }
-        isInitiatingPasswordReset.value = true
         viewModelScope.launch {
             try {
                 val result = accountUpdateRepository.initiatePasswordReset(email)
@@ -131,10 +130,9 @@ class PasswordRecoverViewModel @Inject constructor(
             return
         }
 
-        if (isInitiatingMagicLink.value) {
+        if (!isInitiatingMagicLink.compareAndSet(expect = false, update = true)) {
             return
         }
-        isInitiatingMagicLink.value = true
         viewModelScope.launch {
             try {
                 val isInitiated = accountUpdateRepository.initiateEmailMagicLink(email)
