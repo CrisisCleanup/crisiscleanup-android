@@ -29,6 +29,8 @@ fun NavController.navigateToRequestAccess(code: String) {
 fun NavGraphBuilder.requestAccessScreen(
     onBack: () -> Unit,
     closeRequestAccess: () -> Unit,
+    openAuth: () -> Unit,
+    openForgotPassword: () -> Unit,
 ) {
     composable(
         route = "$REQUEST_ACCESS_ROUTE?$INVITE_CODE_ARG={$INVITE_CODE_ARG}",
@@ -39,6 +41,8 @@ fun NavGraphBuilder.requestAccessScreen(
         RequestOrgAccessRoute(
             onBack = onBack,
             closeRequestAccess = closeRequestAccess,
+            openAuth = openAuth,
+            openForgotPassword = openForgotPassword,
         )
     }
 }
