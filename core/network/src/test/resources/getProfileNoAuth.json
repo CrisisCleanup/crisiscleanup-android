@@ -1,0 +1,29 @@
+{
+  "id": 9,
+  "first_name": "Test",
+  "last_name": "User",
+  "referring_user": 1,
+  "organization": 9,
+  "files": [
+    {
+      "tag": null,
+      "title": null,
+      "notes": null,
+      "created_at": "2022-06-17T23:47:21.119619Z",
+      "file_updated_at": "2021-04-28T19:23:36Z",
+      "id": 920,
+      "file": 728,
+      "filename": "Screenshot 2023-01-09 at 11.31.21 AM-abc.png",
+      "url": "url-file",
+      "full_url": "full-url",
+      "general_file_url": "general-file",
+      "blog_url": "blog-image",
+      "large_blog_url": "large-blog-image",
+      "large_thumbnail_url": "large-thumbnail",
+      "small_thumbnail_url": "small-thumbnail",
+      "filename_original": "Screenshot 2023-01-09 at 11.31.21 AM.png",
+      "file_type_t": "fileTypes.user_profile_picture",
+      "mime_content_type": "image/png"
+    }
+  ]
+}

@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 
@@ -178,10 +179,14 @@ class CasesFilterViewModel @Inject constructor(
     fun clearFilters() {
         val filters = CasesFilter()
         changeFilters(filters)
-        applyFilters(filters)
+        viewModelScope.launch {
+            applyFilters(filters)
+        }
     }
 
-    fun applyFilters(filters: CasesFilter) {
+    suspend fun applyFilters(filters: CasesFilter) {
+        // TODO Disallow successive apply
+        //      Update transient UI
         casesFilterRepository.changeFilters(filters)
     }
 }

@@ -1,11 +1,11 @@
 package com.crisiscleanup.feature.authentication.ui
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -33,11 +33,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
-import com.crisiscleanup.core.designsystem.component.AnimatedBusyIndicator
 import com.crisiscleanup.core.designsystem.component.BusyButton
+import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupOutlinedButton
+import com.crisiscleanup.core.designsystem.component.CrisisCleanupRadioButton
+import com.crisiscleanup.core.designsystem.component.LinkifyHtmlText
 import com.crisiscleanup.core.designsystem.component.OutlinedClearableTextField
 import com.crisiscleanup.core.designsystem.component.RegisterSuccessView
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
+import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.fillWidthPadded
@@ -45,9 +49,12 @@ import com.crisiscleanup.core.designsystem.theme.listItemHorizontalPadding
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
 import com.crisiscleanup.core.designsystem.theme.listItemTopPadding
+import com.crisiscleanup.core.designsystem.theme.primaryRedColor
 import com.crisiscleanup.core.ui.rememberCloseKeyboard
 import com.crisiscleanup.core.ui.scrollFlingListener
+import com.crisiscleanup.feature.authentication.InviteDisplayInfo
 import com.crisiscleanup.feature.authentication.RequestOrgAccessViewModel
+import com.crisiscleanup.feature.authentication.TransferOrgOption
 import kotlinx.coroutines.launch
 import java.net.URL
 
@@ -56,9 +63,12 @@ import java.net.URL
 fun RequestOrgAccessRoute(
     onBack: () -> Unit,
     closeRequestAccess: () -> Unit,
+    openAuth: () -> Unit = {},
+    openForgotPassword: () -> Unit = {},
     viewModel: RequestOrgAccessViewModel = hiltViewModel(),
 ) {
     val isInviteRequested by viewModel.isInviteRequested.collectAsStateWithLifecycle()
+    val isOrgTransferred by viewModel.isOrgTransferred.collectAsStateWithLifecycle()
 
     val clearStateOnBack = remember(viewModel, isInviteRequested, onBack, closeRequestAccess) {
         {
@@ -102,126 +112,82 @@ fun RequestOrgAccessRoute(
                 actionText = actionText,
                 onAction = clearStateOnBack,
             )
+        } else if (isOrgTransferred) {
+            val clearStateOpenAuth = remember(viewModel, openAuth) {
+                {
+                    viewModel.clearInviteCode()
+                    openAuth()
+                }
+            }
+            val clearStateForgotPassword = remember(viewModel, openForgotPassword) {
+                {
+                    viewModel.clearInviteCode()
+                    openForgotPassword()
+                }
+            }
+
+            val displayInfo by viewModel.inviteDisplay.collectAsStateWithLifecycle()
+            val orgName = displayInfo?.inviteInfo?.orgName ?: ""
+            OrgTransferSuccessView(
+                orgName,
+                onForgotPassword = clearStateForgotPassword,
+                onLogin = clearStateOpenAuth,
+            )
         } else {
-            RequestOrgUserInfoInputView()
+            RequestOrgUserInfoInputView(
+                onBack = clearStateOnBack,
+            )
         }
     }
 }
 
 @Composable
 private fun RequestOrgUserInfoInputView(
+    onBack: () -> Unit,
     viewModel: RequestOrgAccessViewModel = hiltViewModel(),
 ) {
-    val t = LocalAppTranslator.current
-    val closeKeyboard = rememberCloseKeyboard(viewModel)
-
     val displayInfo by viewModel.inviteDisplay.collectAsStateWithLifecycle()
-
-    val isEditable by viewModel.isEditable.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
-    val clearErrorVisuals = remember(viewModel) { { viewModel.clearErrors() } }
+    if (displayInfo == null) {
+        Box(Modifier.fillMaxSize()) {
+            BusyIndicatorFloatingTopCenter(true)
+        }
+    } else {
+        val closeKeyboard = rememberCloseKeyboard(viewModel)
 
-    val scrollState = rememberScrollState()
-    var contentSize by remember { mutableStateOf(Size.Zero) }
-    Column(
-        Modifier
-            .scrollFlingListener(closeKeyboard)
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-            .onGloballyPositioned {
-                contentSize = it.size.toSize()
-            },
-    ) {
-        if (viewModel.showEmailInput) {
-            val requestInstructions = t("requestAccess.request_access_enter_email")
-            Text(
-                requestInstructions,
-                listItemModifier.testTag("requestAccessByEmailInstructions"),
-            )
+        var contentSize by remember { mutableStateOf(Size.Zero) }
 
-            val hasEmailError = viewModel.emailAddressError.isNotBlank()
-            if (hasEmailError) {
-                Text(
-                    viewModel.emailAddressError,
-                    Modifier
-                        .listItemHorizontalPadding()
-                        .listItemTopPadding()
-                        .testTag("requestAccessByEmailError"),
-                    color = MaterialTheme.colorScheme.error,
+        val scrollState = rememberScrollState()
+        Column(
+            Modifier
+                .scrollFlingListener(closeKeyboard)
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .onGloballyPositioned {
+                    contentSize = it.size.toSize()
+                },
+        ) {
+            val isExistingUser = displayInfo?.inviteInfo?.isExistingUser == true
+            val isEditable by viewModel.isEditable.collectAsStateWithLifecycle()
+
+            if (isExistingUser) {
+                InviteExistingUserContent(
+                    onBack = onBack,
+                    isEditable = isEditable,
+                    isLoading = isLoading,
+                    displayInfo!!,
+                )
+            } else {
+                InviteNewUserContent(
+                    contentSize,
+                    scrollState,
+                    isEditable = isEditable,
+                    isLoading = isLoading,
+                    displayInfo!!,
                 )
             }
-            // TODO Initial focus isn't taking (on emulator)
-            val hasEmailFocus = viewModel.emailAddress.isBlank() || hasEmailError
-            OutlinedClearableTextField(
-                modifier = listItemModifier.testTag("requestAccessByEmailTextField"),
-                label = t("requestAccess.existing_member_email"),
-                value = viewModel.emailAddress,
-                onValueChange = { viewModel.emailAddress = it },
-                keyboardType = KeyboardType.Email,
-                enabled = isEditable,
-                isError = hasEmailError,
-                hasFocus = hasEmailFocus,
-                onNext = clearErrorVisuals,
-            )
-        } else {
-            if (displayInfo == null) {
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    AnimatedBusyIndicator(
-                        isLoading,
-                        padding = 16.dp,
-                    )
-                }
-            } else {
-                val info = displayInfo!!
-                val avatarUrl = displayInfo?.avatarUrl
-                if (avatarUrl != null &&
-                    info.displayName.isNotBlank() &&
-                    info.inviteMessage.isNotBlank()
-                ) {
-                    InviterAvatar(
-                        avatarUrl,
-                        displayName = info.displayName,
-                        inviteMessage = info.inviteMessage,
-                    )
-                }
-            }
         }
-
-        Text(
-            t("requestAccess.complete_form_request_access"),
-            fillWidthPadded.testTag("requestAccessInputInstruction"),
-            style = LocalFontStyles.current.header3,
-        )
-
-        val coroutineScope = rememberCoroutineScope()
-        val languageOptions by viewModel.languageOptions.collectAsStateWithLifecycle()
-        UserInfoInputView(
-            infoData = viewModel.userInfo,
-            languageOptions = languageOptions,
-            isEditable = isEditable,
-            onEndOfInput = {
-                coroutineScope.launch {
-                    scrollState.animateScrollTo(contentSize.height.toInt())
-                }
-            },
-        )
-
-        Text(
-            t("requestAccess.request_will_be_sent"),
-            listItemModifier.testTag("requestAccessSubmitExplainer"),
-        )
-
-        BusyButton(
-            fillWidthPadded.testTag("requestAccessSubmitAction"),
-            enabled = isEditable,
-            text = t("actions.request_access"),
-            indicateBusy = isLoading,
-            onClick = viewModel::onVolunteerWithOrg,
-        )
     }
 }
 
@@ -264,4 +230,196 @@ internal fun InviterAvatar(
             )
         }
     }
+}
+
+@Composable
+private fun InviteExistingUserContent(
+    onBack: () -> Unit,
+    isEditable: Boolean,
+    isLoading: Boolean,
+    displayInfo: InviteDisplayInfo,
+    viewModel: RequestOrgAccessViewModel = hiltViewModel(),
+) {
+    val t = LocalAppTranslator.current
+    val translationCount by t.translationCount.collectAsStateWithLifecycle()
+
+    val inviteInfo = displayInfo.inviteInfo
+    val transferInstructions = t("invitationSignup.inviting_to_transfer_confirm")
+        .replace("{user}", inviteInfo.displayName)
+        .replace("{fromOrg}", inviteInfo.fromOrgName)
+        .replace("{toOrg}", inviteInfo.orgName)
+
+    LinkifyHtmlText(
+        transferInstructions,
+        listItemModifier,
+    )
+
+    val selectedOption = viewModel.selectedOrgTransfer
+    for (option in viewModel.transferOrgOptions) {
+        CrisisCleanupRadioButton(
+            listItemModifier,
+            option == selectedOption,
+            text = t(option.translateKey),
+            onSelect = { viewModel.onChangeTransferOrgOption(option) },
+            enabled = isEditable,
+        )
+    }
+
+    val errorMessage = viewModel.transferOrgErrorMessage
+    if (errorMessage.isNotBlank()) {
+        Text(
+            errorMessage,
+            listItemModifier,
+            color = primaryRedColor,
+        )
+    }
+
+    val transferText = remember(translationCount) {
+        t("actions.transfer")
+    }
+    BusyButton(
+        fillWidthPadded.testTag("transferOrgSubmitAction"),
+        enabled = isEditable && selectedOption != TransferOrgOption.NotSelected,
+        text = transferText,
+        indicateBusy = isLoading,
+        onClick = {
+            if (selectedOption == TransferOrgOption.DoNotTransfer) {
+                onBack()
+            } else {
+                viewModel.onTransferOrg()
+            }
+        },
+    )
+}
+
+@Composable
+private fun OrgTransferSuccessView(
+    orgName: String,
+    onForgotPassword: () -> Unit,
+    onLogin: () -> Unit,
+) {
+    val t = LocalAppTranslator.current
+
+    Text(
+        t("invitationSignup.move_completed"),
+        listItemModifier,
+        style = MaterialTheme.typography.headlineSmall,
+    )
+
+    Text(
+        t("invitationSignup.congrats_move_complete")
+            .replace("{toOrg}", orgName),
+        listItemModifier,
+    )
+
+    CrisisCleanupOutlinedButton(
+        modifier = listItemModifier
+            .actionHeight(),
+        enabled = true,
+        onClick = onForgotPassword,
+        text = t("invitationSignup.forgot_password"),
+    )
+
+    BusyButton(
+        modifier = listItemModifier
+            .actionHeight(),
+        onClick = onLogin,
+        text = t("actions.login"),
+    )
+}
+
+@Composable
+private fun InviteNewUserContent(
+    contentSize: Size,
+    scrollState: ScrollState,
+    isEditable: Boolean,
+    isLoading: Boolean,
+    displayInfo: InviteDisplayInfo,
+    viewModel: RequestOrgAccessViewModel = hiltViewModel(),
+) {
+    val t = LocalAppTranslator.current
+    val translationCount by t.translationCount.collectAsStateWithLifecycle()
+
+    val clearErrorVisuals = viewModel::clearErrors
+
+    if (viewModel.showEmailInput) {
+        val requestInstructions = t("requestAccess.request_access_enter_email")
+        Text(
+            requestInstructions,
+            listItemModifier.testTag("requestAccessByEmailInstructions"),
+        )
+
+        val hasEmailError = viewModel.emailAddressError.isNotBlank()
+        if (hasEmailError) {
+            Text(
+                viewModel.emailAddressError,
+                Modifier
+                    .listItemHorizontalPadding()
+                    .listItemTopPadding()
+                    .testTag("requestAccessByEmailError"),
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+        // TODO Initial focus isn't taking (on emulator)
+        val hasEmailFocus = viewModel.emailAddress.isBlank() || hasEmailError
+        OutlinedClearableTextField(
+            modifier = listItemModifier.testTag("requestAccessByEmailTextField"),
+            label = t("requestAccess.existing_member_email"),
+            value = viewModel.emailAddress,
+            onValueChange = { viewModel.emailAddress = it },
+            keyboardType = KeyboardType.Email,
+            enabled = isEditable,
+            isError = hasEmailError,
+            hasFocus = hasEmailFocus,
+            onNext = clearErrorVisuals,
+        )
+    } else {
+        val info = displayInfo
+        val avatarUrl = displayInfo.avatarUrl
+        if (avatarUrl != null &&
+            info.displayName.isNotBlank() &&
+            info.inviteMessage.isNotBlank()
+        ) {
+            InviterAvatar(
+                avatarUrl,
+                displayName = info.displayName,
+                inviteMessage = info.inviteMessage,
+            )
+        }
+    }
+
+    Text(
+        t("requestAccess.complete_form_request_access"),
+        fillWidthPadded.testTag("requestAccessInputInstruction"),
+        style = LocalFontStyles.current.header3,
+    )
+
+    val coroutineScope = rememberCoroutineScope()
+    val languageOptions by viewModel.languageOptions.collectAsStateWithLifecycle()
+    UserInfoInputView(
+        infoData = viewModel.userInfo,
+        languageOptions = languageOptions,
+        isEditable = isEditable,
+        onEndOfInput = {
+            coroutineScope.launch {
+                scrollState.animateScrollTo(contentSize.height.toInt())
+            }
+        },
+    )
+
+    Text(
+        t("requestAccess.request_will_be_sent"),
+        listItemModifier.testTag("requestAccessSubmitExplainer"),
+    )
+
+    val requestAccessText = remember(translationCount) {
+        t("actions.request_access")
+    }
+    BusyButton(
+        fillWidthPadded.testTag("requestOrgAccessSubmitAction"),
+        enabled = isEditable,
+        text = requestAccessText,
+        indicateBusy = isLoading,
+        onClick = viewModel::onVolunteerWithOrg,
+    )
 }

@@ -130,6 +130,8 @@ private fun MenuScreen(
 
     val isAppUpdateAvailable by viewModel.isAppUpdateAvailable.collectAsStateWithLifecycle(false)
 
+    val isSyncPhotosImmediate by viewModel.isSyncPhotosImmediate.collectAsStateWithLifecycle(false)
+
     val isSharingAnalytics by viewModel.isSharingAnalytics.collectAsStateWithLifecycle(false)
 
     val isSharingLocation by viewModel.isSharingLocation.collectAsStateWithLifecycle(false)
@@ -374,6 +376,12 @@ private fun MenuScreen(
                     color = neutralFontColor,
                 )
             }
+
+            toggleItem(
+                "~~Sync photos immediately",
+                isSyncPhotosImmediate,
+                viewModel::syncPhotosImmediately,
+            )
 
             toggleItem(
                 "actions.share_analytics",

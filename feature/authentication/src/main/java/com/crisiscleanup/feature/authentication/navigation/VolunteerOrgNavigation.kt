@@ -61,7 +61,7 @@ fun NavGraphBuilder.navigateToVolunteerPasteInviteLink(
             remember(navController) {
                 { code: String ->
                     navController.popBackStack()
-                    navController.navigateToRequestAccess(code)
+                    navController.navigateToRequestAccess(code, false)
                 }
             }
         VolunteerPasteInviteLinkRoute(

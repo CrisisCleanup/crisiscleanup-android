@@ -20,7 +20,13 @@ data class NetworkInvitationInfo(
     val organization: Long,
     @SerialName("invited_by")
     val inviter: NetworkInviterInfo,
-)
+    @SerialName("existing_user")
+    val existingUser: NetworkInviteeInfo?,
+) {
+    val isExistingUser by lazy {
+        (existingUser?.id ?: 0) > 0
+    }
+}
 
 @Serializable
 data class NetworkInviterInfo(
@@ -32,4 +38,10 @@ data class NetworkInviterInfo(
     val email: String,
     @SerialName("mobile")
     val phone: String,
+)
+
+@Serializable
+data class NetworkInviteeInfo(
+    val id: Long,
+    val organization: Long,
 )

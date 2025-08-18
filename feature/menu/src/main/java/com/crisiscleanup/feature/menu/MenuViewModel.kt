@@ -17,6 +17,7 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.subscribedReplay
 import com.crisiscleanup.core.common.sync.SyncPuller
+import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.incidentcache.DataDownloadSpeedMonitor
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
@@ -58,6 +59,7 @@ class MenuViewModel @Inject constructor(
     dataDownloadSpeedMonitor: DataDownloadSpeedMonitor,
     private val appEnv: AppEnv,
     private val syncPuller: SyncPuller,
+    private val syncPusher: SyncPusher,
     @Tutorials(Menu) val menuTutorialDirector: TutorialDirector,
     val tutorialViewTracker: TutorialViewTracker,
     private val databaseVersionProvider: DatabaseVersionProvider,
@@ -102,6 +104,10 @@ class MenuViewModel @Inject constructor(
 
     val databaseVersionText: String
         get() = if (isNotProduction) "DB ${databaseVersionProvider.databaseVersion}" else ""
+
+    val isSyncPhotosImmediate = appPreferencesRepository.userPreferences.map {
+        it.isSyncMediaImmediate
+    }
 
     val isSharingAnalytics = appPreferencesRepository.userPreferences.map {
         it.allowAllAnalytics
@@ -172,6 +178,13 @@ class MenuViewModel @Inject constructor(
 
     fun refreshIncidents() {
         syncPuller.appPullIncidents()
+    }
+
+    fun syncPhotosImmediately(syncImmediate: Boolean) {
+        viewModelScope.launch(ioDispatcher) {
+            appPreferencesRepository.setSyncMediaImmediate(syncImmediate)
+            syncPusher.scheduleSyncMedia()
+        }
     }
 
     fun shareAnalytics(share: Boolean) {

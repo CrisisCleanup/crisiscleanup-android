@@ -89,6 +89,7 @@ import com.crisiscleanup.core.designsystem.theme.disabledAlpha
 import com.crisiscleanup.core.designsystem.theme.listItemModifier
 import com.crisiscleanup.core.designsystem.theme.listItemPadding
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.neutralIconColor
 import com.crisiscleanup.core.designsystem.theme.primaryOrangeColor
 import com.crisiscleanup.core.mapmarker.ui.rememberMapProperties
@@ -525,6 +526,7 @@ internal fun PropertyInfoRow(
     isEmail: Boolean = false,
     isLocation: Boolean = false,
     locationQuery: String = "",
+    subText: String = "",
     trailingContent: (@Composable () -> Unit)? = null,
 ) {
     Row(
@@ -538,20 +540,27 @@ internal fun PropertyInfoRow(
             tint = neutralIconColor,
         )
 
-        val style = MaterialTheme.typography.bodyLarge
-        val innerModifier = if (trailingContent == null) {
-            Modifier
-        } else {
-            Modifier.weight(1f)
-        }
-        if (isPhone) {
-            LinkifyPhoneText(text, innerModifier)
-        } else if (isEmail) {
-            LinkifyEmailText(text, innerModifier)
-        } else if (isLocation) {
-            LinkifyLocationText(text, locationQuery, innerModifier)
-        } else {
-            Text(text, innerModifier, style = style)
+        Column(
+            Modifier.weight(1f),
+            verticalArrangement = listItemSpacedByHalf,
+        ) {
+            val style = MaterialTheme.typography.bodyLarge
+            if (isPhone) {
+                LinkifyPhoneText(text)
+            } else if (isEmail) {
+                LinkifyEmailText(text)
+            } else if (isLocation) {
+                LinkifyLocationText(text, locationQuery)
+            } else {
+                Text(text, style = style)
+            }
+
+            if (subText.isNotBlank()) {
+                Text(
+                    subText,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
         }
 
         trailingContent?.invoke()
@@ -727,6 +736,9 @@ private fun LazyListScope.propertyInfoItems(
                 )
                 val phoneNumbers =
                     listOf(worksite.phone1, worksite.phone2).filterNotBlankTrim().joinToString("; ")
+                val phoneNotes =
+                    listOf(worksite.phone1Notes, worksite.phone2Notes).filterNotBlankTrim()
+                        .joinToString("\n")
                 PropertyInfoRow(
                     CrisisCleanupIcons.Phone,
                     phoneNumbers,
@@ -739,6 +751,7 @@ private fun LazyListScope.propertyInfoItems(
                         .fillMaxWidth()
                         .padding(horizontal = edgeSpacing, vertical = edgeSpacingHalf),
                     isPhone = true,
+                    subText = phoneNotes,
                 )
                 worksite.email?.let {
                     if (it.isNotBlank()) {

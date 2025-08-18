@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.KeyResourceTranslator
+import com.crisiscleanup.core.common.event.AccountEventBus
 import com.crisiscleanup.core.common.event.ExternalEventBus
 import com.crisiscleanup.core.common.isPast
 import com.crisiscleanup.core.common.log.AppLogger
@@ -15,6 +16,9 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.AccountUpdateRepository
+import com.crisiscleanup.core.data.repository.ChangeOrganizationAction
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
 import com.crisiscleanup.core.data.repository.OrgVolunteerRepository
 import com.crisiscleanup.core.model.data.CodeInviteAccept
@@ -30,6 +34,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -37,13 +42,17 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.net.URL
 import javax.inject.Inject
+import com.crisiscleanup.core.common.combine as combineMore
 
 @HiltViewModel
 class RequestOrgAccessViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val languageRepository: LanguageTranslationsRepository,
     private val orgVolunteerRepository: OrgVolunteerRepository,
+    private val accountUpdateRepository: AccountUpdateRepository,
+    private val accountDataRepository: AccountDataRepository,
     private val inputValidator: InputValidator,
+    private val accountEventBus: AccountEventBus,
     private val externalEventBus: ExternalEventBus,
     private val translator: KeyResourceTranslator,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
@@ -74,9 +83,34 @@ class RequestOrgAccessViewModel @Inject constructor(
     var requestSentTitle by mutableStateOf("")
     var requestSentText by mutableStateOf("")
 
-    val screenTitle = requestedOrg
-        .map {
-            val key = if (it == null) "actions.sign_up" else "actions.request_access"
+    val transferOrgOptions = listOf(
+        TransferOrgOption.Users,
+        TransferOrgOption.All,
+        TransferOrgOption.DoNotTransfer,
+    )
+    var selectedOrgTransfer by mutableStateOf(TransferOrgOption.NotSelected)
+        private set
+    var transferOrgErrorMessage by mutableStateOf("")
+        private set
+    val isTransferringOrg = MutableStateFlow(false)
+    val isOrgTransferred = MutableStateFlow(false)
+
+    val screenTitle = combine(
+        requestedOrg,
+        inviteDisplay,
+        translator.translationCount,
+        ::Triple,
+    )
+        .map { (org, invite, _) ->
+            val key = if (org == null) {
+                if (invite?.inviteInfo?.isExistingUser == true) {
+                    "actions.transfer"
+                } else {
+                    "actions.sign_up"
+                }
+            } else {
+                "actions.request_access"
+            }
             translator(key)
         }
         .stateIn(
@@ -85,13 +119,14 @@ class RequestOrgAccessViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val isLoading = combine(
+    val isLoading = combineMore(
         isPullingLanguageOptions,
         isFetchingInviteInfo,
         isRequestingInvite,
-        ::Triple,
-    )
-        .map { (b0, b1, b2) -> b0 || b1 || b2 }
+        isTransferringOrg,
+    ) { b0, b1, b2, b3 ->
+        b0 || b1 || b2 || b3
+    }
         .stateIn(
             scope = viewModelScope,
             initialValue = false,
@@ -147,8 +182,7 @@ class RequestOrgAccessViewModel @Inject constructor(
             .launchIn(viewModelScope)
 
         viewModelScope.launch(ioDispatcher) {
-            if (!isPullingLanguageOptions.value) {
-                isPullingLanguageOptions.value = true
+            if (isPullingLanguageOptions.compareAndSet(expect = false, update = true)) {
                 try {
                     languageOptions.value = languageRepository.getLanguageOptions()
                 } catch (e: Exception) {
@@ -223,10 +257,9 @@ class RequestOrgAccessViewModel @Inject constructor(
             return
         }
 
-        if (isRequestingInvite.value) {
+        if (!isRequestingInvite.compareAndSet(expect = false, update = true)) {
             return
         }
-        isRequestingInvite.value = true
         viewModelScope.launch(ioDispatcher) {
             try {
                 if (showEmailInput) {
@@ -283,6 +316,53 @@ class RequestOrgAccessViewModel @Inject constructor(
             }
         }
     }
+
+    fun onChangeTransferOrgOption(option: TransferOrgOption) {
+        selectedOrgTransfer = option
+        transferOrgErrorMessage = ""
+    }
+
+    fun onTransferOrg() {
+        when (selectedOrgTransfer) {
+            TransferOrgOption.DoNotTransfer -> isInviteRequested.value = true
+            TransferOrgOption.Users,
+            TransferOrgOption.All,
+            -> {
+                if (isTransferringOrg.compareAndSet(expect = false, update = true)) {
+                    viewModelScope.launch(ioDispatcher) {
+                        try {
+                            val action = if (selectedOrgTransfer == TransferOrgOption.Users) {
+                                ChangeOrganizationAction.Users
+                            } else {
+                                ChangeOrganizationAction.All
+                            }
+                            transferToOrg(action)
+
+                            val isAuthenticated = accountDataRepository.isAuthenticated.first()
+                            if (isAuthenticated) {
+                                clearInviteCode()
+                                accountEventBus.onLogout()
+                            }
+                        } finally {
+                            isTransferringOrg.value = false
+                        }
+                    }
+                }
+            }
+
+            else -> {}
+        }
+    }
+
+    private suspend fun transferToOrg(action: ChangeOrganizationAction) {
+        if (accountUpdateRepository.acceptOrganizationChange(action, invitationCode)) {
+            isOrgTransferred.value = true
+        } else {
+            logger.logException(Exception("User transfer to org failed."))
+            transferOrgErrorMessage =
+                translator("~~There was an issue during organization transfer. Try again later or reach out to support for help.")
+        }
+    }
 }
 
 data class InviteDisplayInfo(
@@ -293,4 +373,11 @@ data class InviteDisplayInfo(
         get() = inviteInfo.inviterAvatarUrl
     val displayName: String
         get() = inviteInfo.displayName
+}
+
+enum class TransferOrgOption(val translateKey: String) {
+    NotSelected(""),
+    Users("invitationSignup.yes_transfer_just_me"),
+    All("invitationSignup.yes_transfer_me_and_cases"),
+    DoNotTransfer("invitationSignup.no_transfer"),
 }

@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -25,7 +25,7 @@ interface CasesFilterRepository {
     val casesFiltersLocation: StateFlow<Triple<CasesFilter, Boolean, Long>>
     val filtersCount: Flow<Int>
 
-    fun changeFilters(filters: CasesFilter)
+    suspend fun changeFilters(filters: CasesFilter)
     fun updateWorkTypeFilters(workTypes: Collection<String>)
     fun reapplyFilters()
 }
@@ -60,10 +60,8 @@ class CrisisCleanupCasesFilterRepository @Inject constructor(
 
     // TODO Update or clear work type filters when incident changes
 
-    override fun changeFilters(filters: CasesFilter) {
-        externalScope.launch(ioDispatcher) {
-            dataSource.updateFilters(filters)
-        }
+    override suspend fun changeFilters(filters: CasesFilter) = withContext(ioDispatcher) {
+        dataSource.updateFilters(filters)
     }
 
     override fun updateWorkTypeFilters(workTypes: Collection<String>) {

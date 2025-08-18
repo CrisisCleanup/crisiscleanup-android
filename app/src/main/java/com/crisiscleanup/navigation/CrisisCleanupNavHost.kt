@@ -22,6 +22,7 @@ import com.crisiscleanup.core.appnav.navigateToExistingCase
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.EmptyWorksite
+import com.crisiscleanup.feature.authentication.navigation.requestAccessScreen
 import com.crisiscleanup.feature.authentication.navigation.resetPasswordScreen
 import com.crisiscleanup.feature.caseeditor.navigation.caseAddFlagScreen
 import com.crisiscleanup.feature.caseeditor.navigation.caseEditMoveLocationOnMapScreen
@@ -245,6 +246,14 @@ fun CrisisCleanupNavHost(
             isAuthenticated = true,
             onBack = onBack,
             closeResetPassword = onBack,
+        )
+
+        requestAccessScreen(
+            true,
+            onBack = onBack,
+            closeRequestAccess = onBack,
+            openAuth = {},
+            openForgotPassword = {},
         )
     }
 }

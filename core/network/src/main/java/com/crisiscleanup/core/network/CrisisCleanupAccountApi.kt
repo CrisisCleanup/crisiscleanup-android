@@ -18,4 +18,9 @@ interface CrisisCleanupAccountApi {
     ): Boolean
 
     suspend fun acceptTerms(userId: Long, timestamp: Instant = Clock.System.now()): Boolean
+
+    suspend fun moveToOrganization(
+        action: String,
+        token: String,
+    ): Boolean
 }

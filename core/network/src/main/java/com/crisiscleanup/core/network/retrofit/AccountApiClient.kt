@@ -12,6 +12,8 @@ import com.crisiscleanup.core.network.model.NetworkPasswordResetPayload
 import com.crisiscleanup.core.network.model.NetworkPasswordResetResult
 import com.crisiscleanup.core.network.model.NetworkPhoneCodeResult
 import com.crisiscleanup.core.network.model.NetworkPhonePayload
+import com.crisiscleanup.core.network.model.NetworkTransferOrganizationPayload
+import com.crisiscleanup.core.network.model.NetworkTransferOrganizationResult
 import kotlinx.datetime.Instant
 import retrofit2.Retrofit
 import retrofit2.http.Body
@@ -56,6 +58,11 @@ private interface AccountApi {
         @Path("userId") userId: Long,
         @Body acceptTermsPayload: NetworkAcceptTermsPayload,
     ): NetworkAccountProfileResult
+
+    @POST("transfer_requests/invitation")
+    suspend fun transferOrganization(
+        @Body transferOrganizationPayload: NetworkTransferOrganizationPayload,
+    ): NetworkTransferOrganizationResult
 }
 
 class AccountApiClient @Inject constructor(
@@ -99,5 +106,14 @@ class AccountApiClient @Inject constructor(
         val payload = NetworkAcceptTermsPayload(true, timestamp)
         val result = accountApi.acceptTerms(userId, payload)
         return result.hasAcceptedTerms == true
+    }
+
+    override suspend fun moveToOrganization(action: String, token: String): Boolean {
+        val payload = NetworkTransferOrganizationPayload(
+            action = action,
+            token = token,
+        )
+        val result = accountApi.transferOrganization(payload)
+        return result.status == "accepted"
     }
 }

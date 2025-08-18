@@ -38,12 +38,10 @@ class PasteOrgInviteViewModel @Inject constructor(
 
         inviteCodeError.value = ""
 
+        if (!isVerifyingCode.compareAndSet(expect = false, update = true)) {
+            return
+        }
         viewModelScope.launch(ioDispatcher) {
-            if (isVerifyingCode.value) {
-                return@launch
-            }
-            isVerifyingCode.value = true
-
             try {
                 var errorMessageKey = ""
 
