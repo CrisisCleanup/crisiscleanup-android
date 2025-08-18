@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.KeyResourceTranslator
+import com.crisiscleanup.core.common.event.AccountEventBus
 import com.crisiscleanup.core.common.event.ExternalEventBus
 import com.crisiscleanup.core.common.isPast
 import com.crisiscleanup.core.common.log.AppLogger
@@ -15,6 +16,7 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AccountUpdateRepository
 import com.crisiscleanup.core.data.repository.ChangeOrganizationAction
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
@@ -32,6 +34,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -47,7 +50,9 @@ class RequestOrgAccessViewModel @Inject constructor(
     private val languageRepository: LanguageTranslationsRepository,
     private val orgVolunteerRepository: OrgVolunteerRepository,
     private val accountUpdateRepository: AccountUpdateRepository,
+    private val accountDataRepository: AccountDataRepository,
     private val inputValidator: InputValidator,
+    private val accountEventBus: AccountEventBus,
     private val externalEventBus: ExternalEventBus,
     private val translator: KeyResourceTranslator,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
@@ -322,7 +327,7 @@ class RequestOrgAccessViewModel @Inject constructor(
             TransferOrgOption.DoNotTransfer -> isInviteRequested.value = true
             TransferOrgOption.Users,
             TransferOrgOption.All,
-                -> {
+            -> {
                 if (isTransferringOrg.compareAndSet(expect = false, update = true)) {
                     viewModelScope.launch(ioDispatcher) {
                         try {
@@ -332,6 +337,12 @@ class RequestOrgAccessViewModel @Inject constructor(
                                 ChangeOrganizationAction.All
                             }
                             transferToOrg(action)
+
+                            val isAuthenticated = accountDataRepository.isAuthenticated.first()
+                            if (isAuthenticated) {
+                                clearInviteCode()
+                                accountEventBus.onLogout()
+                            }
                         } finally {
                             isTransferringOrg.value = false
                         }

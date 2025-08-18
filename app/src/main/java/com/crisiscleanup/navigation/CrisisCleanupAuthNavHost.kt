@@ -117,6 +117,7 @@ fun CrisisCleanupAuthNavHost(
                     closeAuthentication = closeAuthentication,
                 )
                 requestAccessScreen(
+                    false,
                     onBack = onBack,
                     closeRequestAccess = navToLoginWithEmail,
                     openAuth = navToAuth,

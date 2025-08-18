@@ -144,6 +144,8 @@ private fun BoxScope.LoadedContent(
     var openAuthentication by rememberSaveable { mutableStateOf(isNotAuthenticatedState) }
 
     val showPasswordReset by viewModel.showPasswordReset.collectAsStateWithLifecycle(false)
+    val orgUserInviteCode by viewModel.orgUserInvites.collectAsStateWithLifecycle("")
+    val showOrgInviteTransfer = orgUserInviteCode.isNotBlank()
 
     if (openAuthentication ||
         isNotAuthenticatedState
@@ -160,19 +162,22 @@ private fun BoxScope.LoadedContent(
 
         if (isNotAuthenticatedState) {
             val showMagicLinkLogin by viewModel.showMagicLinkLogin.collectAsStateWithLifecycle(false)
-            val orgUserInviteCode by viewModel.orgUserInvites.collectAsStateWithLifecycle("")
             val orgPersistentInvite by viewModel.orgPersistentInvites.collectAsStateWithLifecycle()
 
-            if (showPasswordReset) {
-                LaunchedEffect(Unit) {
-                    appState.navController.navigateToPasswordReset(false)
+            with(appState.navController) {
+                if (showPasswordReset) {
+                    LaunchedEffect(Unit) {
+                        navigateToPasswordReset(false)
+                    }
+                } else if (showMagicLinkLogin) {
+                    navigateToMagicLinkLogin()
+                } else if (showOrgInviteTransfer) {
+                    LaunchedEffect(Unit) {
+                        navigateToRequestAccess(orgUserInviteCode, false)
+                    }
+                } else if (orgPersistentInvite.isValidInvite) {
+                    navigateToOrgPersistentInvite()
                 }
-            } else if (showMagicLinkLogin) {
-                appState.navController.navigateToMagicLinkLogin()
-            } else if (orgUserInviteCode.isNotBlank()) {
-                appState.navController.navigateToRequestAccess(orgUserInviteCode)
-            } else if (orgPersistentInvite.isValidInvite) {
-                appState.navController.navigateToOrgPersistentInvite()
             }
         }
     } else if (!hasAcceptedTerms) {
@@ -227,9 +232,15 @@ private fun BoxScope.LoadedContent(
             }
         }
 
-        if (showPasswordReset) {
-            LaunchedEffect(Unit) {
-                appState.navController.navigateToPasswordReset(true)
+        with(appState.navController) {
+            if (showPasswordReset) {
+                LaunchedEffect(Unit) {
+                    navigateToPasswordReset(true)
+                }
+            } else if (showOrgInviteTransfer) {
+                LaunchedEffect(Unit) {
+                    navigateToRequestAccess(orgUserInviteCode, true)
+                }
             }
         }
     }

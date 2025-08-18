@@ -12,7 +12,7 @@ object RouteConstant {
     const val AUTH_RESET_PASSWORD_ROUTE = "$AUTH_ROUTE/auth_reset_password_route"
     const val MAGIC_LINK_ROUTE = "$AUTH_ROUTE/magic_link_login"
 
-    const val REQUEST_ACCESS_ROUTE = "$AUTH_ROUTE/request_access"
+    const val AUTH_REQUEST_ACCESS_ROUTE = "$AUTH_ROUTE/request_access"
     const val ORG_PERSISTENT_INVITE_ROUTE = "$AUTH_ROUTE/org_persistent_invite"
 
     const val VOLUNTEER_ORG_ROUTE = "$AUTH_ROUTE/volunteer_org"
@@ -51,6 +51,7 @@ object RouteConstant {
     const val WORKSITE_IMAGES_ROUTE = "worksite_images"
 
     const val ACCOUNT_RESET_PASSWORD_ROUTE = "account_reset_password_route"
+    const val ACCOUNT_TRANSFER_ORG_ROUTE = "account_transfer_org"
 
     const val LISTS_ROUTE = "crisis_cleanup_lists"
     const val VIEW_LIST_ROUTE = "view_list"
