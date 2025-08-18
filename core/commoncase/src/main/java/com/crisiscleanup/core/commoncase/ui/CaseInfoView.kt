@@ -2,6 +2,7 @@ package com.crisiscleanup.core.commoncase.ui
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -18,6 +19,7 @@ import com.crisiscleanup.core.designsystem.component.LinkifyLocationText
 import com.crisiscleanup.core.designsystem.component.LinkifyPhoneText
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
+import com.crisiscleanup.core.designsystem.theme.listItemSpacedByHalf
 import com.crisiscleanup.core.designsystem.theme.neutralIconColor
 import com.crisiscleanup.core.model.data.Worksite
 
@@ -30,6 +32,7 @@ fun PropertyInfoRow(
     isEmail: Boolean = false,
     isLocation: Boolean = false,
     locationQuery: String = "",
+    subText: String = "",
     trailingContent: (@Composable () -> Unit)? = null,
 ) {
     Row(
@@ -43,20 +46,27 @@ fun PropertyInfoRow(
             tint = neutralIconColor,
         )
 
-        val style = MaterialTheme.typography.bodyLarge
-        val innerModifier = if (trailingContent == null) {
-            Modifier
-        } else {
-            Modifier.weight(1f)
-        }
-        if (isPhone) {
-            LinkifyPhoneText(text, innerModifier)
-        } else if (isEmail) {
-            LinkifyEmailText(text, innerModifier)
-        } else if (isLocation) {
-            LinkifyLocationText(text, locationQuery, innerModifier)
-        } else {
-            Text(text, innerModifier, style = style)
+        Column(
+            Modifier.weight(1f),
+            verticalArrangement = listItemSpacedByHalf,
+        ) {
+            val style = MaterialTheme.typography.bodyLarge
+            if (isPhone) {
+                LinkifyPhoneText(text)
+            } else if (isEmail) {
+                LinkifyEmailText(text)
+            } else if (isLocation) {
+                LinkifyLocationText(text, locationQuery)
+            } else {
+                Text(text, style = style)
+            }
+
+            if (subText.isNotBlank()) {
+                Text(
+                    subText,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
         }
 
         trailingContent?.invoke()
@@ -73,6 +83,9 @@ fun CasePhoneInfoView(
 ) {
     val phoneNumbers =
         listOf(worksite.phone1, worksite.phone2).filterNotBlankTrim().joinToString("; ")
+    val phoneNotes =
+        listOf(worksite.phone1Notes, worksite.phone2Notes).filterNotBlankTrim()
+            .joinToString("\n")
     val rowModifier = if (enableCopy) {
         Modifier
             .combinedClickable(
@@ -86,8 +99,9 @@ fun CasePhoneInfoView(
     PropertyInfoRow(
         CrisisCleanupIcons.Phone,
         phoneNumbers,
-        rowModifier.testTag("casePhoneInfo"),
+        rowModifier,
         isPhone = true,
+        subText = phoneNotes,
     )
 }
 

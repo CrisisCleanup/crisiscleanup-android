@@ -16,6 +16,10 @@ interface AccountUpdateRepository {
     suspend fun initiatePasswordReset(emailAddress: String): PasswordResetInitiation
     suspend fun changePassword(password: String, token: String): Boolean
     suspend fun acceptTerms(): Boolean
+    suspend fun acceptOrganizationChange(
+        action: ChangeOrganizationAction,
+        invitationToken: String,
+    ): Boolean
 }
 
 class CrisisCleanupAccountUpdateRepository @Inject constructor(
@@ -75,4 +79,21 @@ class CrisisCleanupAccountUpdateRepository @Inject constructor(
         }
         return false
     }
+
+    override suspend fun acceptOrganizationChange(
+        action: ChangeOrganizationAction,
+        invitationToken: String,
+    ): Boolean {
+        try {
+            return accountApi.moveToOrganization(action.literal, invitationToken)
+        } catch (e: Exception) {
+            logger.logException(e)
+        }
+        return false
+    }
+}
+
+enum class ChangeOrganizationAction(val literal: String) {
+    All("all"),
+    Users("users"),
 }

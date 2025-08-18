@@ -149,11 +149,13 @@ class RegisterApiClient @Inject constructor(
         return null
     }
 
+    private suspend fun getOrganizationName(orgId: Long) = networkApi.noAuthOrganization(orgId).name
+
     private suspend fun getUserDetails(userId: Long): UserDetails {
         val userInfo = networkApi.noAuthUser(userId)
         val displayName = "${userInfo.firstName} ${userInfo.lastName}"
         val avatarUrl = userInfo.profilePictureUrl?.let { URL(it) }
-        val orgName = networkApi.noAuthOrganization(userInfo.organization).name
+        val orgName = getOrganizationName(userInfo.organization)
         return UserDetails(
             displayName = displayName,
             organizationName = orgName,
@@ -176,6 +178,7 @@ class RegisterApiClient @Inject constructor(
                 orgName = userDetails.organizationName,
                 expiration = persistentInvite.expiresAt,
                 isExpiredInvite = false,
+                isExistingUser = false,
             )
         }
 
@@ -190,6 +193,9 @@ class RegisterApiClient @Inject constructor(
 
             val inviter = invite.inviter
             val userDetails = getUserDetails(inviter.id)
+            val orgName = invite.existingUser?.organization?.let { orgId ->
+                getOrganizationName(orgId)
+            } ?: ""
             return OrgUserInviteInfo(
                 displayName = "${inviter.firstName} ${inviter.lastName}",
                 inviterEmail = inviter.email,
@@ -198,6 +204,8 @@ class RegisterApiClient @Inject constructor(
                 orgName = userDetails.organizationName,
                 expiration = invite.expiresAt,
                 isExpiredInvite = false,
+                isExistingUser = invite.isExistingUser,
+                fromOrgName = orgName,
             )
         }
 

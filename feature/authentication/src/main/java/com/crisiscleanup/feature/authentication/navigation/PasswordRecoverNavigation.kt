@@ -18,9 +18,14 @@ fun NavController.navigateToEmailLoginLink() {
     navigate(EMAIL_LOGIN_LINK_ROUTE)
 }
 
+private fun getResetPasswordRoute(isAuthenticated: Boolean) = if (isAuthenticated) {
+    ACCOUNT_RESET_PASSWORD_ROUTE
+} else {
+    AUTH_RESET_PASSWORD_ROUTE
+}
+
 fun NavController.navigateToPasswordReset(isAuthenticated: Boolean) {
-    val resetPasswordRoute =
-        if (isAuthenticated) ACCOUNT_RESET_PASSWORD_ROUTE else AUTH_RESET_PASSWORD_ROUTE
+    val resetPasswordRoute = getResetPasswordRoute(isAuthenticated)
     navigate(resetPasswordRoute)
 }
 
@@ -52,8 +57,7 @@ fun NavGraphBuilder.resetPasswordScreen(
     onBack: () -> Unit,
     closeResetPassword: () -> Unit,
 ) {
-    val resetPasswordRoute =
-        if (isAuthenticated) ACCOUNT_RESET_PASSWORD_ROUTE else AUTH_RESET_PASSWORD_ROUTE
+    val resetPasswordRoute = getResetPasswordRoute(isAuthenticated)
     composable(route = resetPasswordRoute) {
         ResetPasswordRoute(
             onBack = onBack,

@@ -38,12 +38,14 @@ fun HelpRow(
 @Composable
 fun HelpAction(
     helpHint: String,
-    showHelp: () -> Unit,
+    onShowHelp: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     CrisisCleanupIconButton(
-        onClick = showHelp,
+        modifier = modifier,
         imageVector = CrisisCleanupIcons.Help,
         contentDescription = helpHint,
+        onClick = onShowHelp,
     )
 }
 

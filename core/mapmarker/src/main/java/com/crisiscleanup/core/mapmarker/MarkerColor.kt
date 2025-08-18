@@ -74,13 +74,19 @@ private const val DUPLICATE_MARKER_ALPHA = 0.3f
 
 internal fun getMapMarkerColors(
     statusClaim: WorkTypeStatusClaim,
+    isVisited: Boolean = false,
 ): MapMarkerColor {
     var colors = statusClaimMapMarkerColors[statusClaim]
     if (colors == null) {
         val status = statusClaimToStatus[statusClaim]
         colors = statusMapMarkerColors[status] ?: statusMapMarkerColors[Unknown]!!
     }
-
+    if (isVisited) {
+        colors = MapMarkerColor(
+            colors.fillLong,
+            strokeLong = visitedCaseMarkerColorCode,
+        )
+    }
     return colors
 }
 
@@ -92,14 +98,12 @@ internal fun getMapMarkerColors(
     isVisited: Boolean,
     isDot: Boolean,
 ): MapMarkerColor {
-    var colors = getMapMarkerColors(statusClaim)
+    var colors = getMapMarkerColors(
+        statusClaim,
+        isVisited && !(isDuplicate || isMarkedForDelete || isFilteredOut),
+    )
 
-    if (isDuplicate || isMarkedForDelete) {
-        colors = colors.copy(
-            fill = colors.fill.copy(alpha = DUPLICATE_MARKER_ALPHA),
-            stroke = colors.stroke.copy(alpha = DUPLICATE_MARKER_ALPHA),
-        )
-    } else if (isFilteredOut) {
+    if (isFilteredOut) {
         val fillAlpha = if (isDot) FILTERED_OUT_DOT_FILL_ALPHA else FILTERED_OUT_MARKER_FILL_ALPHA
         val strokeAlpha =
             if (isDot) FILTERED_OUT_DOT_STROKE_ALPHA else FILTERED_OUT_MARKER_STROKE_ALPHA
@@ -110,10 +114,10 @@ internal fun getMapMarkerColors(
                     stroke = it.stroke.copy(alpha = strokeAlpha),
                 )
             }
-    } else if (isVisited) {
-        colors = MapMarkerColor(
-            colors.fillLong,
-            strokeLong = visitedCaseMarkerColorCode,
+    } else if (isDuplicate || isMarkedForDelete) {
+        colors = colors.copy(
+            fill = colors.fill.copy(alpha = DUPLICATE_MARKER_ALPHA),
+            stroke = colors.stroke.copy(alpha = DUPLICATE_MARKER_ALPHA),
         )
     }
 

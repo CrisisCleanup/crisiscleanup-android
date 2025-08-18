@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
+import com.crisiscleanup.core.common.InputValidator
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -46,6 +47,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     private val incidentOrganizationDao: IncidentOrganizationDao,
     private val incidentOrganizationsSyncer: IncidentOrganizationsSyncer,
     private val appPreferences: LocalAppPreferencesDataSource,
+    inputValidator: InputValidator,
     @Logger(CrisisCleanupLoggers.Incidents) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : IncidentsRepository {
@@ -84,9 +86,22 @@ class OfflineFirstIncidentsRepository @Inject constructor(
         incidentDao.streamIncidents().mapLatest { it.map(PopulatedIncident::asExternalModel) }
 
     override val hotlineIncidents = incidents.mapLatest {
-        it.filter { incident ->
-            incident.activePhoneNumbers.isNotEmpty()
-        }
+        it
+            .filter { incident ->
+                incident.activePhoneNumbers.isNotEmpty()
+            }
+            .map { incident ->
+                incident.copy(
+                    activePhoneNumbers = incident.activePhoneNumbers.map { phoneNumber ->
+                        val validation = inputValidator.validatePhoneNumber(phoneNumber)
+                        if (validation.isValid) {
+                            validation.formatted
+                        } else {
+                            phoneNumber
+                        }
+                    },
+                )
+            }
     }
 
     override suspend fun getIncident(id: Long, loadFormFields: Boolean) =

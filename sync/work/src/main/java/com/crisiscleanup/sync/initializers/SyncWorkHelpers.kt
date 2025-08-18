@@ -43,12 +43,12 @@ fun scheduleSync(context: Context) {
     }
 }
 
-fun scheduleSyncMedia(context: Context) {
+fun scheduleSyncMedia(context: Context, syncImmediate: Boolean) {
     WorkManager.getInstance(context).apply {
         enqueueUniqueWork(
             SYNC_MEDIA_WORK_NAME,
-            ExistingWorkPolicy.KEEP,
-            SyncMediaWorker.oneTimeSyncWork(),
+            ExistingWorkPolicy.REPLACE,
+            SyncMediaWorker.oneTimeSyncWork(syncImmediate),
         )
     }
 }
@@ -82,6 +82,11 @@ internal val SyncMediaConstraints
     get() = Constraints.Builder()
         .setRequiredNetworkType(NetworkType.UNMETERED)
         .setRequiresBatteryNotLow(true)
+        .build()
+
+internal val SyncMediaImmediateConstraints
+    get() = Constraints.Builder()
+        .setRequiredNetworkType(NetworkType.CONNECTED)
         .build()
 
 /**

@@ -1,5 +1,6 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
+import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -12,7 +13,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.coerceAtMost
@@ -91,7 +91,7 @@ internal fun PropertyLocationView(
             )
         }
 
-        val screenHeight = LocalConfiguration.current.screenHeightDp.dp
+        val screenHeight = Configuration.SCREEN_HEIGHT_DP_UNDEFINED.dp
         val mapHeight = screenHeight.times(0.5f).coerceAtMost(240.dp)
         val mapModifier = Modifier.sizeIn(maxHeight = mapHeight)
         val cameraPositionState = rememberCameraPositionState()

@@ -58,6 +58,13 @@ fun CrisisCleanupAuthNavHost(
             navController.navigateToLoginWithPhone()
         }
     }
+    val navToLogin = navController::popToAuth
+    val navToForgotPasswordClearStack = remember(navController) {
+        {
+            navController.popToAuth()
+            navController.navigateToForgotPassword()
+        }
+    }
 
     NavHost(
         navController = navController,
@@ -110,8 +117,11 @@ fun CrisisCleanupAuthNavHost(
                     closeAuthentication = closeAuthentication,
                 )
                 requestAccessScreen(
+                    false,
                     onBack = onBack,
                     closeRequestAccess = navToLoginWithEmail,
+                    openAuth = navToAuth,
+                    openForgotPassword = navToForgotPasswordClearStack,
                 )
                 orgPersistentInviteScreen(
                     onBack = onBack,

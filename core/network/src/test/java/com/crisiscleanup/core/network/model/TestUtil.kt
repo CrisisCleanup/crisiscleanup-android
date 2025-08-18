@@ -6,11 +6,20 @@ import kotlinx.serialization.json.Json
 object TestUtil {
     val json = Json { ignoreUnknownKeys = true }
 
+    val jsonMinimal = Json {
+        explicitNulls = false
+        ignoreUnknownKeys = true
+    }
+
     fun loadFile(filePath: String) =
         TestUtil::class.java.getResource(filePath)?.readText()!!
 
-    inline fun <reified T> decodeResource(filePath: String) =
-        json.decodeFromString<T>(loadFile(filePath))
+    inline fun <reified T> decodeResource(filePath: String, ignoreUnknownKeys: Boolean = false) =
+        if (ignoreUnknownKeys) {
+            jsonMinimal.decodeFromString<T>(loadFile(filePath))
+        } else {
+            json.decodeFromString<T>(loadFile(filePath))
+        }
 }
 
 internal fun fillNetworkIncident(

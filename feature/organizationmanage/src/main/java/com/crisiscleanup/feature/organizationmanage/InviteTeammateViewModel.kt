@@ -601,10 +601,9 @@ class InviteTeammateViewModel @Inject constructor(
     }
 
     fun onSendInvites() {
-        if (isSendingInvite.value) {
+        if (!isSendingInvite.compareAndSet(expect = false, update = true)) {
             return
         }
-        isSendingInvite.value = true
         viewModelScope.launch(ioDispatcher) {
             try {
                 sendInvites()

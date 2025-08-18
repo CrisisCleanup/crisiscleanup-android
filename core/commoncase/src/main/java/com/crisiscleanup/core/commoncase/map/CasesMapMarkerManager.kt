@@ -234,7 +234,7 @@ class CasesMapMarkerManager(
     private val denseMarkCountThreshold = 15
     private val denseMarkZoomThreshold = MAP_MARKERS_ZOOM_LEVEL + 4
     private val denseDegreeThreshold = 0.0001
-    private val denseScreenOffsetScale = 0.6f
+    private val denseScreenOffsetScale = 1.2f
     suspend fun denseMarkerOffsets(
         marks: List<WorksiteMapMark>,
         zoom: Float,
@@ -283,9 +283,10 @@ class CasesMapMarkerManager(
             if (buckets.isNotEmpty()) {
                 buckets.forEach {
                     val count = it.size
-                    val offsetScale = denseScreenOffsetScale + (count - 5).coerceAtLeast(0) * 0.2f
                     if (count > 1) {
                         var offsetDir = (PI * 0.5).toFloat()
+                        val offsetScale =
+                            denseScreenOffsetScale + (count - 5).coerceAtLeast(0) * 0.2f
                         val deltaDirDegrees = (2 * PI / count).toFloat()
                         it.forEach { index ->
                             markOffsets[index] = Pair(

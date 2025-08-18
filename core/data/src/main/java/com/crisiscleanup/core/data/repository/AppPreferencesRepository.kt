@@ -52,6 +52,8 @@ interface AppPreferencesRepository {
     suspend fun setTeamMapBounds(bounds: IncidentCoordinateBounds)
 
     suspend fun setWorkScreenView(isTableView: Boolean)
+
+    suspend fun setSyncMediaImmediate(syncImmediate: Boolean)
 }
 
 @Singleton
@@ -116,5 +118,9 @@ class AppPreferencesRepositoryImpl @Inject constructor(
 
     override suspend fun setWorkScreenView(isTableView: Boolean) {
         preferencesDataSource.saveWorkScreenView(isTableView)
+    }
+
+    override suspend fun setSyncMediaImmediate(syncImmediate: Boolean) {
+        preferencesDataSource.saveSyncMediaImmediate(syncImmediate)
     }
 }

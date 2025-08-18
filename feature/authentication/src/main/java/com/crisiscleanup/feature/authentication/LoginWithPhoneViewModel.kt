@@ -180,10 +180,9 @@ class LoginWithPhoneViewModel @Inject constructor(
             return
         }
 
-        if (isRequestingCode.value) {
+        if (!isRequestingCode.compareAndSet(expect = false, update = true)) {
             return
         }
-        isRequestingCode.value = true
 
         phoneCode = ""
 

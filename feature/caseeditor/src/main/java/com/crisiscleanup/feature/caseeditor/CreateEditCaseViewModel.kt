@@ -598,11 +598,8 @@ class CreateEditCaseViewModel @Inject constructor(
             return
         }
 
-        synchronized(isSavingWorksite) {
-            if (isSavingWorksite.value) {
-                return
-            }
-            isSavingWorksite.value = true
+        if (!isSavingWorksite.compareAndSet(expect = false, update = true)) {
+            return
         }
         viewModelScope.launch(ioDispatcher) {
             try {

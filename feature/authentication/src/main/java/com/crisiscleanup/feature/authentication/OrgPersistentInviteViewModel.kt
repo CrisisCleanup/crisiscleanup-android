@@ -106,9 +106,8 @@ class OrgPersistentInviteViewModel @Inject constructor(
             .flowOn(ioDispatcher)
             .launchIn(viewModelScope)
 
-        viewModelScope.launch(ioDispatcher) {
-            if (!isPullingLanguageOptions.value) {
-                isPullingLanguageOptions.value = true
+        if (isPullingLanguageOptions.compareAndSet(expect = false, update = true)) {
+            viewModelScope.launch(ioDispatcher) {
                 try {
                     languageOptions.value = languageRepository.getLanguageOptions()
                 } catch (e: Exception) {
@@ -126,8 +125,9 @@ class OrgPersistentInviteViewModel @Inject constructor(
 
     private fun queryInviteInfo(persistentInvite: UserPersistentInvite) =
         viewModelScope.launch(ioDispatcher) {
-            if (persistentInvite.isValidInvite && !isJoiningOrg.value) {
-                isJoiningOrg.value = true
+            if (persistentInvite.isValidInvite &&
+                isJoiningOrg.compareAndSet(expect = false, update = true)
+            ) {
                 try {
                     val inviteInfo = orgVolunteerRepository.getInvitationInfo(persistentInvite)
                         ?: ExpiredNetworkOrgInvite
@@ -165,10 +165,9 @@ class OrgPersistentInviteViewModel @Inject constructor(
             return
         }
 
-        if (isJoiningOrg.value) {
+        if (!isJoiningOrg.compareAndSet(expect = false, update = true)) {
             return
         }
-        isJoiningOrg.value = true
         viewModelScope.launch(ioDispatcher) {
             try {
                 val joinResult = orgVolunteerRepository.acceptPersistentInvitation(

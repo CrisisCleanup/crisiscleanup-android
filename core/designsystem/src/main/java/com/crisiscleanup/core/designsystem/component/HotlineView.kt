@@ -3,6 +3,7 @@ package com.crisiscleanup.core.designsystem.component
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -59,10 +60,12 @@ fun HotlineIncidentView(
             com.crisiscleanup.core.designsystem.R.style.link_text_style_black,
         )
     } else {
-        Text(
-            text,
-            modifier,
-            style = style,
-        )
+        SelectionContainer {
+            Text(
+                text,
+                modifier,
+                style = style,
+            )
+        }
     }
 }

@@ -14,6 +14,7 @@ import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.common.sync.SyncResult
 import com.crisiscleanup.core.data.incidentcache.IncidentDataPullReporter
 import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.data.repository.EquipmentRepository
 import com.crisiscleanup.core.data.repository.IncidentCacheRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
@@ -43,6 +44,7 @@ class AppSyncer @Inject constructor(
     private val languageRepository: LanguageTranslationsRepository,
     private val statusRepository: WorkTypeStatusRepository,
     private val worksiteChangeRepository: WorksiteChangeRepository,
+    private val appPreferencesRepository: AppPreferencesRepository,
     private val equipmentRepository: EquipmentRepository,
     private val networkMonitor: NetworkMonitor,
     translator: KeyResourceTranslator,
@@ -284,7 +286,13 @@ class AppSyncer @Inject constructor(
         }
     }
 
-    override fun scheduleSyncMedia() = scheduleSyncMedia(context)
+    override fun scheduleSyncMedia() {
+        applicationScope.launch(ioDispatcher) {
+            val syncImmediate =
+                appPreferencesRepository.preferences.first().isSyncMediaImmediate
+            scheduleSyncMedia(context, syncImmediate)
+        }
+    }
 
     override fun scheduleSyncWorksites() = scheduleSyncWorksites(context)
 }

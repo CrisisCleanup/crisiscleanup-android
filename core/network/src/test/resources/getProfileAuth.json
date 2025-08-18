@@ -1,0 +1,102 @@
+{
+  "id": 9,
+  "email": "test@test.test",
+  "permissions": {
+    "create_incident": true,
+    "approve_orgs_full": true,
+    "approve_orgs_preliminary": true,
+    "edit_portal_settings": true,
+    "affiliate_org": true,
+    "invite_users": true,
+    "invite_orgs": true,
+    "remove_workers": true,
+    "phone_agent": true,
+    "advanced_maps": false,
+    "translate": true,
+    "support_agent": true,
+    "manage_crew": false,
+    "manage_cases": true,
+    "view_user_contacts": true,
+    "submit_edu": true,
+    "view_sensitive": "inherit",
+    "move_orgs": true,
+    "view_own_volunteer_locations": true,
+    "view_other_volunteer_locations": true,
+    "move_other_users_worksites": false,
+    "approve_new_user_requests": true,
+    "approve_work_type_transfers": true,
+    "receive_work_type_transfer_requests": true,
+    "unclaim_from_anyone": true,
+    "access_all_incidents": true,
+    "manage_team": true,
+    "is_public_facing": true,
+    "read_work_details": true,
+    "write_work_details": true,
+    "move_other_org_worksites": true,
+    "approve_organization_redeploy": true
+  },
+  "first_name": "Test",
+  "last_name": "User",
+  "states": {},
+  "preferences": {
+    "dashboard": "phone-volunteer",
+    "hideAppBanner": true,
+    "hideTrainingBanner": true
+  },
+  "organization": {
+    "id": 9,
+    "name": "Test org",
+    "is_active": true,
+    "roles": [],
+    "type_t": "orgType.survivor_client_services",
+    "affiliates": [1],
+    "all_affiliates_and_groups": [1],
+    "primary_location": 415,
+    "secondary_location": 345
+  },
+  "roles": [
+    7
+  ],
+  "active_roles": [
+    7
+  ],
+  "pending_roles": [],
+  "mobile": "1234567890",
+  "social": null,
+  "lineage": [
+    1,
+    null
+  ],
+  "primary_language": 1,
+  "secondary_language": null,
+  "files": [
+    {
+      "tag": null,
+      "title": null,
+      "notes": null,
+      "created_at": "2022-06-17T23:47:21.119619Z",
+      "file_updated_at": "2021-04-28T19:23:36Z",
+      "id": 920,
+      "file": 728,
+      "filename": "Screenshot 2023-01-09 at 11.31.21 AM-abc.png",
+      "url": "url-file",
+      "full_url": "full-url",
+      "general_file_url": "general-file",
+      "blog_url": "blog-image",
+      "large_blog_url": "large-blog-image",
+      "large_thumbnail_url": "large-thumbnail",
+      "small_thumbnail_url": "small-thumbnail",
+      "filename_original": "Screenshot 2023-01-09 at 11.31.21 AM.png",
+      "file_type_t": "fileTypes.user_profile_picture",
+      "mime_content_type": "image/png"
+    }
+  ],
+  "referring_user": 1,
+  "accepted_terms": true,
+  "accepted_terms_timestamp": "2025-07-26T19:40:22Z",
+  "beta_features": [],
+  "approved_incidents": [
+    291
+  ],
+  "mobile_dnis_verified_at": null
+}

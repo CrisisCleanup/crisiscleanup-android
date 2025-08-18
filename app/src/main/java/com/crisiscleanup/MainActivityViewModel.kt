@@ -22,6 +22,7 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncPuller
+import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.common.throttleLatest
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
@@ -67,6 +68,7 @@ class MainActivityViewModel @Inject constructor(
     val tutorialViewTracker: TutorialViewTracker,
     val translator: KeyResourceTranslator,
     private val syncPuller: SyncPuller,
+    private val syncPusher: SyncPusher,
     appSettingsProvider: AppSettingsProvider,
     private val appEnv: AppEnv,
     firebaseAnalytics: FirebaseAnalytics,
@@ -206,6 +208,8 @@ class MainActivityViewModel @Inject constructor(
         syncPuller.appPullStatuses()
         syncPuller.appPullEquipment()
 
+        syncPusher.scheduleSyncMedia()
+
         accountDataRepository.accountData
             .mapLatest { it.hasAcceptedTerms }
             .filter { !it }
@@ -264,10 +268,9 @@ class MainActivityViewModel @Inject constructor(
             return
         }
 
-        if (isUpdatingTermsAcceptance.value) {
+        if (!isUpdatingTermsAcceptance.compareAndSet(expect = false, update = true)) {
             return
         }
-        isUpdatingTermsAcceptance.value = true
         viewModelScope.launch(ioDispatcher) {
             try {
                 val isAccepted = accountUpdateRepository.acceptTerms()

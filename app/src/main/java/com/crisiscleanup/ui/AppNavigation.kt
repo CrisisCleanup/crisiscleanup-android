@@ -15,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -42,17 +41,18 @@ private fun TopLevelDestination.Icon(isSelected: Boolean, description: String) {
     } else {
         unselectedIcon
     }
+    var tint = LocalContentColor.current
+    if (!isSelected) {
+        tint = tint.disabledAlpha()
+    }
     when (icon) {
         is Icon.ImageVectorIcon -> Icon(
             imageVector = icon.imageVector,
             contentDescription = description,
+            tint = tint,
         )
 
         is Icon.DrawableResourceIcon -> {
-            var tint = LocalContentColor.current
-            if (isSelected) {
-                tint = Color.White
-            }
             Icon(
                 painter = painterResource(id = icon.id),
                 contentDescription = description,

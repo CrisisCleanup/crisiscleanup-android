@@ -14,6 +14,7 @@ import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.common.sync.SyncResult
 import com.crisiscleanup.sync.initializers.SYNC_MEDIA_NOTIFICATION_ID
 import com.crisiscleanup.sync.initializers.SyncMediaConstraints
+import com.crisiscleanup.sync.initializers.SyncMediaImmediateConstraints
 import com.crisiscleanup.sync.initializers.channelNotificationManager
 import com.crisiscleanup.sync.initializers.syncForegroundInfo
 import dagger.assisted.Assisted
@@ -73,8 +74,8 @@ internal class SyncMediaWorker @AssistedInject constructor(
     }
 
     companion object {
-        fun oneTimeSyncWork() = OneTimeWorkRequestBuilder<DelegatingWorker>()
-            .setConstraints(SyncMediaConstraints)
+        fun oneTimeSyncWork(syncImmediate: Boolean) = OneTimeWorkRequestBuilder<DelegatingWorker>()
+            .setConstraints(if (syncImmediate) SyncMediaImmediateConstraints else SyncMediaConstraints)
             .setInputData(SyncMediaWorker::class.delegatedData())
             .build()
     }

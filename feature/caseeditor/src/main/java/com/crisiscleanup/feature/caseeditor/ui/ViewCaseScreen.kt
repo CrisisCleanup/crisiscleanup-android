@@ -702,7 +702,8 @@ private fun LazyListScope.propertyInfoItems(
                 CasePhoneInfoView(
                     worksite,
                     true,
-                    listItemModifier,
+                    listItemModifier
+                        .testTag("casePhoneInfo"),
                     copyToClipboard,
                 )
                 worksite.email?.let {

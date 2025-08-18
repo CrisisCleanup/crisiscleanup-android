@@ -1,6 +1,7 @@
 package com.crisiscleanup
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -15,7 +16,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.toArgb
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
@@ -40,7 +40,6 @@ import com.crisiscleanup.core.data.repository.EndOfLifeRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
 import com.crisiscleanup.core.data.util.TimeZoneMonitor
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
-import com.crisiscleanup.core.designsystem.theme.navigationContainerColor
 import com.crisiscleanup.core.model.data.DarkThemeConfig
 import com.crisiscleanup.core.ui.LocalTimeZone
 import com.crisiscleanup.sync.initializers.scheduleSyncWorksites
@@ -135,10 +134,9 @@ class MainActivity : ComponentActivity() {
             )
             val currentTimeZone by appState.currentTimeZone.collectAsStateWithLifecycle()
 
-            val barColor = navigationContainerColor.toArgb()
             enableEdgeToEdge(
-                statusBarStyle = SystemBarStyle.dark(barColor),
-                navigationBarStyle = SystemBarStyle.dark(barColor),
+                statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+                navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
             )
 
             CompositionLocalProvider(

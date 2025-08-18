@@ -11,6 +11,8 @@ data class OrgUserInviteInfo(
     val orgName: String,
     val expiration: Instant,
     val isExpiredInvite: Boolean,
+    val isExistingUser: Boolean,
+    val fromOrgName: String = "",
 )
 
 val ExpiredNetworkOrgInvite = OrgUserInviteInfo(
@@ -21,6 +23,7 @@ val ExpiredNetworkOrgInvite = OrgUserInviteInfo(
     orgName = "",
     expiration = Instant.fromEpochSeconds(0),
     isExpiredInvite = true,
+    isExistingUser = false,
 )
 
 data class TeamInviteInfo(
