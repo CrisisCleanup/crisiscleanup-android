@@ -5,10 +5,10 @@ import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-class NetworkProfileTest {
+class NetworkAccountProfileTest {
     @Test
-    fun profileNoAuthResult() {
-        val account = TestUtil.decodeResource<NetworkAccountProfileResult>("/getProfileAuth.json")
+    fun profileAuthResult() {
+        val account = TestUtil.decodeResource<NetworkAccountProfileResult>("/getAccountProfileAuth.json")
 
         assertEquals(setOf(291L), account.approvedIncidents)
         assertEquals(true, account.hasAcceptedTerms)
@@ -44,8 +44,8 @@ class NetworkProfileTest {
     }
 
     @Test
-    fun profileAuthResult() {
-        val account = TestUtil.decodeResource<NetworkAccountProfileResult>("/getProfileNoAuth.json", true)
+    fun profileNoAuthResult() {
+        val account = TestUtil.decodeResource<NetworkAccountProfileResult>("/getAccountProfileNoAuth.json", true)
 
         assertNull(account.approvedIncidents)
         assertNull(account.hasAcceptedTerms)
