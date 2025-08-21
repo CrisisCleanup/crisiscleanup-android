@@ -4,7 +4,9 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -243,6 +245,8 @@ private fun InviteExistingUserContent(
     val t = LocalAppTranslator.current
     val translationCount by t.translationCount.collectAsStateWithLifecycle()
 
+    var selectedOrgTransfer by remember { mutableStateOf(TransferOrgOption.NotSelected) }
+
     val inviteInfo = displayInfo.inviteInfo
     val transferInstructions = t("invitationSignup.inviting_to_transfer_confirm")
         .replace("{user}", inviteInfo.displayName)
@@ -254,13 +258,15 @@ private fun InviteExistingUserContent(
         listItemModifier,
     )
 
-    val selectedOption = viewModel.selectedOrgTransfer
     for (option in viewModel.transferOrgOptions) {
         CrisisCleanupRadioButton(
             listItemModifier,
-            option == selectedOption,
+            option == selectedOrgTransfer,
             text = t(option.translateKey),
-            onSelect = { viewModel.onChangeTransferOrgOption(option) },
+            onSelect = {
+                selectedOrgTransfer = option
+                viewModel.onChangeTransferOrgOption()
+            },
             enabled = isEditable,
         )
     }
@@ -279,21 +285,21 @@ private fun InviteExistingUserContent(
     }
     BusyButton(
         fillWidthPadded.testTag("transferOrgSubmitAction"),
-        enabled = isEditable && selectedOption != TransferOrgOption.NotSelected,
+        enabled = isEditable && selectedOrgTransfer != TransferOrgOption.NotSelected,
         text = transferText,
         indicateBusy = isLoading,
         onClick = {
-            if (selectedOption == TransferOrgOption.DoNotTransfer) {
+            if (selectedOrgTransfer == TransferOrgOption.DoNotTransfer) {
                 onBack()
             } else {
-                viewModel.onTransferOrg()
+                viewModel.onTransferOrg(selectedOrgTransfer)
             }
         },
     )
 }
 
 @Composable
-private fun OrgTransferSuccessView(
+private fun ColumnScope.OrgTransferSuccessView(
     orgName: String,
     onForgotPassword: () -> Unit,
     onLogin: () -> Unit,
@@ -311,6 +317,8 @@ private fun OrgTransferSuccessView(
             .replace("{toOrg}", orgName),
         listItemModifier,
     )
+
+    Spacer(Modifier.weight(1f))
 
     CrisisCleanupOutlinedButton(
         modifier = listItemModifier

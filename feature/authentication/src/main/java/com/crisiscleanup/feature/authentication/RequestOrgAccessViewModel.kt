@@ -88,8 +88,6 @@ class RequestOrgAccessViewModel @Inject constructor(
         TransferOrgOption.All,
         TransferOrgOption.DoNotTransfer,
     )
-    var selectedOrgTransfer by mutableStateOf(TransferOrgOption.NotSelected)
-        private set
     var transferOrgErrorMessage by mutableStateOf("")
         private set
     val isTransferringOrg = MutableStateFlow(false)
@@ -317,12 +315,11 @@ class RequestOrgAccessViewModel @Inject constructor(
         }
     }
 
-    fun onChangeTransferOrgOption(option: TransferOrgOption) {
-        selectedOrgTransfer = option
+    fun onChangeTransferOrgOption() {
         transferOrgErrorMessage = ""
     }
 
-    fun onTransferOrg() {
+    fun onTransferOrg(selectedOrgTransfer: TransferOrgOption) {
         when (selectedOrgTransfer) {
             TransferOrgOption.DoNotTransfer -> isInviteRequested.value = true
             TransferOrgOption.Users,
