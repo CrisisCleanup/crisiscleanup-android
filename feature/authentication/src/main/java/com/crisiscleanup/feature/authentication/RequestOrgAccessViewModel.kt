@@ -16,6 +16,7 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.common.subscribedReplay
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AccountUpdateRepository
 import com.crisiscleanup.core.data.repository.ChangeOrganizationAction
@@ -34,15 +35,16 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.net.URL
 import javax.inject.Inject
-import com.crisiscleanup.core.common.combine as combineMore
 
 @HiltViewModel
 class RequestOrgAccessViewModel @Inject constructor(
@@ -117,14 +119,32 @@ class RequestOrgAccessViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val isLoading = combineMore(
-        isPullingLanguageOptions,
+    private val isStateTransient = combine(
         isFetchingInviteInfo,
         isRequestingInvite,
         isTransferringOrg,
-    ) { b0, b1, b2, b3 ->
-        b0 || b1 || b2 || b3
-    }
+        ::Triple,
+    )
+        .map { (b0, b1, b2) -> b0 || b1 || b2 }
+        .distinctUntilChanged()
+        .shareIn(
+            scope = viewModelScope,
+            started = subscribedReplay(1),
+            replay = 1,
+        )
+
+    val isLoading = combine(
+        isPullingLanguageOptions,
+        isStateTransient,
+    ) { b0, b1 -> b0 || b1 }
+        .distinctUntilChanged()
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    val isEditable = isStateTransient.map(Boolean::not)
         .stateIn(
             scope = viewModelScope,
             initialValue = false,
@@ -133,18 +153,6 @@ class RequestOrgAccessViewModel @Inject constructor(
 
     var emailAddress by mutableStateOf("")
     var emailAddressError by mutableStateOf("")
-
-    val isEditable = combine(
-        isFetchingInviteInfo,
-        isRequestingInvite,
-        ::Pair,
-    )
-        .map { (b0, b1) -> !(b0 || b1) }
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = false,
-            started = SharingStarted.WhileSubscribed(),
-        )
 
     init {
         requestedOrg
