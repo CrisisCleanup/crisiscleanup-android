@@ -342,12 +342,6 @@ class RequestOrgAccessViewModel @Inject constructor(
                                 ChangeOrganizationAction.All
                             }
                             transferToOrg(action)
-
-                            val isAuthenticated = accountDataRepository.isAuthenticated.first()
-                            if (isAuthenticated) {
-                                clearInviteCode()
-                                accountEventBus.onLogout()
-                            }
                         } finally {
                             isTransferringOrg.value = false
                         }
@@ -360,8 +354,16 @@ class RequestOrgAccessViewModel @Inject constructor(
     }
 
     private suspend fun transferToOrg(action: ChangeOrganizationAction) {
-        if (accountUpdateRepository.acceptOrganizationChange(action, invitationCode)) {
+        val isAuthenticated = accountDataRepository.isAuthenticated.first()
+
+        val isTransferred = accountUpdateRepository.acceptOrganizationChange(action, invitationCode)
+        if (isTransferred) {
             isOrgTransferred.value = true
+
+            if (isAuthenticated) {
+                clearInviteCode()
+                accountEventBus.onLogout()
+            }
         } else {
             logger.logException(Exception("User transfer to org failed."))
             transferOrgErrorMessage =
