@@ -74,7 +74,7 @@ fun ResetPasswordRoute(
         TopAppBarBackAction(
             title = t("actions.reset_password"),
             onAction = clearStateOnBack,
-            modifier = Modifier.testTag("passwordRecoverBackBtn"),
+            modifier = Modifier,
         )
 
         if (isPasswordReset) {
@@ -191,7 +191,7 @@ private fun ResetPasswordView(
         modifier = fillWidthPadded.testTag("resetPasswordBtn"),
         onClick = viewModel::onResetPassword,
         enabled = isEditable,
-        text = translator("actions.reset"),
+        text = translator("actions.reset_password"),
         indicateBusy = isBusy,
     )
 }
