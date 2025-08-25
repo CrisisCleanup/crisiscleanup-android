@@ -99,7 +99,13 @@ fun RequestOrgAccessRoute(
             onAction = clearStateOnBack,
         )
 
-        if (inviteInfoErrorMessage.isNotBlank()) {
+        if (viewModel.isRecentlyTransferred) {
+            OnOrgTransferredView(
+                viewModel.recentOrgTransferredTo,
+                openForgotPassword = openForgotPassword,
+                openAuth = openAuth,
+            )
+        } else if (inviteInfoErrorMessage.isNotBlank()) {
             Text(
                 inviteInfoErrorMessage,
                 listItemModifier.testTag("requestAccessInviteInfoError"),
@@ -115,25 +121,12 @@ fun RequestOrgAccessRoute(
                 onAction = clearStateOnBack,
             )
         } else if (isOrgTransferred) {
-            val clearStateOpenAuth = remember(viewModel, openAuth) {
-                {
-                    viewModel.clearInviteCode()
-                    openAuth()
-                }
-            }
-            val clearStateForgotPassword = remember(viewModel, openForgotPassword) {
-                {
-                    viewModel.clearInviteCode()
-                    openForgotPassword()
-                }
-            }
-
             val displayInfo by viewModel.inviteDisplay.collectAsStateWithLifecycle()
             val orgName = displayInfo?.inviteInfo?.orgName ?: ""
-            OrgTransferSuccessView(
+            OnOrgTransferredView(
                 orgName,
-                onForgotPassword = clearStateForgotPassword,
-                onLogin = clearStateOpenAuth,
+                openForgotPassword = openForgotPassword,
+                openAuth = openAuth,
             )
         } else {
             RequestOrgUserInfoInputView(
@@ -141,6 +134,33 @@ fun RequestOrgAccessRoute(
             )
         }
     }
+}
+
+@Composable
+private fun ColumnScope.OnOrgTransferredView(
+    orgName: String,
+    openForgotPassword: () -> Unit,
+    openAuth: () -> Unit,
+    viewModel: RequestOrgAccessViewModel = hiltViewModel(),
+) {
+    val clearStateOpenAuth = remember(viewModel, openAuth) {
+        {
+            viewModel.clearInviteCode()
+            openAuth()
+        }
+    }
+    val clearStateForgotPassword = remember(viewModel, openForgotPassword) {
+        {
+            viewModel.clearInviteCode()
+            openForgotPassword()
+        }
+    }
+
+    OrgTransferSuccessView(
+        orgName,
+        onForgotPassword = clearStateForgotPassword,
+        onLogin = clearStateOpenAuth,
+    )
 }
 
 @Composable

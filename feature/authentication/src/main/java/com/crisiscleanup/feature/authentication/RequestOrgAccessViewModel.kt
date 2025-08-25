@@ -45,6 +45,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.net.URL
 import javax.inject.Inject
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 @HiltViewModel
 class RequestOrgAccessViewModel @Inject constructor(
@@ -60,10 +62,18 @@ class RequestOrgAccessViewModel @Inject constructor(
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.Onboarding) private val logger: AppLogger,
 ) : ViewModel() {
+    companion object {
+        private var recentOrgTransfer = RecentOrgTransfer()
+    }
+
     private val editorArgs = RequestOrgAccessArgs(savedStateHandle)
 
     private val invitationCode = editorArgs.inviteCode ?: ""
     val showEmailInput = editorArgs.showEmailInput ?: false
+
+    @OptIn(ExperimentalTime::class)
+    val isRecentlyTransferred = recentOrgTransfer.isValidTransferCode(invitationCode)
+    val recentOrgTransferredTo = recentOrgTransfer.orgName
 
     private val isFetchingInviteInfo =
         MutableStateFlow(!showEmailInput && invitationCode.isNotBlank())
@@ -353,6 +363,7 @@ class RequestOrgAccessViewModel @Inject constructor(
         }
     }
 
+    @OptIn(ExperimentalTime::class)
     private suspend fun transferToOrg(action: ChangeOrganizationAction) {
         val isAuthenticated = accountDataRepository.isAuthenticated.first()
 
@@ -361,7 +372,12 @@ class RequestOrgAccessViewModel @Inject constructor(
             isOrgTransferred.value = true
 
             if (isAuthenticated) {
-                clearInviteCode()
+                recentOrgTransfer = RecentOrgTransfer(
+                    invitationCode,
+                    orgName = inviteDisplay.value?.inviteInfo?.orgName ?: "",
+                    transferEpochSeconds = Clock.System.now().epochSeconds,
+                )
+
                 accountEventBus.onLogout()
             }
         } else {
@@ -387,4 +403,21 @@ enum class TransferOrgOption(val translateKey: String) {
     Users("invitationSignup.yes_transfer_just_me"),
     All("invitationSignup.yes_transfer_me_and_cases"),
     DoNotTransfer("invitationSignup.no_transfer"),
+}
+
+/*
+ * Hack for edge case when authenticated user is transferred and logs out
+ * Navigation graph changes losing state for success screen
+ * Use for preserving data in this transition (between navigation graphs)
+ */
+private data class RecentOrgTransfer(
+    val code: String = "",
+    val orgName: String = "",
+    val transferEpochSeconds: Long = 0,
+) {
+    @ExperimentalTime
+    fun isValidTransferCode(compare: String): Boolean {
+        return code == compare &&
+            transferEpochSeconds + 60 > Clock.System.now().epochSeconds
+    }
 }
