@@ -71,6 +71,8 @@ class RequestOrgAccessViewModel @Inject constructor(
     private val invitationCode = editorArgs.inviteCode ?: ""
     val showEmailInput = editorArgs.showEmailInput ?: false
 
+    val isFromInvite = invitationCode.isNotBlank()
+
     @OptIn(ExperimentalTime::class)
     val isRecentlyTransferred = recentOrgTransfer.isValidTransferCode(invitationCode)
     val recentOrgTransferredTo = recentOrgTransfer.orgName

@@ -2,12 +2,14 @@ package com.crisiscleanup.feature.authentication.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -35,6 +37,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
+import com.crisiscleanup.core.designsystem.component.AnimatedBusyIndicator
 import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.BusyIndicatorFloatingTopCenter
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupOutlinedButton
@@ -171,7 +174,7 @@ private fun RequestOrgUserInfoInputView(
     val displayInfo by viewModel.inviteDisplay.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
-    if (displayInfo == null) {
+    if (viewModel.isFromInvite && displayInfo == null) {
         Box(Modifier.fillMaxSize()) {
             BusyIndicatorFloatingTopCenter(true)
         }
@@ -206,7 +209,7 @@ private fun RequestOrgUserInfoInputView(
                     scrollState,
                     isEditable = isEditable,
                     isLoading = isLoading,
-                    displayInfo!!,
+                    displayInfo,
                 )
             }
         }
@@ -362,7 +365,7 @@ private fun InviteNewUserContent(
     scrollState: ScrollState,
     isEditable: Boolean,
     isLoading: Boolean,
-    displayInfo: InviteDisplayInfo,
+    displayInfo: InviteDisplayInfo?,
     viewModel: RequestOrgAccessViewModel = hiltViewModel(),
 ) {
     val t = LocalAppTranslator.current
@@ -402,17 +405,29 @@ private fun InviteNewUserContent(
             onNext = clearErrorVisuals,
         )
     } else {
-        val info = displayInfo
-        val avatarUrl = displayInfo.avatarUrl
-        if (avatarUrl != null &&
-            info.displayName.isNotBlank() &&
-            info.inviteMessage.isNotBlank()
-        ) {
-            InviterAvatar(
-                avatarUrl,
-                displayName = info.displayName,
-                inviteMessage = info.inviteMessage,
-            )
+        if (displayInfo == null) {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                AnimatedBusyIndicator(
+                    isLoading,
+                    padding = 16.dp,
+                )
+            }
+        } else {
+            val info = displayInfo
+            val avatarUrl = displayInfo.avatarUrl
+            if (avatarUrl != null &&
+                info.displayName.isNotBlank() &&
+                info.inviteMessage.isNotBlank()
+            ) {
+                InviterAvatar(
+                    avatarUrl,
+                    displayName = info.displayName,
+                    inviteMessage = info.inviteMessage,
+                )
+            }
         }
     }
 
