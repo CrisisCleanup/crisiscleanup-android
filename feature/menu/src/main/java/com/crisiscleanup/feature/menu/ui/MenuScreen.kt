@@ -752,7 +752,7 @@ private fun AppUpdateView() {
                 t("~~A new version of the app is available"),
                 Modifier.onGloballyPositioned {
                     badgeOffsetX = with(localDensity) {
-                        -it.size.width.div(2).toDp()
+                        -it.size.width.div(2).toDp().plus(4.dp)
                     }
                 },
             )
