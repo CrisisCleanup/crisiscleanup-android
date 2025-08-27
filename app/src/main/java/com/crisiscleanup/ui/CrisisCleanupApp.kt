@@ -59,7 +59,6 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
-import com.crisiscleanup.core.designsystem.theme.navigationContainerColor
 import com.crisiscleanup.core.model.data.TutorialViewId
 import com.crisiscleanup.core.ui.AppLayoutArea
 import com.crisiscleanup.core.ui.LayoutSizePosition
@@ -148,7 +147,6 @@ private fun BoxScope.LoadedContent(
     val showOrgInviteTransfer = orgUserInviteCode.isNotBlank()
 
     val contentModifier = Modifier
-        .background(navigationContainerColor)
         .semantics {
             testTagsAsResourceId = true
         }
