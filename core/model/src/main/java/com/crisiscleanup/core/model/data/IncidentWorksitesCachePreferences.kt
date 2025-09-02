@@ -1,5 +1,7 @@
 package com.crisiscleanup.core.model.data
 
+import kotlinx.datetime.Instant
+
 const val BOUNDED_REGION_RADIUS_MILES_DEFAULT = 30.0
 
 data class BoundedRegionParameters(
@@ -15,6 +17,7 @@ data class IncidentWorksitesCachePreferences(
     val isPaused: Boolean,
     val isRegionBounded: Boolean,
     val boundedRegionParameters: BoundedRegionParameters,
+    val lastReconciled: Instant,
 ) {
     val isAutoCache by lazy {
         !(isPaused || isRegionBounded)
@@ -33,4 +36,5 @@ val InitialIncidentWorksitesCachePreferences = IncidentWorksitesCachePreferences
     isPaused = false,
     isRegionBounded = false,
     boundedRegionParameters = BoundedRegionParametersNone,
+    lastReconciled = Instant.fromEpochSeconds(0),
 )

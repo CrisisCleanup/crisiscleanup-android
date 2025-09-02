@@ -10,6 +10,7 @@ import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
 import com.crisiscleanup.core.database.model.BoundedSyncedWorksiteIds
 import com.crisiscleanup.core.database.model.CoordinateGridQuery
+import com.crisiscleanup.core.database.model.IncidentWorksiteIds
 import com.crisiscleanup.core.database.model.NetworkFileEntity
 import com.crisiscleanup.core.database.model.PopulatedFilterDataWorksite
 import com.crisiscleanup.core.database.model.PopulatedLocalModifiedAt
@@ -837,4 +838,47 @@ class WorksiteDaoPlus @Inject constructor(
 
         IncidentIdWorksiteCount(incidentId, totalCount, count)
     }
+
+    suspend fun syncNetworkChangedIncidents(
+        changeCandidates: List<IncidentWorksiteIds>,
+        stepInterval: Int = 100,
+    ) = db.withTransaction {
+        val changedIncidentWorksites = mutableListOf<IncidentWorksiteIds>()
+
+        val worksiteDao = db.worksiteDao()
+        val iStep = stepInterval.coerceAtLeast(1)
+        for (i in changeCandidates.indices step iStep) {
+            val iEnd = (i + iStep).coerceAtMost(changeCandidates.size)
+            val chunk = changeCandidates.subList(i, iEnd)
+            val queryIds = chunk.map(IncidentWorksiteIds::networkWorksiteId)
+            val localLookup = worksiteDao.getWorksiteIds(queryIds)
+                .associateBy(IncidentWorksiteIds::networkWorksiteId)
+            val changed = chunk.mapNotNull { candidate ->
+                localLookup[candidate.networkWorksiteId]?.let { localMatch ->
+                    return@mapNotNull candidate.copy(worksiteId = localMatch.worksiteId)
+                }
+                null
+            }
+            changedIncidentWorksites.addAll(changed)
+        }
+
+        for (changed in changedIncidentWorksites) {
+            val id = changed.worksiteId
+            val incidentId = changed.incidentId
+            worksiteDao.syncUpdateWorksiteRootIncident(id, incidentId)
+            worksiteDao.syncUpdateWorksiteIncident(id, incidentId)
+        }
+
+        changedIncidentWorksites
+    }
+
+    suspend fun syncDeletedWorksites(networkIds: List<Long>, stepInterval: Int = 100) =
+        db.withTransaction {
+            val iStep = stepInterval.coerceAtLeast(1)
+            for (i in networkIds.indices step iStep) {
+                val iEnd = (i + iStep).coerceAtMost(networkIds.size)
+                val deleteIds = networkIds.subList(i, iEnd)
+                db.worksiteDao().deleteNetworkWorksites(deleteIds)
+            }
+        }
 }

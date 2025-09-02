@@ -20,6 +20,7 @@ import com.crisiscleanup.core.network.model.NetworkTeamResult
 import com.crisiscleanup.core.network.model.NetworkUserProfile
 import com.crisiscleanup.core.network.model.NetworkWorkTypeRequest
 import com.crisiscleanup.core.network.model.NetworkWorkTypeStatusResult
+import com.crisiscleanup.core.network.model.NetworkWorksiteChange
 import com.crisiscleanup.core.network.model.NetworkWorksiteCoreData
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.core.network.model.NetworkWorksiteLocationSearch
@@ -213,4 +214,6 @@ interface CrisisCleanupNetworkDataSource {
         limit: Int = 0,
         offset: Int = 0,
     ): NetworkTeamResult
+
+    suspend fun getWorksiteChanges(after: Instant): List<NetworkWorksiteChange>
 }

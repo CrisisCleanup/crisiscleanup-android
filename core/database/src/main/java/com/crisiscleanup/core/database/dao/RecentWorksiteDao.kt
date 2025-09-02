@@ -25,7 +25,7 @@ interface RecentWorksiteDao {
     )
     fun streamRecentWorksites(
         incidentId: Long,
-        limit: Int = 16,
+        limit: Int = 30,
         offset: Int = 0,
     ): Flow<List<PopulatedRecentWorksite>>
 

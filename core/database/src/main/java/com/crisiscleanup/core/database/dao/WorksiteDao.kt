@@ -7,6 +7,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import com.crisiscleanup.core.database.dao.fts.PopulatedWorksiteTextMatchInfo
 import com.crisiscleanup.core.database.model.BoundedSyncedWorksiteIds
+import com.crisiscleanup.core.database.model.IncidentWorksiteIds
 import com.crisiscleanup.core.database.model.PopulatedFilterDataWorksite
 import com.crisiscleanup.core.database.model.PopulatedLocalModifiedAt
 import com.crisiscleanup.core.database.model.PopulatedLocalWorksite
@@ -617,6 +618,28 @@ interface WorksiteDao {
         limit: Int,
         offset: Int,
     ): List<PopulatedFilterDataWorksite>
+
+    @Transaction
+    @Query(
+        """
+        SELECT id, incident_id, network_id
+        FROM worksites_root
+        WHERE network_id IN(:networkWorksiteIds)
+        """,
+    )
+    fun getWorksiteIds(networkWorksiteIds: List<Long>): List<IncidentWorksiteIds>
+
+    @Transaction
+    @Query("UPDATE worksites_root SET incident_id=:incidentId WHERE id=:id")
+    fun syncUpdateWorksiteRootIncident(id: Long, incidentId: Long)
+
+    @Transaction
+    @Query("UPDATE worksites SET incident_id=:incidentId WHERE id=:id")
+    fun syncUpdateWorksiteIncident(id: Long, incidentId: Long)
+
+    @Transaction
+    @Query("DELETE from worksites_root WHERE network_id IN(:networkWorksiteIds)")
+    fun deleteNetworkWorksites(networkWorksiteIds: Collection<Long>)
 
     @Transaction
     @Query("SELECT case_number FROM worksites ORDER BY RANDOM() LIMIT 1")

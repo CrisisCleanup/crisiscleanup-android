@@ -4,7 +4,6 @@ import androidx.datastore.core.DataStore
 import com.crisiscleanup.core.model.data.DarkThemeConfig
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.IncidentCoordinateBounds
-import com.crisiscleanup.core.model.data.SyncAttempt
 import com.crisiscleanup.core.model.data.UserData
 import com.crisiscleanup.core.model.data.WorksiteSortBy
 import com.crisiscleanup.core.model.data.worksiteSortByFromLiteral
@@ -35,12 +34,6 @@ class LocalAppPreferencesDataSource @Inject constructor(
                     DarkThemeConfigProto.DARK_THEME_CONFIG_DARK -> DarkThemeConfig.DARK
                 },
                 shouldHideOnboarding = it.shouldHideOnboarding,
-
-                syncAttempt = SyncAttempt(
-                    it.syncAttempt.successfulSeconds,
-                    it.syncAttempt.attemptedSeconds,
-                    it.syncAttempt.attemptedCounter,
-                ),
 
                 selectedIncidentId = if (it.selectedIncidentId <= 0L) EmptyIncident.id else it.selectedIncidentId,
 

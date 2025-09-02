@@ -20,7 +20,7 @@ class CrisisCleanupAppEnv @Inject constructor(
             val apiUrl = settingsProvider.apiBaseUrl
             return when {
                 apiUrl.startsWith("https://api.dev.crisiscleanup.io") -> "Dev"
-                apiUrl.startsWith("https://api.staging.crisiscleanup.io") -> "Staging"
+                apiUrl.startsWith("https://crisiscleanup-3-api-staging.up.railway.app") -> "Staging"
                 apiUrl.startsWith("https://api.crisiscleanup.org") -> "Production"
                 else -> "Local?"
             }

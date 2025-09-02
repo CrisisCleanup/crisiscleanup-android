@@ -12,6 +12,7 @@ import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.radians
+import com.crisiscleanup.core.common.split
 import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.common.sync.SyncResult
 import com.crisiscleanup.core.data.IncidentMapTracker
@@ -42,6 +43,7 @@ import com.crisiscleanup.core.model.data.IncidentWorksitesCachePreferences
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.KeyDynamicValuePair
 import com.crisiscleanup.core.network.model.NetworkFlagsFormData
+import com.crisiscleanup.core.network.model.NetworkWorksiteChange
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.core.network.model.NetworkWorksitePage
 import com.crisiscleanup.core.network.model.WorksiteDataResult
@@ -54,13 +56,13 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.combine as kCombine
@@ -488,6 +490,17 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
                 ensureActive()
                 worksitesAdditionalStatsUpdater.clearStep()
+            }
+
+            if (!(isPaused || isSlowDownload)) {
+                ensureActive()
+
+                logStage(incidentId, IncidentCacheStage.WorksitesChangedIncident)
+
+                updateChangedIncidentWorksites(
+                    syncPlan.restartCache,
+                    syncPreferences.lastReconciled,
+                )
             }
         } catch (e: Exception) {
             with(incidentDataPullStats.value) {
@@ -1278,7 +1291,36 @@ class IncidentWorksitesCacheRepository @Inject constructor(
     }
 
     override suspend fun updateCachePreferences(preferences: IncidentWorksitesCachePreferences) {
-        incidentCachePreferences.setPreferences(preferences)
+        incidentCachePreferences.setPauseRegionPreferences(preferences)
+    }
+
+    private suspend fun updateChangedIncidentWorksites(
+        restartCache: Boolean,
+        lastReconciled: Instant,
+    ) {
+        val minTimestamp = Clock.System.now().minus(45.days)
+        val queryAfter =
+            if (restartCache) minTimestamp else lastReconciled.coerceAtLeast(minTimestamp)
+        try {
+            val reconcileStart = Clock.System.now()
+
+            val worksiteChanges = networkDataSource.getWorksiteChanges(queryAfter)
+
+            val (valid, invalid) = worksiteChanges.split { it.invalidatedAt == null }
+            val invalidWorksiteIds = invalid.map(NetworkWorksiteChange::worksiteId)
+
+            val changedIncidents = worksitesRepository.processReconciliation(
+                valid.toList(),
+                invalidWorksiteIds,
+            )
+            if (changedIncidents.isNotEmpty()) {
+                syncLogger.log("${changedIncidents.size} Cases changed Incidents.")
+            }
+
+            incidentCachePreferences.setLastReconciled(reconcileStart)
+        } catch (e: Exception) {
+            appLogger.logException(e)
+        }
     }
 
     private data class DownloadCountSpeed(
@@ -1297,6 +1339,7 @@ enum class IncidentCacheStage {
     WorksitesAdditional,
     ActiveIncident,
     ActiveIncidentOrganization,
+    WorksitesChangedIncident,
     End,
 }
 
