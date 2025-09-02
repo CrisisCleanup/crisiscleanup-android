@@ -47,4 +47,8 @@ interface RecentWorksiteDao {
 
     @Upsert
     fun upsert(recentWorksite: RecentWorksiteEntity)
+
+    @Transaction
+    @Query("UPDATE recent_worksites SET incident_id=:incidentId WHERE id=:id")
+    fun syncUpdateRecentWorksiteIncident(id: Long, incidentId: Long)
 }

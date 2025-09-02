@@ -1,6 +1,7 @@
 package com.crisiscleanup.core.database.dao
 
 import com.crisiscleanup.core.database.TestCrisisCleanupDatabase
+import com.crisiscleanup.core.database.TestRecentWorksiteDao
 import com.crisiscleanup.core.database.TestUtil
 import com.crisiscleanup.core.database.TestUtil.testAppLogger
 import com.crisiscleanup.core.database.TestUtil.testSyncLogger
@@ -8,6 +9,7 @@ import com.crisiscleanup.core.database.TestWorksiteDao
 import com.crisiscleanup.core.database.WorksiteTestUtil
 import com.crisiscleanup.core.database.WorksiteTestUtil.testIncidents
 import com.crisiscleanup.core.database.model.IncidentWorksiteIds
+import com.crisiscleanup.core.database.model.RecentWorksiteEntity
 import com.crisiscleanup.core.database.model.WorksiteEntity
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Clock
@@ -23,6 +25,7 @@ class WorksiteSyncReconciliationTest {
 
     private lateinit var worksiteDao: TestWorksiteDao
     private lateinit var worksiteDaoPlus: WorksiteDaoPlus
+    private lateinit var recentWorksiteDao: TestRecentWorksiteDao
 
     private val syncLogger = testSyncLogger()
     private val appLogger = testAppLogger()
@@ -32,6 +35,7 @@ class WorksiteSyncReconciliationTest {
         db = TestUtil.getTestDatabase()
         worksiteDao = db.testWorksiteDao()
         worksiteDaoPlus = WorksiteDaoPlus(db, syncLogger, appLogger)
+        recentWorksiteDao = db.testRecentWorksiteDao()
     }
 
     @Before
@@ -84,6 +88,15 @@ class WorksiteSyncReconciliationTest {
 
     @Test
     fun syncNetworkChangedIncidents() = runTest {
+        val viewedAt = Instant.fromEpochSeconds(1756835957)
+        val recentViews = listOf(
+            RecentWorksiteEntity(4, 23, viewedAt),
+            RecentWorksiteEntity(1, 23, viewedAt),
+        )
+        for (recent in recentViews) {
+            recentWorksiteDao.upsert(recent)
+        }
+
         fun makeIncidentWorksiteIds(incidentId: Long, networkWorksiteId: Long) =
             IncidentWorksiteIds(
                 incidentId = incidentId,
@@ -118,6 +131,13 @@ class WorksiteSyncReconciliationTest {
         assertEquals(orderedChanges, worksiteIdsA)
         val worksiteIdsB = worksiteDao.getRootWorksiteEntities()
         assertEquals(orderedChanges, worksiteIdsB)
+
+        val recents = recentWorksiteDao.getRecentWorksites()
+        val expectedRecents = listOf(
+            RecentWorksiteEntity(1, 1, viewedAt),
+            RecentWorksiteEntity(4, 23, viewedAt),
+            )
+        assertEquals(expectedRecents, recents)
     }
 
     @Test

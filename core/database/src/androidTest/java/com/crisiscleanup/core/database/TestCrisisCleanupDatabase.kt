@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.TypeConverters
+import com.crisiscleanup.core.database.dao.RecentWorksiteDao
 import com.crisiscleanup.core.database.dao.fts.IncidentFtsEntity
 import com.crisiscleanup.core.database.dao.fts.IncidentOrganizationFtsEntity
 import com.crisiscleanup.core.database.dao.fts.WorksiteTextFtsEntity
@@ -109,6 +110,7 @@ abstract class TestCrisisCleanupDatabase : CrisisCleanupDatabase() {
     abstract fun testWorkTypeDao(): TestWorkTypeDao
     abstract fun testWorksiteChangeDao(): TestWorksiteChangeDao
     abstract fun testWorkTypeRequestDao(): TestWorkTypeRequestDao
+    abstract fun testRecentWorksiteDao(): TestRecentWorksiteDao
 }
 
 @Dao
@@ -268,4 +270,11 @@ interface TestWorkTypeRequestDao {
     @Transaction
     @Query("SELECT id, network_id FROM worksite_work_type_requests WHERE worksite_id=:worksiteId")
     fun getNetworkedIdMap(worksiteId: Long): List<PopulatedIdNetworkId>
+}
+
+@Dao
+interface TestRecentWorksiteDao : RecentWorksiteDao {
+    @Transaction
+    @Query("SELECT * FROM recent_worksites ORDER BY id")
+    fun getRecentWorksites(): List<RecentWorksiteEntity>
 }

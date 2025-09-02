@@ -862,11 +862,13 @@ class WorksiteDaoPlus @Inject constructor(
             changedIncidentWorksites.addAll(changed)
         }
 
+        val recentDao = db.recentWorksiteDao()
         for (changed in changedIncidentWorksites) {
             val id = changed.worksiteId
             val incidentId = changed.incidentId
             worksiteDao.syncUpdateWorksiteRootIncident(id, incidentId)
             worksiteDao.syncUpdateWorksiteIncident(id, incidentId)
+            recentDao.syncUpdateRecentWorksiteIncident(id, incidentId)
         }
 
         changedIncidentWorksites
