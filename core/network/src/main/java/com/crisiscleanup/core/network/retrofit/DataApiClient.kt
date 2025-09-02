@@ -22,6 +22,7 @@ import com.crisiscleanup.core.network.model.NetworkUserProfile
 import com.crisiscleanup.core.network.model.NetworkUsersResult
 import com.crisiscleanup.core.network.model.NetworkWorkTypeRequestResult
 import com.crisiscleanup.core.network.model.NetworkWorkTypeStatusResult
+import com.crisiscleanup.core.network.model.NetworkWorksiteChange
 import com.crisiscleanup.core.network.model.NetworkWorksiteChangesResult
 import com.crisiscleanup.core.network.model.NetworkWorksiteLocationSearchResult
 import com.crisiscleanup.core.network.model.NetworkWorksitesCoreDataResult
@@ -698,6 +699,12 @@ class DataApiClient @Inject constructor(
     override suspend fun getTeams(incidentId: Long?, limit: Int, offset: Int) =
         networkApi.getTeams(incidentId, limit, offset)
 
-    override suspend fun getWorksiteChanges(after: Instant) =
-        networkApi.getWorksiteChanges(after).changes ?: emptyList()
+    override suspend fun getWorksiteChanges(after: Instant): List<NetworkWorksiteChange> {
+        val result = networkApi.getWorksiteChanges(after)
+        result.errors?.tryThrowException()
+        result.error?.let { errorMessage ->
+            throw Exception(errorMessage)
+        }
+        return result.changes ?: emptyList()
+    }
 }

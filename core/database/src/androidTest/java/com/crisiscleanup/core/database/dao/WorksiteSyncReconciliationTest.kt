@@ -136,7 +136,7 @@ class WorksiteSyncReconciliationTest {
         val expectedRecents = listOf(
             RecentWorksiteEntity(1, 1, viewedAt),
             RecentWorksiteEntity(4, 23, viewedAt),
-            )
+        )
         assertEquals(expectedRecents, recents)
     }
 

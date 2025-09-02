@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class NetworkWorksiteChangesResult(
+    val errors: List<NetworkCrisisCleanupApiError>? = null,
     val error: String? = null,
     val changes: List<NetworkWorksiteChange>? = null,
 )

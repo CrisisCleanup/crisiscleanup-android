@@ -498,6 +498,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 logStage(incidentId, IncidentCacheStage.WorksitesChangedIncident)
 
                 updateChangedIncidentWorksites(
+                    incidentId,
                     syncPlan.restartCache,
                     syncPreferences.lastReconciled,
                 )
@@ -1295,6 +1296,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
     }
 
     private suspend fun updateChangedIncidentWorksites(
+        incidentId: Long,
         restartCache: Boolean,
         lastReconciled: Instant,
     ) {
@@ -1314,7 +1316,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 invalidWorksiteIds,
             )
             if (changedIncidents.isNotEmpty()) {
-                syncLogger.log("${changedIncidents.size} Cases changed Incidents.")
+                logStage(incidentId, IncidentCacheStage.WorksitesChangedIncident, "${changedIncidents.size} Cases changed Incidents.")
             }
 
             incidentCachePreferences.setLastReconciled(reconcileStart)
