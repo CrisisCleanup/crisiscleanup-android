@@ -18,7 +18,9 @@ import com.crisiscleanup.core.database.dao.LocationDaoPlus
 import com.crisiscleanup.core.database.dao.fts.getMatchingIncidents
 import com.crisiscleanup.core.database.model.PopulatedIncident
 import com.crisiscleanup.core.database.model.asExternalModel
+import com.crisiscleanup.core.datastore.AccountInfoDataSource
 import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
+import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.INCIDENT_ORGANIZATIONS_STABLE_MODEL_BUILD_VERSION
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.IncidentIdNameType
@@ -30,6 +32,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
@@ -47,6 +50,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     private val incidentOrganizationDao: IncidentOrganizationDao,
     private val incidentOrganizationsSyncer: IncidentOrganizationsSyncer,
     private val appPreferences: LocalAppPreferencesDataSource,
+    private val accountInfoDataSource: AccountInfoDataSource,
     inputValidator: InputValidator,
     @Logger(CrisisCleanupLoggers.Incidents) private val logger: AppLogger,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
@@ -214,13 +218,16 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     }
 
     override suspend fun pullIncidents(force: Boolean) = coroutineScope {
-        var isSuccessful = false
-        try {
-            syncInternal(force)
-            isSuccessful = true
-        } finally {
-            // Treat coroutine cancellation as unsuccessful for now
-            appPreferences.setSyncAttempt(isSuccessful)
+        syncInternal(force)
+
+        val selectedIncidentId = appPreferences.userData.first().selectedIncidentId
+        if (selectedIncidentId == EmptyIncident.id) {
+            val incidents = getIncidentsList()
+            val accountData = accountInfoDataSource.accountData.first()
+            val approvedIncidents = accountData.filterApproved(incidents)
+            approvedIncidents.firstOrNull()?.let { firstIncident ->
+                appPreferences.setSelectedIncident(firstIncident.id)
+            }
         }
     }
 
