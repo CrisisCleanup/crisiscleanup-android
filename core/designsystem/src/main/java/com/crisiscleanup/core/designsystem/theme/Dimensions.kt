@@ -29,6 +29,7 @@ data class Dimensions(
     val isLandscape: Boolean = false,
     val isPortrait: Boolean = true,
     val isListDetailWidth: Boolean = false,
+    val contentMaxWidth: Dp = 600.dp,
 
     val buttonSpinnerSize: Dp = 24.dp,
 ) {
