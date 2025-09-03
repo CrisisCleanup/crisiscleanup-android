@@ -97,7 +97,7 @@ class WorksiteSyncReconciliationTest {
             recentWorksiteDao.upsert(recent)
         }
 
-        fun makeIncidentWorksiteIds(incidentId: Long, networkWorksiteId: Long) =
+        fun makeChangeIds(incidentId: Long, networkWorksiteId: Long) =
             IncidentWorksiteIds(
                 incidentId = incidentId,
                 worksiteId = 0,
@@ -106,26 +106,28 @@ class WorksiteSyncReconciliationTest {
 
         val changes = worksiteDaoPlus.syncNetworkChangedIncidents(
             listOf(
-                makeIncidentWorksiteIds(1, 534),
-                makeIncidentWorksiteIds(1, 987),
-                makeIncidentWorksiteIds(23, 1654),
+                makeChangeIds(1, 534),
+                makeChangeIds(1, 8921),
+                makeChangeIds(1, 987),
+                makeChangeIds(1, 4986),
+                makeChangeIds(23, 1654),
             ),
             stepInterval = 2,
         )
 
         val expectedChanges = listOf(
-            IncidentWorksiteIds(1, 1, 534),
-            IncidentWorksiteIds(1, 5, 987),
-            IncidentWorksiteIds(23, 3, 1654),
+            IncidentWorksiteIds(23, 1, 534),
+            IncidentWorksiteIds(23, 5, 987),
+            IncidentWorksiteIds(456, 3, 1654),
         )
         assertEquals(expectedChanges, changes)
 
         val orderedChanges = listOf(
-            expectedChanges[0],
+            IncidentWorksiteIds(1, 1, 534),
             IncidentWorksiteIds(1, 2, 48),
-            expectedChanges[2],
+            IncidentWorksiteIds(23, 3, 1654),
             IncidentWorksiteIds(23, 4, 9),
-            expectedChanges[1],
+            IncidentWorksiteIds(1, 5, 987),
         )
         val worksiteIdsA = worksiteDao.getWorksiteEntities()
         assertEquals(orderedChanges, worksiteIdsA)
@@ -142,13 +144,19 @@ class WorksiteSyncReconciliationTest {
 
     @Test
     fun syncDeletedWorksites() = runTest {
-        worksiteDaoPlus.syncDeletedWorksites(
-            listOf(987, 1654, 48),
+        val changes = worksiteDaoPlus.syncDeletedWorksites(
+            listOf(987, 9, 54, 13, 654, 7895, 48),
             stepInterval = 2,
         )
+        val expectedChanges = listOf(
+            IncidentWorksiteIds(23, 5, 987),
+            IncidentWorksiteIds(23, 4, 9),
+            IncidentWorksiteIds(1, 2, 48),
+        )
+        assertEquals(expectedChanges, changes)
 
         val worksites = worksiteDao.getWorksites()
         val networkWorksiteIds = worksites.map { it.entity.networkId }
-        assertEquals(listOf(9L, 534), networkWorksiteIds)
+        assertEquals(listOf(534L, 1654), networkWorksiteIds)
     }
 }

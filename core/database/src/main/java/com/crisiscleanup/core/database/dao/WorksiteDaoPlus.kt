@@ -843,23 +843,29 @@ class WorksiteDaoPlus @Inject constructor(
         changeCandidates: List<IncidentWorksiteIds>,
         stepInterval: Int = 100,
     ) = db.withTransaction {
-        val changedIncidentWorksites = mutableListOf<IncidentWorksiteIds>()
+        val changedWorksites = mutableListOf<IncidentWorksiteIds>()
 
         val worksiteDao = db.worksiteDao()
+        val changedIncidentWorksites = mutableListOf<IncidentWorksiteIds>()
         val iStep = stepInterval.coerceAtLeast(1)
         for (i in changeCandidates.indices step iStep) {
             val iEnd = (i + iStep).coerceAtMost(changeCandidates.size)
-            val chunk = changeCandidates.subList(i, iEnd)
-            val queryIds = chunk.map(IncidentWorksiteIds::networkWorksiteId)
+            val candidatesChunk = changeCandidates.subList(i, iEnd)
+            val queryIds = candidatesChunk.map(IncidentWorksiteIds::networkWorksiteId)
             val localLookup = worksiteDao.getWorksiteIds(queryIds)
                 .associateBy(IncidentWorksiteIds::networkWorksiteId)
-            val changed = chunk.mapNotNull { candidate ->
+            val chunkChanges = candidatesChunk.mapNotNull { candidate ->
                 localLookup[candidate.networkWorksiteId]?.let { localMatch ->
-                    return@mapNotNull candidate.copy(worksiteId = localMatch.worksiteId)
+                    if (candidate.incidentId != localMatch.incidentId) {
+                        changedWorksites.add(localMatch)
+                        return@mapNotNull candidate.copy(
+                            worksiteId = localMatch.worksiteId,
+                        )
+                    }
                 }
                 null
             }
-            changedIncidentWorksites.addAll(changed)
+            changedIncidentWorksites.addAll(chunkChanges)
         }
 
         val recentDao = db.recentWorksiteDao()
@@ -871,16 +877,27 @@ class WorksiteDaoPlus @Inject constructor(
             recentDao.syncUpdateRecentWorksiteIncident(id, incidentId)
         }
 
-        changedIncidentWorksites
+        changedWorksites
     }
 
     suspend fun syncDeletedWorksites(networkIds: List<Long>, stepInterval: Int = 100) =
         db.withTransaction {
+            val deletedWorksites = mutableListOf<IncidentWorksiteIds>()
+
             val iStep = stepInterval.coerceAtLeast(1)
+            val worksiteDao = db.worksiteDao()
             for (i in networkIds.indices step iStep) {
                 val iEnd = (i + iStep).coerceAtMost(networkIds.size)
-                val deleteIds = networkIds.subList(i, iEnd)
-                db.worksiteDao().deleteNetworkWorksites(deleteIds)
+                val idChunk = networkIds.subList(i, iEnd)
+                val localLookup = worksiteDao.getWorksiteIds(idChunk)
+                    .associateBy(IncidentWorksiteIds::networkWorksiteId)
+                if (localLookup.isNotEmpty()) {
+                    val deleteIds = localLookup.keys
+                    db.worksiteDao().deleteNetworkWorksites(deleteIds)
+                    deletedWorksites.addAll(idChunk.mapNotNull { localLookup[it] })
+                }
             }
+
+            deletedWorksites
         }
 }

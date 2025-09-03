@@ -1311,12 +1311,16 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             val (valid, invalid) = worksiteChanges.split { it.invalidatedAt == null }
             val invalidWorksiteIds = invalid.map(NetworkWorksiteChange::worksiteId)
 
-            val changedIncidents = worksitesRepository.processReconciliation(
+            val localChanges = worksitesRepository.processReconciliation(
                 valid.toList(),
                 invalidWorksiteIds,
             )
-            if (changedIncidents.isNotEmpty()) {
-                logStage(incidentId, IncidentCacheStage.WorksitesChangedIncident, "${changedIncidents.size} Cases changed Incidents.")
+            if (localChanges.isNotEmpty()) {
+                logStage(
+                    incidentId,
+                    IncidentCacheStage.WorksitesChangedIncident,
+                    "${localChanges.size} Cases changed Incidents or were deleted.",
+                )
             }
 
             incidentCachePreferences.setLastReconciled(reconcileStart)

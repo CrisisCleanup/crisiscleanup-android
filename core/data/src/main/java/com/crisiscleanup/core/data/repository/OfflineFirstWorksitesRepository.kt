@@ -349,9 +349,11 @@ class OfflineFirstWorksitesRepository @Inject constructor(
                 networkWorksiteId = it.worksiteId,
             )
         }
-        val changedIncidents = worksiteDaoPlus.syncNetworkChangedIncidents(validIds)
-        worksiteDaoPlus.syncDeletedWorksites(invalidatedNetworkWorksiteIds)
+        val worksitesChanged = worksiteDaoPlus.syncNetworkChangedIncidents(validIds)
+        val worksitesDeleted = worksiteDaoPlus.syncDeletedWorksites(invalidatedNetworkWorksiteIds)
 
-        return changedIncidents
+        return worksitesChanged.toMutableList().apply {
+            addAll(worksitesDeleted)
+        }
     }
 }
