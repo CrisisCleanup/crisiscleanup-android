@@ -742,10 +742,10 @@ private fun AppUpdateView() {
                     .offset(x = (-10).dp, y = (-10).dp),
                 containerColor = primaryOrangeColor,
             ) {
-                // TODO Match content color in menu badge
                 Icon(
                     imageVector = CrisisCleanupIcons.AppUpdateAvailable,
                     contentDescription = null,
+                    tint = Color.White,
                 )
             }
         }
