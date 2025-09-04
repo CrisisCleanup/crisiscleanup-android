@@ -883,8 +883,13 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 statsUpdater,
                 downloadSpeedTracker,
                 getTotalCaseCount = null,
-                { count: Int, before: Instant ->
-                    networkDataSource.getWorksitesPageBefore(incidentId, count, before)
+                { count: Int, offset: Int, before: Instant ->
+                    networkDataSource.getWorksitesPageBefore(
+                        incidentId,
+                        pageCount = count,
+                        updatedBefore = before,
+                        offset = offset,
+                    )
                 },
                 { worksites: List<NetworkWorksitePage> ->
                     saveWorksites(worksites, statsUpdater)
@@ -935,7 +940,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         statsUpdater: IncidentDataPullStatsUpdater,
         downloadSpeedTracker: CountTimeTracker,
         getTotalCaseCount: (suspend () -> Int)?,
-        getNetworkData: suspend (Int, Instant) -> T,
+        getNetworkData: suspend (Int, Int, Instant) -> T,
         saveToDb: suspend (List<U>) -> Unit,
     ) where T : WorksiteDataResult<U>, U : WorksiteDataSubset = coroutineScope {
         var isSlowDownload: Boolean? = null
@@ -944,9 +949,10 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
         log("Downloading Worksites before")
 
-        var queryCount = if (isPaused) 100 else 1000
-        val maxQueryCount = getMaxQueryCount(stage == IncidentCacheStage.WorksitesAdditional)
-        var beforeTimeMarker = timeMarkers.before
+        val queryCount =
+            if (isPaused) 100 else getMaxQueryCount(stage == IncidentCacheStage.WorksitesAdditional)
+        var queryOffset = 0
+        val beforeTimeMarker = timeMarkers.before
         var savedWorksiteIds = emptySet<Long>()
         var initialCount = -1
         var savedCount = 0
@@ -958,6 +964,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 // TODO Edge case where paging data breaks where Cases are equally updated_at
                 val result = getNetworkData(
                     queryCount,
+                    queryOffset,
                     beforeTimeMarker,
                 )
 
@@ -1006,16 +1013,16 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
                 savedWorksiteIds = networkData.map { it.id }.toSet()
 
-                queryCount = (queryCount * 2).coerceAtMost(maxQueryCount)
-                beforeTimeMarker = networkData.last().updatedAt
+                queryOffset += queryCount
 
+                val lastTimeMarker = networkData.last().updatedAt.plus(1.minutes)
                 if (stage == IncidentCacheStage.WorksitesCore) {
-                    syncParameterDao.updateUpdatedBefore(incidentId, beforeTimeMarker)
+                    syncParameterDao.updateUpdatedBefore(incidentId, lastTimeMarker)
                 } else {
-                    syncParameterDao.updateAdditionalUpdatedBefore(incidentId, beforeTimeMarker)
+                    syncParameterDao.updateAdditionalUpdatedBefore(incidentId, lastTimeMarker)
                 }
 
-                log("Cached ${deduplicateWorksites.size} ($savedCount/$initialCount) before, back to $beforeTimeMarker")
+                log("Cached ${deduplicateWorksites.size} ($savedCount/$initialCount) before, back to $beforeTimeMarker ($queryOffset-$queryCount)")
             }
 
             if (isPaused) {
@@ -1197,11 +1204,12 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 statsUpdater,
                 downloadSpeedTracker,
                 getTotalCaseCount = { worksitesRepository.getWorksitesCount(incidentId) },
-                { count: Int, before: Instant ->
+                { count: Int, offset: Int, before: Instant ->
                     networkDataSource.getWorksitesFlagsFormDataPageBefore(
                         incidentId,
                         count,
                         before,
+                        offset = offset,
                     )
                 },
                 { worksites: List<NetworkFlagsFormData> ->

@@ -102,17 +102,20 @@ interface CrisisCleanupNetworkDataSource {
         pageCount: Int,
         updatedAt: Instant,
         isPagingBackwards: Boolean,
+        offset: Int = 0,
     ): NetworkWorksitesPageResult
 
     suspend fun getWorksitesPageBefore(
         incidentId: Long,
         pageCount: Int,
         updatedBefore: Instant,
+        offset: Int,
     ): NetworkWorksitesPageResult = getWorksitesPageUpdatedAt(
         incidentId,
         pageCount,
         updatedBefore,
         true,
+        offset = offset,
     )
 
     suspend fun getWorksitesPageAfter(
@@ -131,17 +134,20 @@ interface CrisisCleanupNetworkDataSource {
         pageCount: Int,
         updatedAt: Instant,
         isPagingBackwards: Boolean,
+        offset: Int = 0,
     ): NetworkFlagsFormDataResult
 
     suspend fun getWorksitesFlagsFormDataPageBefore(
         incidentId: Long,
         pageCount: Int,
         updatedBefore: Instant,
+        offset: Int,
     ) = getWorksitesFlagsFormDataPage(
         incidentId,
         pageCount,
         updatedBefore,
         true,
+        offset = offset,
     )
 
     suspend fun getWorksitesFlagsFormDataPageAfter(

@@ -223,6 +223,8 @@ private interface DataSourceApi {
         incidentId: Long,
         @Query("limit")
         pageCount: Int,
+        @Query("offset")
+        offset: Int,
         @Query("updated_at__lt")
         updatedBefore: Instant,
         @Query("sort")
@@ -317,6 +319,8 @@ private interface DataSourceApi {
         incidentId: Long,
         @Query("limit")
         limit: Int,
+        @Query("offset")
+        offset: Int,
         @Query("updated_at__lt")
         updatedAtBefore: Instant,
         @Query("sort")
@@ -530,11 +534,13 @@ class DataApiClient @Inject constructor(
         pageCount: Int,
         updatedAt: Instant,
         isPagingBackwards: Boolean,
+        offset: Int,
     ): NetworkWorksitesPageResult {
         val result = if (isPagingBackwards) {
             networkApi.getWorksitesPageUpdatedBefore(
                 incidentId,
                 pageCount,
+                offset = offset,
                 updatedAt,
                 "-updated_at",
             )
@@ -556,11 +562,13 @@ class DataApiClient @Inject constructor(
         pageCount: Int,
         updatedAt: Instant,
         isPagingBackwards: Boolean,
+        offset: Int,
     ): NetworkFlagsFormDataResult {
         val result = if (isPagingBackwards) {
             networkApi.getWorksitesFlagsFormDataBefore(
                 incidentId,
                 pageCount,
+                offset = offset,
                 updatedAt,
                 "-updated_at",
             )
