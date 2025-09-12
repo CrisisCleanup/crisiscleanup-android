@@ -18,8 +18,8 @@ import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.AutocompletePrediction
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken
 import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.model.PlaceTypes
 import com.google.android.libraries.places.api.model.RectangularBounds
-import com.google.android.libraries.places.api.model.TypeFilter
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
 import com.google.android.libraries.places.api.net.PlacesClient
@@ -143,15 +143,14 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
         }
 
         val hasBounds = southwest != null && northeast != null
-        val bounds =
-            if (hasBounds) RectangularBounds.newInstance(southwest!!, northeast!!) else null
+        val bounds = if (hasBounds) RectangularBounds.newInstance(southwest, northeast) else null
         val request = FindAutocompletePredictionsRequest.builder()
             // Call either setLocationBias() OR setLocationRestriction().
             .setLocationBias(bounds)
             // .setLocationRestriction(bounds)
             .setOrigin(center)
             .setCountries(countryCodes)
-            .setTypesFilter(listOf(TypeFilter.ADDRESS.toString().lowercase()))
+            .setTypesFilter(listOf(PlaceTypes.ADDRESS))
             .setQuery(query)
             .setSessionToken(getSessionToken())
             .build()
