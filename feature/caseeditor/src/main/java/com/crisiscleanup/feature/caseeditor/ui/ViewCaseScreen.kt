@@ -115,7 +115,7 @@ import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberMarkerState
+import com.google.maps.android.compose.rememberUpdatedMarkerState
 import kotlinx.coroutines.launch
 
 // TODO Use/move common dimensions
@@ -1098,8 +1098,7 @@ private fun PropertyInfoMapView(
         disablePanning = true,
     )
 
-    val markerState = rememberMarkerState()
-    markerState.position = coordinates
+    val markerState = rememberUpdatedMarkerState(coordinates)
 
     val update = CameraUpdateFactory.newLatLngZoom(coordinates, 13f)
     cameraPositionState.move(update)

@@ -1,9 +1,9 @@
 package com.crisiscleanup.feature.caseeditor.ui
 
-import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
@@ -13,6 +13,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.coerceAtMost
@@ -92,7 +93,7 @@ internal fun PropertyLocationView(
             )
         }
 
-        val screenHeight = Configuration.SCREEN_HEIGHT_DP_UNDEFINED.dp
+        val screenHeight = LocalWindowInfo.current.containerSize.height.dp
         val mapHeight = screenHeight.times(0.5f).coerceAtMost(240.dp)
         val mapModifier = Modifier.sizeIn(maxHeight = mapHeight)
         val cameraPositionState = rememberCameraPositionState()
@@ -100,6 +101,7 @@ internal fun PropertyLocationView(
             LocationMapView(
                 viewModel,
                 editor,
+                Modifier.fillMaxSize(),
                 zoomControls = true,
                 disablePanning = true,
                 cameraPositionState = cameraPositionState,

@@ -54,6 +54,8 @@ class LocalAppPreferencesDataSource @Inject constructor(
                 isWorkScreenTableView = it.isWorkScreenTableView,
 
                 isSyncMediaImmediate = it.syncMediaImmediate,
+
+                isMapSatelliteView = it.isMapSatelliteView,
             )
         }
 
@@ -161,6 +163,12 @@ class LocalAppPreferencesDataSource @Inject constructor(
     suspend fun saveSyncMediaImmediate(syncImmediate: Boolean) {
         userPreferences.updateData {
             it.copy { syncMediaImmediate = syncImmediate }
+        }
+    }
+
+    suspend fun saveMapSatelliteView(isSatellite: Boolean) {
+        userPreferences.updateData {
+            it.copy { isMapSatelliteView = isSatellite }
         }
     }
 }

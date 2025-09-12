@@ -43,4 +43,6 @@ message UserPreferences {
   bool is_work_screen_table_view = 15;
 
   bool sync_media_immediate = 16;
+
+  bool is_map_satellite_view = 17;
 }

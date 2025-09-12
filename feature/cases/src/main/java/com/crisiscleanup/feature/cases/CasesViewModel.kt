@@ -155,6 +155,8 @@ class CasesViewModel @Inject constructor(
 
     val filtersCount = filterRepository.filtersCount
 
+    val isMapSatelliteView = appPreferencesRepository.userPreferences.map { it.isMapSatelliteView }
+
     val isTableView = qsm.isTableView
 
     private val tableDataDistanceSortSearchRadius = 100.0f
@@ -640,6 +642,12 @@ class CasesViewModel @Inject constructor(
     }
 
     fun zoomToInteractive() = adjustMapZoom(MAP_MARKERS_ZOOM_LEVEL + 0.5f)
+
+    fun setMapSatelliteView(isSatellite: Boolean) {
+        viewModelScope.launch(ioDispatcher) {
+            appPreferencesRepository.setMapSatelliteView(isSatellite)
+        }
+    }
 
     private fun setMapToMyCoordinates() {
         viewModelScope.launch {

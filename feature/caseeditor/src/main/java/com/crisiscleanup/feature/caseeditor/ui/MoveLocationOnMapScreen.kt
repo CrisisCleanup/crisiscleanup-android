@@ -49,7 +49,7 @@ import com.google.maps.android.compose.CameraMoveStartedReason
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberMarkerState
+import com.google.maps.android.compose.rememberUpdatedMarkerState
 
 @Composable
 internal fun EditCaseMapMoveLocationRoute(
@@ -253,9 +253,8 @@ private fun BoxScope.MoveMapUnderLocation(
 
     val mapCameraZoom by editor.mapCameraZoom.collectAsStateWithLifecycle()
 
-    val markerState = rememberMarkerState()
     val coordinates by editor.locationInputData.coordinates.collectAsStateWithLifecycle()
-    markerState.position = coordinates
+    val markerState = rememberUpdatedMarkerState(coordinates)
 
     val mapMarkerIcon by editor.mapMarkerIcon.collectAsStateWithLifecycle()
 
