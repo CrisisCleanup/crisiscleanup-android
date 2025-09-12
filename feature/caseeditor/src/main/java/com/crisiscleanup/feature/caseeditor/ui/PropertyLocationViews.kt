@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.LocalTextStyle
@@ -23,6 +24,7 @@ import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.designsystem.LocalAppTranslator
 import com.crisiscleanup.core.designsystem.component.ExplainLocationPermissionDialog
 import com.crisiscleanup.core.designsystem.component.HelpRow
+import com.crisiscleanup.core.designsystem.component.MapViewToggleButton
 import com.crisiscleanup.core.designsystem.component.OutlinedSingleLineTextField
 import com.crisiscleanup.core.designsystem.component.WithHelpDialog
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
@@ -93,6 +95,7 @@ internal fun PropertyLocationView(
             )
         }
 
+        val isMapSatelliteView by viewModel.isMapSatelliteView.collectAsStateWithLifecycle(false)
         val screenHeight = LocalWindowInfo.current.containerSize.height.dp
         val mapHeight = screenHeight.times(0.5f).coerceAtMost(240.dp)
         val mapModifier = Modifier.sizeIn(maxHeight = mapHeight)
@@ -101,10 +104,16 @@ internal fun PropertyLocationView(
             LocationMapView(
                 viewModel,
                 editor,
+                isMapSatelliteView,
                 Modifier.fillMaxSize(),
                 zoomControls = true,
                 disablePanning = true,
                 cameraPositionState = cameraPositionState,
+            )
+
+            MapViewToggleButton(
+                isMapSatelliteView,
+                viewModel::setMapSatelliteView,
             )
         }
 

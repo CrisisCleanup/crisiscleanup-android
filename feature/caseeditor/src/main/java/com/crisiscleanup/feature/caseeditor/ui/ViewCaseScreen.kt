@@ -77,6 +77,7 @@ import com.crisiscleanup.core.designsystem.component.LeadingIconChip
 import com.crisiscleanup.core.designsystem.component.LinkifyEmailText
 import com.crisiscleanup.core.designsystem.component.LinkifyLocationText
 import com.crisiscleanup.core.designsystem.component.LinkifyPhoneText
+import com.crisiscleanup.core.designsystem.component.MapViewToggleButton
 import com.crisiscleanup.core.designsystem.component.TemporaryDialog
 import com.crisiscleanup.core.designsystem.component.WorkTypeBusyAction
 import com.crisiscleanup.core.designsystem.component.WorkTypePrimaryAction
@@ -113,6 +114,7 @@ import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberUpdatedMarkerState
@@ -570,10 +572,11 @@ internal fun PropertyInfoRow(
 @Composable
 private fun CaseInfoView(
     worksite: Worksite,
-    viewModel: ViewCaseViewModel = hiltViewModel(),
     copyToClipboard: (String?) -> Unit = {},
+    viewModel: ViewCaseViewModel = hiltViewModel(),
 ) {
     val mapMarkerIcon by viewModel.mapMarkerIcon.collectAsStateWithLifecycle()
+    val isMapSatelliteView by viewModel.isMapSatelliteView.collectAsStateWithLifecycle(false)
     val workTypeProfile by viewModel.workTypeProfile.collectAsStateWithLifecycle()
 
     val removeFlag = remember(viewModel) { { flag: WorksiteFlag -> viewModel.removeFlag(flag) } }
@@ -617,9 +620,11 @@ private fun CaseInfoView(
         flagItems(worksite, removeFlag)
         propertyInfoItems(
             worksite,
+            isMapSatelliteView,
             mapMarkerIcon,
             copyToClipboard,
             distanceAwayText,
+            viewModel::setMapSatelliteView,
             viewModel::jumpToCaseOnMap,
         )
         workItems(
@@ -712,9 +717,11 @@ private fun FlagChip(
 @OptIn(ExperimentalFoundationApi::class)
 private fun LazyListScope.propertyInfoItems(
     worksite: Worksite,
+    isMapSatelliteView: Boolean,
     mapMarkerIcon: BitmapDescriptor? = null,
     copyToClipboard: (String?) -> Unit = {},
     distanceAwayText: String = "",
+    setMapSatelliteView: (Boolean) -> Unit = {},
     onJumpToCaseOnMap: () -> Unit = {},
 ) {
     itemInfoSectionHeader(0, "caseForm.property_information")
@@ -815,15 +822,26 @@ private fun LazyListScope.propertyInfoItems(
                     }
                 }
 
-                PropertyInfoMapView(
-                    worksite.coordinates,
-                    // TODO Common dimensions
+                Box(
                     Modifier
-                        .testTag("editCasePropertyInfoMapView")
+                        // TODO Common dimensions
                         .height(192.dp)
                         .padding(top = edgeSpacingHalf),
-                    mapMarkerIcon = mapMarkerIcon,
-                )
+                ) {
+                    PropertyInfoMapView(
+                        worksite.coordinates,
+                        isMapSatelliteView,
+                        Modifier
+                            .fillMaxSize()
+                            .testTag("editCasePropertyInfoMapView"),
+                        mapMarkerIcon = mapMarkerIcon,
+                    )
+
+                    MapViewToggleButton(
+                        isMapSatelliteView,
+                        setMapSatelliteView,
+                    )
+                }
             }
         }
     }
@@ -1088,6 +1106,7 @@ data class IconTextAction(
 @Composable
 private fun PropertyInfoMapView(
     coordinates: LatLng,
+    isSatelliteView: Boolean,
     modifier: Modifier = Modifier,
     mapMarkerIcon: BitmapDescriptor? = null,
     onMapLoaded: () -> Unit = {},
@@ -1103,7 +1122,11 @@ private fun PropertyInfoMapView(
     val update = CameraUpdateFactory.newLatLngZoom(coordinates, 13f)
     cameraPositionState.move(update)
 
-    val mapProperties by rememberMapProperties()
+    var mapProperties by rememberMapProperties()
+    LaunchedEffect(isSatelliteView) {
+        val mapType = if (isSatelliteView) MapType.SATELLITE else MapType.NORMAL
+        mapProperties = mapProperties.copy(mapType = mapType)
+    }
     GoogleMap(
         modifier = modifier,
         uiSettings = uiSettings,

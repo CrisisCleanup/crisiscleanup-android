@@ -30,6 +30,7 @@ import com.crisiscleanup.core.commoncase.WorkTypeTransferType
 import com.crisiscleanup.core.commoncase.oneDecimalFormat
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
 import com.crisiscleanup.core.data.repository.LocalImageRepository
@@ -92,6 +93,7 @@ class ViewCaseViewModel @Inject constructor(
     languageRefresher: LanguageRefresher,
     workTypeStatusRepository: WorkTypeStatusRepository,
     localImageRepository: LocalImageRepository,
+    private val preferencesRepository: AppPreferencesRepository,
     private val editableWorksiteProvider: EditableWorksiteProvider,
     val transferWorkTypeProvider: TransferWorkTypeProvider,
     permissionManager: PermissionManager,
@@ -121,6 +123,8 @@ class ViewCaseViewModel @Inject constructor(
     val mapMarkerIcon = MutableStateFlow<BitmapDescriptor?>(null)
     private var inBoundsPinIcon: BitmapDescriptor? = null
     private var outOfBoundsPinIcon: BitmapDescriptor? = null
+
+    val isMapSatelliteView = preferencesRepository.userPreferences.map { it.isMapSatelliteView }
 
     val isSyncing = combine(
         worksiteChangeRepository.syncingWorksiteIds,
@@ -641,6 +645,12 @@ class ViewCaseViewModel @Inject constructor(
                 "caseView.not_high_priority"
             }
             actionDescriptionMessage.value = translate(messageTranslateKey)
+        }
+    }
+
+    fun setMapSatelliteView(isSatellite: Boolean) {
+        viewModelScope.launch(ioDispatcher) {
+            preferencesRepository.setMapSatelliteView(isSatellite)
         }
     }
 

@@ -27,6 +27,7 @@ import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
 import com.crisiscleanup.core.data.repository.LocalImageRepository
@@ -68,6 +69,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
@@ -96,6 +98,7 @@ class CreateEditCaseViewModel @Inject constructor(
     private val worksiteChangeRepository: WorksiteChangeRepository,
     localImageRepository: LocalImageRepository,
     private val worksiteImageRepository: WorksiteImageRepository,
+    private val preferencesRepository: AppPreferencesRepository,
     private val syncPusher: SyncPusher,
     networkMonitor: NetworkMonitor,
     packageManager: PackageManager,
@@ -136,6 +139,9 @@ class CreateEditCaseViewModel @Inject constructor(
 
     val showInvalidWorksiteSave = MutableStateFlow(false)
     val invalidWorksiteInfo = mutableStateOf(InvalidWorksiteInfo())
+
+    override val isMapSatelliteView =
+        preferencesRepository.userPreferences.map { it.isMapSatelliteView }
 
     private val editingWorksite = editableWorksiteProvider.editableWorksite
     val photosWorksiteId: Long
@@ -452,6 +458,12 @@ class CreateEditCaseViewModel @Inject constructor(
             initialValue = incidentCreationNow,
             started = SharingStarted.WhileSubscribed(),
         )
+
+    override fun setMapSatelliteView(isSatellite: Boolean) {
+        viewModelScope.launch(ioDispatcher) {
+            preferencesRepository.setMapSatelliteView(isSatellite)
+        }
+    }
 
     fun scheduleSync() {
         val worksite = editingWorksite.value

@@ -503,13 +503,8 @@ internal fun BoxScope.CasesMapView(
         isMyLocation = isMyLocationEnabled,
     )
     LaunchedEffect(isSatelliteMapType) {
-        mapProperties = mapProperties.copy(
-            mapType = if (isSatelliteMapType) {
-                MapType.SATELLITE
-            } else {
-                MapType.NORMAL
-            },
-        )
+        val mapType = if (isSatelliteMapType) MapType.SATELLITE else MapType.NORMAL
+        mapProperties = mapProperties.copy(mapType = mapType)
     }
     GoogleMap(
         modifier = Modifier
