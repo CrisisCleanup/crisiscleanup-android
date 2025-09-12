@@ -917,8 +917,13 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             timeMarkers,
             statsUpdater,
             downloadSpeedTracker,
-            { count: Int, after: Instant ->
-                networkDataSource.getWorksitesPageAfter(incidentId, count, after)
+            { count: Int, offset: Int, after: Instant ->
+                networkDataSource.getWorksitesPageAfter(
+                    incidentId,
+                    pageCount = count,
+                    updatedAfter = after,
+                    offset = offset,
+                )
             },
             { worksites: List<NetworkWorksitePage> ->
                 saveWorksites(worksites, statsUpdater)
@@ -961,7 +966,6 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             ensureActive()
 
             val networkData = downloadSpeedTracker.time {
-                // TODO Edge case where paging data breaks where Cases are equally updated_at
                 val result = getNetworkData(
                     queryCount,
                     queryOffset,
@@ -1047,30 +1051,30 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         timeMarkers: IncidentDataSyncParameters.SyncTimeMarker,
         statsUpdater: IncidentDataPullStatsUpdater,
         downloadSpeedTracker: CountTimeTracker,
-        getNetworkData: suspend (Int, Instant) -> T,
+        getNetworkData: suspend (Int, Int, Instant) -> T,
         saveToDb: suspend (List<U>) -> Unit,
     ) where T : WorksiteDataResult<U>, U : WorksiteDataSubset = coroutineScope {
         var isSlowDownload: Boolean? = null
 
         fun log(message: String) = logStage(incidentId, stage, message)
 
-        var afterTimeMarker = timeMarkers.after
-
-        log("Downloading delta starting at $afterTimeMarker")
-
-        var queryCount = if (isPaused) 100 else 1000
-        val maxQueryCount = getMaxQueryCount(stage == IncidentCacheStage.WorksitesAdditional)
+        val queryCount =
+            if (isPaused) 100 else getMaxQueryCount(stage == IncidentCacheStage.WorksitesAdditional)
+        var queryOffset = 0
+        val afterTimeMarker = timeMarkers.after
         var savedWorksiteIds = emptySet<Long>()
         var initialCount = -1
         var savedCount = 0
+
+        log("Downloading delta starting at $afterTimeMarker")
 
         do {
             ensureActive()
 
             val networkData = downloadSpeedTracker.time {
-                // TODO Edge case where paging data breaks where Cases are equally updated_at
                 val result = getNetworkData(
                     queryCount,
+                    queryOffset,
                     afterTimeMarker,
                 )
                 if (initialCount < 0) {
@@ -1091,7 +1095,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             if (networkData.isEmpty()) {
                 updateUpdatedAfter(syncStart)
 
-                log("Cached $savedCount/$initialCount after. No Cases after $afterTimeMarker")
+                log("Cached $savedCount/$initialCount after. No Cases after $afterTimeMarker ($queryOffset-$queryCount)")
             } else {
                 downloadSpeedTracker.averageSpeed()?.let {
                     val isSlow = it < slowDownloadSpeed
@@ -1114,12 +1118,11 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
                 savedWorksiteIds = networkData.map { it.id }.toSet()
 
-                queryCount = (queryCount * 2).coerceAtMost(maxQueryCount)
-                afterTimeMarker = networkData.last().updatedAt
+                queryOffset += queryCount
+                val lastTimeMarker = networkData.last().updatedAt.minus(1.minutes)
+                updateUpdatedAfter(lastTimeMarker)
 
-                updateUpdatedAfter(afterTimeMarker)
-
-                log("Cached ${deduplicateWorksites.size} ($savedCount/$initialCount) after, up to $afterTimeMarker")
+                log("Cached ${deduplicateWorksites.size} ($savedCount/$initialCount) after, up to $afterTimeMarker ($queryOffset-$queryCount)")
             }
 
             if (isPaused) {
@@ -1238,11 +1241,12 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             timeMarkers,
             statsUpdater,
             downloadSpeedTracker,
-            { count: Int, after: Instant ->
+            { count: Int, offset: Int, after: Instant ->
                 networkDataSource.getWorksitesFlagsFormDataPageAfter(
                     incidentId,
                     count,
                     after,
+                    offset = offset,
                 )
             },
             { worksites: List<NetworkFlagsFormData> ->
