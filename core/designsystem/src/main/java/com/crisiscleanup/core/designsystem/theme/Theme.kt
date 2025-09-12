@@ -1,7 +1,5 @@
 package com.crisiscleanup.core.designsystem.theme
 
-import android.os.Build
-import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -116,32 +114,13 @@ val DarkColors = darkColorScheme(
 fun CrisisCleanupTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
-) = CrisisCleanupTheme(
-    darkTheme = darkTheme,
-    disableDynamicTheming = false,
-    content = content,
-)
-
-/**
- * App theme. This is an internal only version, to allow disabling dynamic theming
- * in tests.
- *
- * @param darkTheme Whether the theme should use a dark color scheme (follows system by default).
- * @param disableDynamicTheming If `true`, disables the use of dynamic theming, even when it is
- *        supported.
- */
-@Composable
-internal fun CrisisCleanupTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    disableDynamicTheming: Boolean,
-    content: @Composable () -> Unit,
 ) {
     // Color scheme
-    val colorScheme = SingleColors
+    val colorScheme = if (darkTheme) DarkColors else LightColors
 
     // Background theme
     val defaultBackgroundTheme = BackgroundTheme(
-        color = colorScheme.background,
+        color = colorScheme.surface,
     )
 
     val configuration = LocalConfiguration.current
@@ -159,12 +138,9 @@ internal fun CrisisCleanupTheme(
         LocalFontStyles provides CrisisCleanupTypographyDefault,
     ) {
         MaterialTheme(
-            colorScheme = colorScheme,
+            colorScheme = SingleColors,
             typography = AppTypography,
             content = content,
         )
     }
 }
-
-@ChecksSdkIntAtLeast(api = Build.VERSION_CODES.S)
-private fun supportsDynamicTheming() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S

@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -62,6 +61,7 @@ import com.crisiscleanup.core.designsystem.component.OpenSettingsDialog
 import com.crisiscleanup.core.designsystem.component.actionHeight
 import com.crisiscleanup.core.designsystem.component.actionRoundCornerShape
 import com.crisiscleanup.core.designsystem.icon.CrisisCleanupIcons
+import com.crisiscleanup.core.designsystem.theme.LocalDimensions
 import com.crisiscleanup.core.designsystem.theme.LocalFontStyles
 import com.crisiscleanup.core.designsystem.theme.cardContainerColor
 import com.crisiscleanup.core.designsystem.theme.listItemBottomPadding
@@ -196,7 +196,7 @@ private fun MenuScreen(
     val incidentDataCacheMetrics by viewModel.incidentDataCacheMetrics.collectAsStateWithLifecycle()
     val hasSpeedNotAdaptive = incidentDataCacheMetrics.hasSpeedNotAdaptive
 
-    Column {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
         AppTopBar(
             incidentDropdownModifier = incidentDropdownModifier,
             accountToggleModifier = accountToggleModifier
@@ -251,7 +251,8 @@ private fun MenuScreen(
         }
 
         LazyColumn(
-            Modifier.weight(1f),
+            Modifier.weight(1f)
+                .sizeIn(maxWidth = LocalDimensions.current.contentMaxWidth),
             state = lazyListState,
         ) {
             hotlineItems(
@@ -729,33 +730,24 @@ private fun AppUpdateView() {
         horizontalArrangement = listItemSpacedBy,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        var badgeOffsetX by remember { mutableStateOf(0.dp) }
-        val localDensity = LocalDensity.current
-        BadgedBox(
-            badge = {
-                Badge(
-                    Modifier
-                        .size(20.dp)
-                        .offset(x = badgeOffsetX),
-                    containerColor = primaryOrangeColor,
-                ) {
-                    // TODO: Match content color in menu badge
-                    Icon(
-                        imageVector = CrisisCleanupIcons.AppUpdateAvailable,
-                        contentDescription = null,
-                    )
-                }
-            },
+        Box(
             Modifier.weight(1f),
         ) {
             Text(
                 t("~~A new version of the app is available"),
-                Modifier.onGloballyPositioned {
-                    badgeOffsetX = with(localDensity) {
-                        -it.size.width.div(2).toDp()
-                    }
-                },
+                Modifier.align(Alignment.CenterStart),
             )
+            Badge(
+                Modifier.size(20.dp)
+                    .offset(x = (-10).dp, y = (-10).dp),
+                containerColor = primaryOrangeColor,
+            ) {
+                Icon(
+                    imageVector = CrisisCleanupIcons.AppUpdateAvailable,
+                    contentDescription = null,
+                    tint = Color.White,
+                )
+            }
         }
 
         val context = LocalContext.current

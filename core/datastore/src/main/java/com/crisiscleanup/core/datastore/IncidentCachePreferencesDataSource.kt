@@ -4,6 +4,7 @@ import androidx.datastore.core.DataStore
 import com.crisiscleanup.core.model.data.BoundedRegionParameters
 import com.crisiscleanup.core.model.data.IncidentWorksitesCachePreferences
 import kotlinx.coroutines.flow.map
+import kotlinx.datetime.Instant
 import javax.inject.Inject
 
 class IncidentCachePreferencesDataSource @Inject constructor(
@@ -19,10 +20,14 @@ class IncidentCachePreferencesDataSource @Inject constructor(
                 regionLongitude = it.regionLongitude,
                 regionRadiusMiles = it.regionRadiusMiles,
             ),
+            lastReconciled = Instant.fromEpochSeconds(it.caseReconciliationSeconds),
         )
     }
 
-    suspend fun setPreferences(preferences: IncidentWorksitesCachePreferences) {
+    /**
+     * Updates preferences relating to pausing sync and region syncing
+     */
+    suspend fun setPauseRegionPreferences(preferences: IncidentWorksitesCachePreferences) {
         dataStore.updateData {
             val regionParameters = preferences.boundedRegionParameters
             it.copy {
@@ -32,6 +37,14 @@ class IncidentCachePreferencesDataSource @Inject constructor(
                 regionLatitude = regionParameters.regionLatitude
                 regionLongitude = regionParameters.regionLongitude
                 regionRadiusMiles = regionParameters.regionRadiusMiles
+            }
+        }
+    }
+
+    suspend fun setLastReconciled(lastReconciled: Instant) {
+        dataStore.updateData {
+            it.copy {
+                caseReconciliationSeconds = lastReconciled.epochSeconds
             }
         }
     }

@@ -145,11 +145,18 @@ private fun AuthenticatedScreen(
     val t = LocalAppTranslator.current
 
     Text(
-        modifier = fillWidthPadded.testTag("authedAccountInfoText"),
+        modifier = fillWidthPadded.testTag("accountInfoText"),
         text = t("info.account_is")
             .replace("{full_name}", accountData.fullName)
             .replace("{email_address}", accountData.emailAddress),
     )
+
+    if (accountData.org.name.isNotBlank()) {
+        Text(
+            modifier = fillWidthPadded.testTag("organizationText"),
+            text = t(accountData.org.name),
+        )
+    }
 
     val authErrorMessage by viewModel.errorMessage
     ConditionalErrorMessage(authErrorMessage, "authenticated")

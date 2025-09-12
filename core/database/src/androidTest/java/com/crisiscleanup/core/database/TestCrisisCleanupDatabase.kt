@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.TypeConverters
+import com.crisiscleanup.core.database.dao.RecentWorksiteDao
 import com.crisiscleanup.core.database.dao.fts.IncidentFtsEntity
 import com.crisiscleanup.core.database.dao.fts.IncidentOrganizationFtsEntity
 import com.crisiscleanup.core.database.dao.fts.WorksiteTextFtsEntity
@@ -17,6 +18,7 @@ import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
 import com.crisiscleanup.core.database.model.IncidentLocationEntity
 import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
 import com.crisiscleanup.core.database.model.IncidentOrganizationSyncStatsEntity
+import com.crisiscleanup.core.database.model.IncidentWorksiteIds
 import com.crisiscleanup.core.database.model.IncidentWorksitesFullSyncStatsEntity
 import com.crisiscleanup.core.database.model.IncidentWorksitesSecondarySyncStatsEntity
 import com.crisiscleanup.core.database.model.LanguageTranslationEntity
@@ -108,6 +110,7 @@ abstract class TestCrisisCleanupDatabase : CrisisCleanupDatabase() {
     abstract fun testWorkTypeDao(): TestWorkTypeDao
     abstract fun testWorksiteChangeDao(): TestWorksiteChangeDao
     abstract fun testWorkTypeRequestDao(): TestWorkTypeRequestDao
+    abstract fun testRecentWorksiteDao(): TestRecentWorksiteDao
 }
 
 @Dao
@@ -163,6 +166,18 @@ interface TestWorksiteDao {
         limit: Int,
         offset: Int = 0,
     ): List<PopulatedWorksite>
+
+    @Transaction
+    @Query("SELECT * FROM worksites ORDER BY network_id")
+    fun getWorksites(): List<PopulatedWorksite>
+
+    @Transaction
+    @Query("SELECT id, incident_id, network_id FROM worksites_root ORDER BY id")
+    fun getRootWorksiteEntities(): List<IncidentWorksiteIds>
+
+    @Transaction
+    @Query("SELECT id, incident_id, network_id FROM worksites ORDER BY id")
+    fun getWorksiteEntities(): List<IncidentWorksiteIds>
 }
 
 @Dao
@@ -255,4 +270,11 @@ interface TestWorkTypeRequestDao {
     @Transaction
     @Query("SELECT id, network_id FROM worksite_work_type_requests WHERE worksite_id=:worksiteId")
     fun getNetworkedIdMap(worksiteId: Long): List<PopulatedIdNetworkId>
+}
+
+@Dao
+interface TestRecentWorksiteDao : RecentWorksiteDao {
+    @Transaction
+    @Query("SELECT * FROM recent_worksites ORDER BY id")
+    fun getRecentWorksites(): List<RecentWorksiteEntity>
 }

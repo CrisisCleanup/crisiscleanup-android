@@ -10,4 +10,5 @@ message IncidentCachePreferences {
   double region_longitude = 4;
   double region_radius_miles = 5;
   bool is_region_my_location = 6;
+  int64 case_reconciliation_seconds = 7;
 }

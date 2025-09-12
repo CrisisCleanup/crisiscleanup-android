@@ -12,11 +12,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -46,11 +44,7 @@ class IncidentSelectManager @Inject constructor(
         ::Pair,
     )
         .mapLatest { (incidents, accountData) ->
-            if (accountData.isCrisisCleanupAdmin) {
-                incidents
-            } else {
-                incidents.filter { accountData.approvedIncidents.contains(it.id) }
-            }
+            accountData.filterApproved(incidents)
         }
 
     private val preferencesIncidentId =
@@ -65,7 +59,6 @@ class IncidentSelectManager @Inject constructor(
     )
         .map { (selectedId, incidents) ->
             incidents.firstOrNull { it.id == selectedId }
-                ?: incidents.firstOrNull()
                 ?: EmptyIncident
         }
 
@@ -101,22 +94,6 @@ class IncidentSelectManager @Inject constructor(
             initialValue = EmptyIncident.id,
             started = subscribedReplay(),
         )
-
-    init {
-        combine(
-            preferencesIncidentId,
-            incidentsSource,
-            ::Pair,
-        )
-            .onEach { (selectedId, incidents) ->
-                val selectedIncident = incidents.find { it.id == selectedId } ?: EmptyIncident
-                if (selectedIncident == EmptyIncident && incidents.isNotEmpty()) {
-                    val firstIncident = incidents[0]
-                    appPreferencesRepository.setSelectedIncident(firstIncident.id)
-                }
-            }
-            .launchIn(coroutineScope)
-    }
 
     override fun selectIncident(incident: Incident) {
         coroutineScope.launch {

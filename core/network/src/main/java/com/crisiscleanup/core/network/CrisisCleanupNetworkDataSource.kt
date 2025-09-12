@@ -20,6 +20,7 @@ import com.crisiscleanup.core.network.model.NetworkTeamResult
 import com.crisiscleanup.core.network.model.NetworkUserProfile
 import com.crisiscleanup.core.network.model.NetworkWorkTypeRequest
 import com.crisiscleanup.core.network.model.NetworkWorkTypeStatusResult
+import com.crisiscleanup.core.network.model.NetworkWorksiteChange
 import com.crisiscleanup.core.network.model.NetworkWorksiteCoreData
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.core.network.model.NetworkWorksiteLocationSearch
@@ -101,28 +102,33 @@ interface CrisisCleanupNetworkDataSource {
         pageCount: Int,
         updatedAt: Instant,
         isPagingBackwards: Boolean,
+        offset: Int,
     ): NetworkWorksitesPageResult
 
     suspend fun getWorksitesPageBefore(
         incidentId: Long,
         pageCount: Int,
         updatedBefore: Instant,
+        offset: Int,
     ): NetworkWorksitesPageResult = getWorksitesPageUpdatedAt(
         incidentId,
         pageCount,
         updatedBefore,
         true,
+        offset = offset,
     )
 
     suspend fun getWorksitesPageAfter(
         incidentId: Long,
         pageCount: Int,
         updatedAfter: Instant,
+        offset: Int,
     ): NetworkWorksitesPageResult = getWorksitesPageUpdatedAt(
         incidentId,
         pageCount,
         updatedAfter,
         false,
+        offset = offset,
     )
 
     suspend fun getWorksitesFlagsFormDataPage(
@@ -130,28 +136,33 @@ interface CrisisCleanupNetworkDataSource {
         pageCount: Int,
         updatedAt: Instant,
         isPagingBackwards: Boolean,
+        offset: Int,
     ): NetworkFlagsFormDataResult
 
     suspend fun getWorksitesFlagsFormDataPageBefore(
         incidentId: Long,
         pageCount: Int,
         updatedBefore: Instant,
+        offset: Int,
     ) = getWorksitesFlagsFormDataPage(
         incidentId,
         pageCount,
         updatedBefore,
         true,
+        offset = offset,
     )
 
     suspend fun getWorksitesFlagsFormDataPageAfter(
         incidentId: Long,
         pageCount: Int,
         updatedAfter: Instant,
+        offset: Int,
     ) = getWorksitesFlagsFormDataPage(
         incidentId,
         pageCount,
         updatedAfter,
         false,
+        offset = offset,
     )
 
     suspend fun getWorksitesFlagsFormData(
@@ -213,4 +224,6 @@ interface CrisisCleanupNetworkDataSource {
         limit: Int = 0,
         offset: Int = 0,
     ): NetworkTeamResult
+
+    suspend fun getWorksiteChanges(after: Instant): List<NetworkWorksiteChange>
 }

@@ -16,6 +16,7 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
+import com.crisiscleanup.core.common.subscribedReplay
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AccountUpdateRepository
 import com.crisiscleanup.core.data.repository.ChangeOrganizationAction
@@ -34,15 +35,18 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.net.URL
 import javax.inject.Inject
-import com.crisiscleanup.core.common.combine as combineMore
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 @HiltViewModel
 class RequestOrgAccessViewModel @Inject constructor(
@@ -58,10 +62,20 @@ class RequestOrgAccessViewModel @Inject constructor(
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.Onboarding) private val logger: AppLogger,
 ) : ViewModel() {
+    companion object {
+        private var recentOrgTransfer = RecentOrgTransfer()
+    }
+
     private val editorArgs = RequestOrgAccessArgs(savedStateHandle)
 
     private val invitationCode = editorArgs.inviteCode ?: ""
     val showEmailInput = editorArgs.showEmailInput ?: false
+
+    val isFromInvite = invitationCode.isNotBlank()
+
+    @OptIn(ExperimentalTime::class)
+    val isRecentlyTransferred = recentOrgTransfer.isValidTransferCode(invitationCode)
+    val recentOrgTransferredTo = recentOrgTransfer.orgName
 
     private val isFetchingInviteInfo =
         MutableStateFlow(!showEmailInput && invitationCode.isNotBlank())
@@ -88,8 +102,6 @@ class RequestOrgAccessViewModel @Inject constructor(
         TransferOrgOption.All,
         TransferOrgOption.DoNotTransfer,
     )
-    var selectedOrgTransfer by mutableStateOf(TransferOrgOption.NotSelected)
-        private set
     var transferOrgErrorMessage by mutableStateOf("")
         private set
     val isTransferringOrg = MutableStateFlow(false)
@@ -119,14 +131,32 @@ class RequestOrgAccessViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val isLoading = combineMore(
-        isPullingLanguageOptions,
+    private val isStateTransient = combine(
         isFetchingInviteInfo,
         isRequestingInvite,
         isTransferringOrg,
-    ) { b0, b1, b2, b3 ->
-        b0 || b1 || b2 || b3
-    }
+        ::Triple,
+    )
+        .map { (b0, b1, b2) -> b0 || b1 || b2 }
+        .distinctUntilChanged()
+        .shareIn(
+            scope = viewModelScope,
+            started = subscribedReplay(1),
+            replay = 1,
+        )
+
+    val isLoading = combine(
+        isPullingLanguageOptions,
+        isStateTransient,
+    ) { b0, b1 -> b0 || b1 }
+        .distinctUntilChanged()
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = false,
+            started = SharingStarted.WhileSubscribed(),
+        )
+
+    val isEditable = isStateTransient.map(Boolean::not)
         .stateIn(
             scope = viewModelScope,
             initialValue = false,
@@ -135,18 +165,6 @@ class RequestOrgAccessViewModel @Inject constructor(
 
     var emailAddress by mutableStateOf("")
     var emailAddressError by mutableStateOf("")
-
-    val isEditable = combine(
-        isFetchingInviteInfo,
-        isRequestingInvite,
-        ::Pair,
-    )
-        .map { (b0, b1) -> !(b0 || b1) }
-        .stateIn(
-            scope = viewModelScope,
-            initialValue = false,
-            started = SharingStarted.WhileSubscribed(),
-        )
 
     init {
         requestedOrg
@@ -317,12 +335,11 @@ class RequestOrgAccessViewModel @Inject constructor(
         }
     }
 
-    fun onChangeTransferOrgOption(option: TransferOrgOption) {
-        selectedOrgTransfer = option
+    fun onChangeTransferOrgOption() {
         transferOrgErrorMessage = ""
     }
 
-    fun onTransferOrg() {
+    fun onTransferOrg(selectedOrgTransfer: TransferOrgOption) {
         when (selectedOrgTransfer) {
             TransferOrgOption.DoNotTransfer -> isInviteRequested.value = true
             TransferOrgOption.Users,
@@ -337,12 +354,6 @@ class RequestOrgAccessViewModel @Inject constructor(
                                 ChangeOrganizationAction.All
                             }
                             transferToOrg(action)
-
-                            val isAuthenticated = accountDataRepository.isAuthenticated.first()
-                            if (isAuthenticated) {
-                                clearInviteCode()
-                                accountEventBus.onLogout()
-                            }
                         } finally {
                             isTransferringOrg.value = false
                         }
@@ -354,9 +365,23 @@ class RequestOrgAccessViewModel @Inject constructor(
         }
     }
 
+    @OptIn(ExperimentalTime::class)
     private suspend fun transferToOrg(action: ChangeOrganizationAction) {
-        if (accountUpdateRepository.acceptOrganizationChange(action, invitationCode)) {
+        val isAuthenticated = accountDataRepository.isAuthenticated.first()
+
+        val isTransferred = accountUpdateRepository.acceptOrganizationChange(action, invitationCode)
+        if (isTransferred) {
             isOrgTransferred.value = true
+
+            if (isAuthenticated) {
+                recentOrgTransfer = RecentOrgTransfer(
+                    invitationCode,
+                    orgName = inviteDisplay.value?.inviteInfo?.orgName ?: "",
+                    transferEpochSeconds = Clock.System.now().epochSeconds,
+                )
+
+                accountEventBus.onLogout()
+            }
         } else {
             logger.logException(Exception("User transfer to org failed."))
             transferOrgErrorMessage =
@@ -380,4 +405,21 @@ enum class TransferOrgOption(val translateKey: String) {
     Users("invitationSignup.yes_transfer_just_me"),
     All("invitationSignup.yes_transfer_me_and_cases"),
     DoNotTransfer("invitationSignup.no_transfer"),
+}
+
+/*
+ * Hack for edge case when authenticated user is transferred and logs out
+ * Navigation graph changes losing state for success screen
+ * Use for preserving data in this transition (between navigation graphs)
+ */
+private data class RecentOrgTransfer(
+    val code: String = "",
+    val orgName: String = "",
+    val transferEpochSeconds: Long = 0,
+) {
+    @ExperimentalTime
+    fun isValidTransferCode(compare: String): Boolean {
+        return code == compare &&
+            transferEpochSeconds + 60 > Clock.System.now().epochSeconds
+    }
 }

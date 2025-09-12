@@ -8,8 +8,6 @@ data class UserData(
     val darkThemeConfig: DarkThemeConfig,
     val shouldHideOnboarding: Boolean,
 
-    val syncAttempt: SyncAttempt,
-
     val selectedIncidentId: Long,
 
     val languageKey: String,
