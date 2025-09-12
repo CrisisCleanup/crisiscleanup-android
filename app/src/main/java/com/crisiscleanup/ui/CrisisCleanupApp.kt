@@ -59,7 +59,6 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupAlertDialog
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.LocalDimensions
-import com.crisiscleanup.core.designsystem.theme.navigationContainerColor
 import com.crisiscleanup.core.model.data.TutorialViewId
 import com.crisiscleanup.core.ui.AppLayoutArea
 import com.crisiscleanup.core.ui.LayoutSizePosition
@@ -147,6 +146,11 @@ private fun BoxScope.LoadedContent(
     val orgUserInviteCode by viewModel.orgUserInvites.collectAsStateWithLifecycle("")
     val showOrgInviteTransfer = orgUserInviteCode.isNotBlank()
 
+    val contentModifier = Modifier
+        .semantics {
+            testTagsAsResourceId = true
+        }
+
     if (openAuthentication ||
         isNotAuthenticatedState
     ) {
@@ -158,6 +162,7 @@ private fun BoxScope.LoadedContent(
             appState,
             !isNotAuthenticatedState,
             toggleAuthentication,
+            modifier = contentModifier,
         )
 
         if (isNotAuthenticatedState) {
@@ -196,6 +201,7 @@ private fun BoxScope.LoadedContent(
                 isLoading,
                 viewModel.isAcceptingTerms,
                 setAcceptingTerms,
+                contentModifier,
                 onRejectTerms = viewModel::onRejectTerms,
                 onAcceptTerms = viewModel::onAcceptTerms,
                 errorMessage = viewModel.acceptTermsErrorMessage,
@@ -220,6 +226,7 @@ private fun BoxScope.LoadedContent(
             isOnboarding = isOnboarding,
             menuTutorialStep,
             viewModel.tutorialViewTracker.viewSizePositionLookup,
+            contentModifier,
             viewModel::onMenuTutorialNext,
         ) { openAuthentication = true }
 
@@ -261,33 +268,52 @@ private fun BoxScope.LoadedContent(
 }
 
 @Composable
-private fun AuthenticateContent(
+private fun ScaffoldBox(
     snackbarHostState: SnackbarHostState,
-    appState: CrisisCleanupAppState,
-    enableBackHandler: Boolean,
-    toggleAuthentication: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit = {},
 ) {
     Scaffold(
-        modifier = Modifier.semantics {
-            testTagsAsResourceId = true
-        },
+        modifier = modifier,
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
         contentWindowInsets = WindowInsets.systemBars,
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
-        CrisisCleanupAuthNavHost(
-            navController = appState.navController,
-            enableBackHandler = enableBackHandler,
-            closeAuthentication = { toggleAuthentication(false) },
-            onBack = appState::onBack,
-            modifier = Modifier
+        Box(
+            Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .consumeWindowInsets(padding)
                 .windowInsetsPadding(
                     WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
                 ),
+        ) {
+            content()
+        }
+    }
+}
+
+@Composable
+private fun AuthenticateContent(
+    snackbarHostState: SnackbarHostState,
+    appState: CrisisCleanupAppState,
+    enableBackHandler: Boolean,
+    toggleAuthentication: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    ScaffoldBox(
+        snackbarHostState,
+        modifier,
+    ) {
+        CrisisCleanupAuthNavHost(
+            navController = appState.navController,
+            enableBackHandler = enableBackHandler,
+            closeAuthentication = { toggleAuthentication(false) },
+            onBack = appState::onBack,
+            modifier = Modifier
+                .background(Color.White)
+                .fillMaxSize(),
         )
     }
 }
@@ -300,19 +326,15 @@ private fun AcceptTermsContent(
     isLoading: Boolean,
     isAcceptingTerms: Boolean,
     setAcceptingTerms: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
     onRejectTerms: () -> Unit = {},
     onAcceptTerms: () -> Unit = {},
     errorMessage: String = "",
 ) {
-    Scaffold(
-        modifier = Modifier.semantics {
-            testTagsAsResourceId = true
-        },
-        containerColor = Color.Transparent,
-        contentColor = MaterialTheme.colorScheme.onBackground,
-        contentWindowInsets = WindowInsets.systemBars,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-    ) { padding ->
+    ScaffoldBox(
+        snackbarHostState,
+        modifier,
+    ) {
         AcceptTermsView(
             termsOfServiceUrl,
             privacyPolicyUrl,
@@ -320,12 +342,8 @@ private fun AcceptTermsContent(
             isAcceptingTerms = isAcceptingTerms,
             setAcceptingTerms = setAcceptingTerms,
             modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .consumeWindowInsets(padding)
-                .windowInsetsPadding(
-                    WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal),
-                ),
+                .background(Color.White)
+                .fillMaxSize(),
             onRejectTerms = onRejectTerms,
             onAcceptTerms = onAcceptTerms,
             errorMessage = errorMessage,
@@ -341,6 +359,7 @@ private fun NavigableContent(
     isOnboarding: Boolean,
     menuTutorialStep: TutorialStep,
     tutorialViewLookup: SnapshotStateMap<TutorialViewId, LayoutSizePosition>,
+    modifier: Modifier = Modifier,
     advanceMenuTutorial: () -> Unit,
     openAuthentication: () -> Unit,
 ) {
@@ -353,11 +372,7 @@ private fun NavigableContent(
     }
 
     Scaffold(
-        modifier = Modifier
-            .background(navigationContainerColor)
-            .semantics {
-                testTagsAsResourceId = true
-            },
+        modifier = modifier,
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onBackground,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),

@@ -427,6 +427,7 @@ internal class CaseEditorDataLoader(
                         if (worksite.id > 0 &&
                             (networkId > 0 || localWorksite.localChanges.isLocalModified)
                         ) {
+                            // TODO Delete worksite if is not exists on backend and notify user Worksite no longer exists
                             isRefreshingWorksite.value = true
                             if (worksiteChangeRepository.trySyncWorksite(worksite.id) &&
                                 networkId > 0

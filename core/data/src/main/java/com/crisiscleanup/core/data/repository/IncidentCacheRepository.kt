@@ -12,6 +12,7 @@ import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.radians
+import com.crisiscleanup.core.common.split
 import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.common.sync.SyncResult
 import com.crisiscleanup.core.data.IncidentMapTracker
@@ -42,6 +43,7 @@ import com.crisiscleanup.core.model.data.IncidentWorksitesCachePreferences
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.KeyDynamicValuePair
 import com.crisiscleanup.core.network.model.NetworkFlagsFormData
+import com.crisiscleanup.core.network.model.NetworkWorksiteChange
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.core.network.model.NetworkWorksitePage
 import com.crisiscleanup.core.network.model.WorksiteDataResult
@@ -54,13 +56,13 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.combine as kCombine
@@ -489,6 +491,18 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 ensureActive()
                 worksitesAdditionalStatsUpdater.clearStep()
             }
+
+            if (!(isPaused || isSlowDownload)) {
+                ensureActive()
+
+                logStage(incidentId, IncidentCacheStage.WorksitesChangedIncident)
+
+                updateChangedIncidentWorksites(
+                    incidentId,
+                    syncPlan.restartCache,
+                    syncPreferences.lastReconciled,
+                )
+            }
         } catch (e: Exception) {
             with(incidentDataPullStats.value) {
                 if (queryCount < dataCount) {
@@ -869,8 +883,13 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 statsUpdater,
                 downloadSpeedTracker,
                 getTotalCaseCount = null,
-                { count: Int, before: Instant ->
-                    networkDataSource.getWorksitesPageBefore(incidentId, count, before)
+                { count: Int, offset: Int, before: Instant ->
+                    networkDataSource.getWorksitesPageBefore(
+                        incidentId,
+                        pageCount = count,
+                        updatedBefore = before,
+                        offset = offset,
+                    )
                 },
                 { worksites: List<NetworkWorksitePage> ->
                     saveWorksites(worksites, statsUpdater)
@@ -898,8 +917,13 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             timeMarkers,
             statsUpdater,
             downloadSpeedTracker,
-            { count: Int, after: Instant ->
-                networkDataSource.getWorksitesPageAfter(incidentId, count, after)
+            { count: Int, offset: Int, after: Instant ->
+                networkDataSource.getWorksitesPageAfter(
+                    incidentId,
+                    pageCount = count,
+                    updatedAfter = after,
+                    offset = offset,
+                )
             },
             { worksites: List<NetworkWorksitePage> ->
                 saveWorksites(worksites, statsUpdater)
@@ -921,7 +945,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         statsUpdater: IncidentDataPullStatsUpdater,
         downloadSpeedTracker: CountTimeTracker,
         getTotalCaseCount: (suspend () -> Int)?,
-        getNetworkData: suspend (Int, Instant) -> T,
+        getNetworkData: suspend (Int, Int, Instant) -> T,
         saveToDb: suspend (List<U>) -> Unit,
     ) where T : WorksiteDataResult<U>, U : WorksiteDataSubset = coroutineScope {
         var isSlowDownload: Boolean? = null
@@ -930,9 +954,10 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
         log("Downloading Worksites before")
 
-        var queryCount = if (isPaused) 100 else 1000
-        val maxQueryCount = getMaxQueryCount(stage == IncidentCacheStage.WorksitesAdditional)
-        var beforeTimeMarker = timeMarkers.before
+        val queryCount =
+            if (isPaused) 100 else getMaxQueryCount(stage == IncidentCacheStage.WorksitesAdditional)
+        var queryOffset = 0
+        val beforeTimeMarker = timeMarkers.before
         var savedWorksiteIds = emptySet<Long>()
         var initialCount = -1
         var savedCount = 0
@@ -941,9 +966,9 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             ensureActive()
 
             val networkData = downloadSpeedTracker.time {
-                // TODO Edge case where paging data breaks where Cases are equally updated_at
                 val result = getNetworkData(
                     queryCount,
+                    queryOffset,
                     beforeTimeMarker,
                 )
 
@@ -992,16 +1017,16 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
                 savedWorksiteIds = networkData.map { it.id }.toSet()
 
-                queryCount = (queryCount * 2).coerceAtMost(maxQueryCount)
-                beforeTimeMarker = networkData.last().updatedAt
-
+                val lastTimeMarker = networkData.last().updatedAt.plus(1.minutes)
                 if (stage == IncidentCacheStage.WorksitesCore) {
-                    syncParameterDao.updateUpdatedBefore(incidentId, beforeTimeMarker)
+                    syncParameterDao.updateUpdatedBefore(incidentId, lastTimeMarker)
                 } else {
-                    syncParameterDao.updateAdditionalUpdatedBefore(incidentId, beforeTimeMarker)
+                    syncParameterDao.updateAdditionalUpdatedBefore(incidentId, lastTimeMarker)
                 }
 
-                log("Cached ${deduplicateWorksites.size} ($savedCount/$initialCount) before, back to $beforeTimeMarker")
+                log("Cached ${deduplicateWorksites.size} ($savedCount/$initialCount) before, back to $lastTimeMarker ($queryOffset-$queryCount)")
+
+                queryOffset += queryCount
             }
 
             if (isPaused) {
@@ -1026,30 +1051,30 @@ class IncidentWorksitesCacheRepository @Inject constructor(
         timeMarkers: IncidentDataSyncParameters.SyncTimeMarker,
         statsUpdater: IncidentDataPullStatsUpdater,
         downloadSpeedTracker: CountTimeTracker,
-        getNetworkData: suspend (Int, Instant) -> T,
+        getNetworkData: suspend (Int, Int, Instant) -> T,
         saveToDb: suspend (List<U>) -> Unit,
     ) where T : WorksiteDataResult<U>, U : WorksiteDataSubset = coroutineScope {
         var isSlowDownload: Boolean? = null
 
         fun log(message: String) = logStage(incidentId, stage, message)
 
-        var afterTimeMarker = timeMarkers.after
-
-        log("Downloading delta starting at $afterTimeMarker")
-
-        var queryCount = if (isPaused) 100 else 1000
-        val maxQueryCount = getMaxQueryCount(stage == IncidentCacheStage.WorksitesAdditional)
+        val queryCount =
+            if (isPaused) 100 else getMaxQueryCount(stage == IncidentCacheStage.WorksitesAdditional)
+        var queryOffset = 0
+        val afterTimeMarker = timeMarkers.after
         var savedWorksiteIds = emptySet<Long>()
         var initialCount = -1
         var savedCount = 0
+
+        log("Downloading delta starting at $afterTimeMarker")
 
         do {
             ensureActive()
 
             val networkData = downloadSpeedTracker.time {
-                // TODO Edge case where paging data breaks where Cases are equally updated_at
                 val result = getNetworkData(
                     queryCount,
+                    queryOffset,
                     afterTimeMarker,
                 )
                 if (initialCount < 0) {
@@ -1070,7 +1095,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             if (networkData.isEmpty()) {
                 updateUpdatedAfter(syncStart)
 
-                log("Cached $savedCount/$initialCount after. No Cases after $afterTimeMarker")
+                log("Cached $savedCount/$initialCount after. No Cases after $afterTimeMarker ($queryOffset-$queryCount)")
             } else {
                 downloadSpeedTracker.averageSpeed()?.let {
                     val isSlow = it < slowDownloadSpeed
@@ -1093,12 +1118,12 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
                 savedWorksiteIds = networkData.map { it.id }.toSet()
 
-                queryCount = (queryCount * 2).coerceAtMost(maxQueryCount)
-                afterTimeMarker = networkData.last().updatedAt
+                val lastTimeMarker = networkData.last().updatedAt.minus(1.minutes)
+                updateUpdatedAfter(lastTimeMarker)
 
-                updateUpdatedAfter(afterTimeMarker)
+                log("Cached ${deduplicateWorksites.size} ($savedCount/$initialCount) after, up to $lastTimeMarker ($queryOffset-$queryCount)")
 
-                log("Cached ${deduplicateWorksites.size} ($savedCount/$initialCount) after, up to $afterTimeMarker")
+                queryOffset += queryCount
             }
 
             if (isPaused) {
@@ -1183,11 +1208,12 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                 statsUpdater,
                 downloadSpeedTracker,
                 getTotalCaseCount = { worksitesRepository.getWorksitesCount(incidentId) },
-                { count: Int, before: Instant ->
+                { count: Int, offset: Int, before: Instant ->
                     networkDataSource.getWorksitesFlagsFormDataPageBefore(
                         incidentId,
                         count,
                         before,
+                        offset = offset,
                     )
                 },
                 { worksites: List<NetworkFlagsFormData> ->
@@ -1216,11 +1242,12 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             timeMarkers,
             statsUpdater,
             downloadSpeedTracker,
-            { count: Int, after: Instant ->
+            { count: Int, offset: Int, after: Instant ->
                 networkDataSource.getWorksitesFlagsFormDataPageAfter(
                     incidentId,
                     count,
                     after,
+                    offset = offset,
                 )
             },
             { worksites: List<NetworkFlagsFormData> ->
@@ -1278,7 +1305,41 @@ class IncidentWorksitesCacheRepository @Inject constructor(
     }
 
     override suspend fun updateCachePreferences(preferences: IncidentWorksitesCachePreferences) {
-        incidentCachePreferences.setPreferences(preferences)
+        incidentCachePreferences.setPauseRegionPreferences(preferences)
+    }
+
+    private suspend fun updateChangedIncidentWorksites(
+        incidentId: Long,
+        restartCache: Boolean,
+        lastReconciled: Instant,
+    ) {
+        val minTimestamp = Clock.System.now().minus(45.days)
+        val queryAfter =
+            if (restartCache) minTimestamp else lastReconciled.coerceAtLeast(minTimestamp)
+        try {
+            val reconcileStart = Clock.System.now()
+
+            val worksiteChanges = networkDataSource.getWorksiteChanges(queryAfter)
+
+            val (valid, invalid) = worksiteChanges.split { it.invalidatedAt == null }
+            val invalidWorksiteIds = invalid.map(NetworkWorksiteChange::worksiteId)
+
+            val localChanges = worksitesRepository.processReconciliation(
+                valid.toList(),
+                invalidWorksiteIds,
+            )
+            if (localChanges.isNotEmpty()) {
+                logStage(
+                    incidentId,
+                    IncidentCacheStage.WorksitesChangedIncident,
+                    "${localChanges.size} Cases changed Incidents or were deleted.",
+                )
+            }
+
+            incidentCachePreferences.setLastReconciled(reconcileStart)
+        } catch (e: Exception) {
+            appLogger.logException(e)
+        }
     }
 
     private data class DownloadCountSpeed(
@@ -1297,6 +1358,7 @@ enum class IncidentCacheStage {
     WorksitesAdditional,
     ActiveIncident,
     ActiveIncidentOrganization,
+    WorksitesChangedIncident,
     End,
 }
 

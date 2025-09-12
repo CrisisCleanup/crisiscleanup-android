@@ -27,6 +27,8 @@ import com.crisiscleanup.core.network.model.NetworkUserRolesResult
 import com.crisiscleanup.core.network.model.NetworkUsersResult
 import com.crisiscleanup.core.network.model.NetworkWorkTypeRequestResult
 import com.crisiscleanup.core.network.model.NetworkWorkTypeStatusResult
+import com.crisiscleanup.core.network.model.NetworkWorksiteChange
+import com.crisiscleanup.core.network.model.NetworkWorksiteChangesResult
 import com.crisiscleanup.core.network.model.NetworkWorksiteLocationSearchResult
 import com.crisiscleanup.core.network.model.NetworkWorksitesCoreDataResult
 import com.crisiscleanup.core.network.model.NetworkWorksitesFullResult
@@ -226,6 +228,8 @@ private interface DataSourceApi {
         incidentId: Long,
         @Query("limit")
         pageCount: Int,
+        @Query("offset")
+        offset: Int,
         @Query("updated_at__lt")
         updatedBefore: Instant,
         @Query("sort")
@@ -239,6 +243,8 @@ private interface DataSourceApi {
         incidentId: Long,
         @Query("limit")
         pageCount: Int,
+        @Query("offset")
+        offset: Int,
         @Query("updated_at__gt")
         updatedAfter: Instant,
         @Query("sort")
@@ -320,6 +326,8 @@ private interface DataSourceApi {
         incidentId: Long,
         @Query("limit")
         limit: Int,
+        @Query("offset")
+        offset: Int,
         @Query("updated_at__lt")
         updatedAtBefore: Instant,
         @Query("sort")
@@ -333,6 +341,8 @@ private interface DataSourceApi {
         incidentId: Long,
         @Query("limit")
         limit: Int,
+        @Query("offset")
+        offset: Int,
         @Query("updated_at__gt")
         updatedAfter: Instant,
         @Query("sort")
@@ -360,6 +370,14 @@ private interface DataSourceApi {
     suspend fun getList(
         @Path("listId") id: Long,
     ): NetworkListResult
+
+    @TokenAuthenticationHeader
+    @WrapResponseHeader("changes")
+    @GET("worksites_changes")
+    suspend fun getWorksiteChanges(
+        @Query("since")
+        after: Instant,
+    ): NetworkWorksiteChangesResult
 
     @TokenAuthenticationHeader
     @GET("teams")
@@ -574,11 +592,13 @@ class DataApiClient @Inject constructor(
         pageCount: Int,
         updatedAt: Instant,
         isPagingBackwards: Boolean,
+        offset: Int,
     ): NetworkWorksitesPageResult {
         val result = if (isPagingBackwards) {
             networkApi.getWorksitesPageUpdatedBefore(
                 incidentId,
                 pageCount,
+                offset = offset,
                 updatedAt,
                 "-updated_at",
             )
@@ -586,6 +606,7 @@ class DataApiClient @Inject constructor(
             networkApi.getWorksitesPageUpdatedAfter(
                 incidentId,
                 pageCount,
+                offset = offset,
                 updatedAt,
                 "updated_at",
             )
@@ -600,11 +621,13 @@ class DataApiClient @Inject constructor(
         pageCount: Int,
         updatedAt: Instant,
         isPagingBackwards: Boolean,
+        offset: Int,
     ): NetworkFlagsFormDataResult {
         val result = if (isPagingBackwards) {
             networkApi.getWorksitesFlagsFormDataBefore(
                 incidentId,
                 pageCount,
+                offset = offset,
                 updatedAt,
                 "-updated_at",
             )
@@ -612,6 +635,7 @@ class DataApiClient @Inject constructor(
             networkApi.getWorksitesFlagsFormDataAfter(
                 incidentId,
                 pageCount,
+                offset = offset,
                 updatedAt,
                 "updated_at",
             )
@@ -735,6 +759,15 @@ class DataApiClient @Inject constructor(
             networkLists.add(list)
         }
         return networkLists
+    }
+
+    override suspend fun getWorksiteChanges(after: Instant): List<NetworkWorksiteChange> {
+        val result = networkApi.getWorksiteChanges(after)
+        result.errors?.tryThrowException()
+        result.error?.let { errorMessage ->
+            throw Exception(errorMessage)
+        }
+        return result.changes ?: emptyList()
     }
 
     override suspend fun getTeams(incidentId: Long?, limit: Int, offset: Int) =

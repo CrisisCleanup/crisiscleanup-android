@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
+import com.crisiscleanup.core.database.model.IncidentWorksiteIds
 import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.IncidentIdWorksiteCount
 import com.crisiscleanup.core.model.data.LocalWorksite
@@ -8,6 +9,7 @@ import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteMapMark
 import com.crisiscleanup.core.model.data.WorksiteSortBy
 import com.crisiscleanup.core.model.data.WorksiteSummary
+import com.crisiscleanup.core.network.model.NetworkWorksiteChange
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Clock
@@ -91,4 +93,9 @@ interface WorksitesRepository {
         searchRadius: Float = 100f,
         count: Int = 360,
     ): List<TableDataWorksite>
+
+    suspend fun processReconciliation(
+        validChanges: List<NetworkWorksiteChange>,
+        invalidatedNetworkWorksiteIds: List<Long>,
+    ): List<IncidentWorksiteIds>
 }

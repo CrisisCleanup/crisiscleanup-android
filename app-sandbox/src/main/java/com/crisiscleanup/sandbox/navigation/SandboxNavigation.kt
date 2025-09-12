@@ -12,6 +12,7 @@ import com.crisiscleanup.sandbox.ui.CheckboxesRoute
 import com.crisiscleanup.sandbox.ui.ChipsRoute
 import com.crisiscleanup.sandbox.ui.MapMarkersView
 import com.crisiscleanup.sandbox.ui.MultiImageRoute
+import com.crisiscleanup.sandbox.ui.RowBadgeView
 import com.crisiscleanup.sandbox.ui.SingleImageRoute
 
 const val ROOT_ROUTE = "root"
@@ -22,6 +23,7 @@ internal const val SINGLE_IMAGE_ROUTE = "single-image"
 internal const val MULTI_IMAGE_ROUTE = "multi-image"
 private const val MAP_MARKERS_ROUTE = "map-markers"
 const val ASYNC_IMAGE_ROUTE = "async-image"
+const val ROW_BADGE_ROUTE = "row-badge"
 
 fun NavController.navigateToBottomNav() {
     navigate(BOTTOM_NAV_ROUTE)
@@ -49,6 +51,10 @@ fun NavController.navigateToMapMarkers() {
 
 fun NavController.navigateToAsyncImage() {
     this.navigate(ASYNC_IMAGE_ROUTE)
+}
+
+fun NavController.navigateToRowBadge() {
+    this.navigate(ROW_BADGE_ROUTE)
 }
 
 @Composable
@@ -91,6 +97,10 @@ fun SandboxNavHost(
 
         composable(ASYNC_IMAGE_ROUTE) {
             AsyncImageView()
+        }
+
+        composable(ROW_BADGE_ROUTE) {
+            RowBadgeView()
         }
     }
 }

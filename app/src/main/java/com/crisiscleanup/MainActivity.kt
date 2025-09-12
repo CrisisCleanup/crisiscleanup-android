@@ -1,17 +1,14 @@
 package com.crisiscleanup
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,7 +22,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.metrics.performance.JankStats
 import com.crisiscleanup.MainActivityViewState.Loading
-import com.crisiscleanup.MainActivityViewState.Success
 import com.crisiscleanup.core.common.NetworkMonitor
 import com.crisiscleanup.core.common.PermissionManager
 import com.crisiscleanup.core.common.PhoneNumberPicker
@@ -40,7 +36,6 @@ import com.crisiscleanup.core.data.repository.EndOfLifeRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
 import com.crisiscleanup.core.data.util.TimeZoneMonitor
 import com.crisiscleanup.core.designsystem.theme.CrisisCleanupTheme
-import com.crisiscleanup.core.model.data.DarkThemeConfig
 import com.crisiscleanup.core.ui.LocalTimeZone
 import com.crisiscleanup.sync.initializers.scheduleSyncWorksites
 import com.crisiscleanup.ui.CrisisCleanupApp
@@ -124,7 +119,7 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            val darkTheme = shouldUseDarkTheme(viewState)
+            val darkTheme = isSystemInDarkTheme()
 
             val windowSizeClass = calculateWindowSizeClass(this)
             val appState = rememberCrisisCleanupAppState(
@@ -134,10 +129,7 @@ class MainActivity : ComponentActivity() {
             )
             val currentTimeZone by appState.currentTimeZone.collectAsStateWithLifecycle()
 
-            enableEdgeToEdge(
-                statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
-                navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
-            )
+            enableEdgeToEdge()
 
             CompositionLocalProvider(
                 LocalTimeZone provides currentTimeZone,
@@ -225,21 +217,5 @@ class MainActivity : ComponentActivity() {
             // TODO Open to browser or WebView. Do no loop back here.
             logger.logDebug("App link not processed $dataUri")
         }
-    }
-}
-
-/**
- * Returns `true` if dark theme should be used, as a function of the [viewState] and the
- * current system context.
- */
-@Composable
-private fun shouldUseDarkTheme(
-    viewState: MainActivityViewState,
-): Boolean = when (viewState) {
-    Loading -> isSystemInDarkTheme()
-    is Success -> when (viewState.userData.darkThemeConfig) {
-        DarkThemeConfig.FOLLOW_SYSTEM -> isSystemInDarkTheme()
-        DarkThemeConfig.LIGHT -> false
-        DarkThemeConfig.DARK -> true
     }
 }

@@ -51,14 +51,6 @@ annotation class ThemePreviews
 @ThemePreviews
 @Composable
 fun BackgroundDefault() {
-    CrisisCleanupTheme(disableDynamicTheming = true) {
-        CrisisCleanupBackground(Modifier.size(100.dp), content = {})
-    }
-}
-
-@ThemePreviews
-@Composable
-fun BackgroundDynamic() {
     CrisisCleanupTheme {
         CrisisCleanupBackground(Modifier.size(100.dp), content = {})
     }

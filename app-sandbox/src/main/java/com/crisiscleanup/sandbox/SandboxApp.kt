@@ -24,7 +24,7 @@ import androidx.navigation.NavController
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupBackground
 import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextButton
 import com.crisiscleanup.core.designsystem.theme.listItemSpacedBy
-import com.crisiscleanup.sandbox.navigation.ASYNC_IMAGE_ROUTE
+import com.crisiscleanup.sandbox.navigation.ROW_BADGE_ROUTE
 import com.crisiscleanup.sandbox.navigation.SandboxNavHost
 import com.crisiscleanup.sandbox.navigation.navigateToAsyncImage
 import com.crisiscleanup.sandbox.navigation.navigateToBottomNav
@@ -32,6 +32,7 @@ import com.crisiscleanup.sandbox.navigation.navigateToCheckboxes
 import com.crisiscleanup.sandbox.navigation.navigateToChips
 import com.crisiscleanup.sandbox.navigation.navigateToMapMarkers
 import com.crisiscleanup.sandbox.navigation.navigateToMultiImage
+import com.crisiscleanup.sandbox.navigation.navigateToRowBadge
 import com.crisiscleanup.sandbox.navigation.navigateToSingleImage
 
 @Composable
@@ -67,7 +68,7 @@ fun SandboxApp(
                     SandboxNavHost(
                         appState.navController,
                         appState::onBack,
-                        ASYNC_IMAGE_ROUTE,
+                        ROW_BADGE_ROUTE,
                     )
                 }
             }
@@ -107,6 +108,9 @@ fun RootRoute(navController: NavController) {
 
             CrisisCleanupTextButton(text = "Async image") {
                 navController.navigateToAsyncImage()
+            }
+            CrisisCleanupTextButton(text = "Row badge") {
+                navController.navigateToRowBadge()
             }
         }
     }

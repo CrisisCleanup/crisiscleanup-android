@@ -25,7 +25,7 @@ interface RecentWorksiteDao {
     )
     fun streamRecentWorksites(
         incidentId: Long,
-        limit: Int = 16,
+        limit: Int = 30,
         offset: Int = 0,
     ): Flow<List<PopulatedRecentWorksite>>
 
@@ -47,4 +47,8 @@ interface RecentWorksiteDao {
 
     @Upsert
     fun upsert(recentWorksite: RecentWorksiteEntity)
+
+    @Transaction
+    @Query("UPDATE recent_worksites SET incident_id=:incidentId WHERE id=:id")
+    fun syncUpdateRecentWorksiteIncident(id: Long, incidentId: Long)
 }

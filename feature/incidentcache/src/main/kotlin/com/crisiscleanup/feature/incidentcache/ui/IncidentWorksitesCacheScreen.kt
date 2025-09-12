@@ -170,6 +170,7 @@ private fun IncidentWorksitesCacheScreen(
                         IncidentCacheStage.WorksitesAdditional -> t("appCache.syncing_additional_case_data")
                         IncidentCacheStage.ActiveIncident -> t("appCache.syncing_active_incident")
                         IncidentCacheStage.ActiveIncidentOrganization -> t("appCache.syncing_organizations_in_incident")
+                        IncidentCacheStage.WorksitesChangedIncident -> t("~~Syncing Cases with changed Incidents...")
                         IncidentCacheStage.End -> t("appCache.sync_finished")
                     }
                     Text(syncStageMessage)

@@ -52,6 +52,13 @@ data class AccountData(
 
     val isAccessTokenExpired: Boolean
         get() = tokenExpiry <= Clock.System.now().minus(1.minutes)
+
+    fun <T : IncidentIdProvider> filterApproved(incidents: List<T>) =
+        if (isCrisisCleanupAdmin) {
+            incidents
+        } else {
+            incidents.filter { approvedIncidents.contains(it.id) }
+        }
 }
 
 val emptyOrgData = OrgData(0, "")

@@ -2,8 +2,12 @@ package com.crisiscleanup.core.model.data
 
 import kotlinx.datetime.Instant
 
+interface IncidentIdProvider {
+    val id: Long
+}
+
 data class Incident(
-    val id: Long,
+    override val id: Long,
     val name: String,
     val shortName: String,
     val caseLabel: String,
@@ -15,7 +19,7 @@ data class Incident(
     val disaster: Disaster = disasterFromLiteral(disasterLiteral),
     val displayLabel: String = if (caseLabel.isBlank()) name else "$caseLabel: $name",
     val startAt: Instant? = null,
-) {
+) : IncidentIdProvider {
     val formFieldLookup: Map<String, IncidentFormField> by lazy {
         formFields.associateBy { it.fieldKey }
     }
@@ -75,12 +79,12 @@ data class IncidentFormField(
 }
 
 data class IncidentIdNameType(
-    val id: Long,
+    override val id: Long,
     val name: String,
     val shortName: String,
     val disasterLiteral: String,
     val disaster: Disaster = disasterFromLiteral(disasterLiteral),
-)
+) : IncidentIdProvider
 
 val Incident.idNameType: IncidentIdNameType
     get() = IncidentIdNameType(

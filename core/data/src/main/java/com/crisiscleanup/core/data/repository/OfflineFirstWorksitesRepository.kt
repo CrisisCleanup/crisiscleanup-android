@@ -14,11 +14,13 @@ import com.crisiscleanup.core.database.dao.RecentWorksiteDao
 import com.crisiscleanup.core.database.dao.WorkTypeTransferRequestDaoPlus
 import com.crisiscleanup.core.database.dao.WorksiteDao
 import com.crisiscleanup.core.database.dao.WorksiteDaoPlus
+import com.crisiscleanup.core.database.model.IncidentWorksiteIds
 import com.crisiscleanup.core.database.model.PopulatedRecentWorksite
 import com.crisiscleanup.core.database.model.RecentWorksiteEntity
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.database.model.asSummary
 import com.crisiscleanup.core.model.data.CasesFilter
+import com.crisiscleanup.core.model.data.EmptyWorksite
 import com.crisiscleanup.core.model.data.IncidentIdWorksiteCount
 import com.crisiscleanup.core.model.data.OrganizationLocationAreaBounds
 import com.crisiscleanup.core.model.data.TableDataWorksite
@@ -26,6 +28,7 @@ import com.crisiscleanup.core.model.data.WorksiteSortBy
 import com.crisiscleanup.core.model.data.getClaimStatus
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.CrisisCleanupWriteApi
+import com.crisiscleanup.core.network.model.NetworkWorksiteChange
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
@@ -357,5 +360,24 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         }
 
         tableData
+    }
+
+    override suspend fun processReconciliation(
+        validChanges: List<NetworkWorksiteChange>,
+        invalidatedNetworkWorksiteIds: List<Long>,
+    ): List<IncidentWorksiteIds> {
+        val validIds = validChanges.map {
+            IncidentWorksiteIds(
+                incidentId = it.incidentId,
+                worksiteId = EmptyWorksite.id,
+                networkWorksiteId = it.worksiteId,
+            )
+        }
+        val worksitesChanged = worksiteDaoPlus.syncNetworkChangedIncidents(validIds)
+        val worksitesDeleted = worksiteDaoPlus.syncDeletedWorksites(invalidatedNetworkWorksiteIds)
+
+        return worksitesChanged.toMutableList().apply {
+            addAll(worksitesDeleted)
+        }
     }
 }
