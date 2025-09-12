@@ -238,6 +238,8 @@ private interface DataSourceApi {
         incidentId: Long,
         @Query("limit")
         pageCount: Int,
+        @Query("offset")
+        offset: Int,
         @Query("updated_at__gt")
         updatedAfter: Instant,
         @Query("sort")
@@ -334,6 +336,8 @@ private interface DataSourceApi {
         incidentId: Long,
         @Query("limit")
         limit: Int,
+        @Query("offset")
+        offset: Int,
         @Query("updated_at__gt")
         updatedAfter: Instant,
         @Query("sort")
@@ -548,6 +552,7 @@ class DataApiClient @Inject constructor(
             networkApi.getWorksitesPageUpdatedAfter(
                 incidentId,
                 pageCount,
+                offset = offset,
                 updatedAt,
                 "updated_at",
             )
@@ -576,6 +581,7 @@ class DataApiClient @Inject constructor(
             networkApi.getWorksitesFlagsFormDataAfter(
                 incidentId,
                 pageCount,
+                offset = offset,
                 updatedAt,
                 "updated_at",
             )

@@ -1017,8 +1017,6 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
                 savedWorksiteIds = networkData.map { it.id }.toSet()
 
-                queryOffset += queryCount
-
                 val lastTimeMarker = networkData.last().updatedAt.plus(1.minutes)
                 if (stage == IncidentCacheStage.WorksitesCore) {
                     syncParameterDao.updateUpdatedBefore(incidentId, lastTimeMarker)
@@ -1026,7 +1024,9 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     syncParameterDao.updateAdditionalUpdatedBefore(incidentId, lastTimeMarker)
                 }
 
-                log("Cached ${deduplicateWorksites.size} ($savedCount/$initialCount) before, back to $beforeTimeMarker ($queryOffset-$queryCount)")
+                log("Cached ${deduplicateWorksites.size} ($savedCount/$initialCount) before, back to $lastTimeMarker ($queryOffset-$queryCount)")
+
+                queryOffset += queryCount
             }
 
             if (isPaused) {
@@ -1118,11 +1118,12 @@ class IncidentWorksitesCacheRepository @Inject constructor(
 
                 savedWorksiteIds = networkData.map { it.id }.toSet()
 
-                queryOffset += queryCount
                 val lastTimeMarker = networkData.last().updatedAt.minus(1.minutes)
                 updateUpdatedAfter(lastTimeMarker)
 
-                log("Cached ${deduplicateWorksites.size} ($savedCount/$initialCount) after, up to $afterTimeMarker ($queryOffset-$queryCount)")
+                log("Cached ${deduplicateWorksites.size} ($savedCount/$initialCount) after, up to $lastTimeMarker ($queryOffset-$queryCount)")
+
+                queryOffset += queryCount
             }
 
             if (isPaused) {
