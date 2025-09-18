@@ -216,7 +216,14 @@ class CasesViewModel @Inject constructor(
     }
 
     val editedWorksiteLocation: LatLng?
-        get() = worksiteLocationEditor.takeEditedLocation()?.let { LatLng(it.first, it.second) }
+        get() = worksiteLocationEditor.takeEditedLocation()?.let {
+            // TODO Separate side effect
+            if (isTableView.value) {
+                isTableView.value = false
+            }
+
+            LatLng(it.first, it.second)
+        }
 
     val isIncidentLoading = incidentsRepository.isLoading
 
