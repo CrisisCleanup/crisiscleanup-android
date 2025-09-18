@@ -71,10 +71,6 @@ interface IncidentOrganizationDao {
     fun streamLocationIds(orgId: Long): Flow<PopulatedOrganizationLocationIds?>
 
     @Transaction
-    @Query("SELECT name FROM incident_organizations ORDER BY RANDOM() LIMIT 1")
-    fun getRandomOrganizationName(): String?
-
-    @Transaction
     @Query("INSERT INTO incident_organization_fts(incident_organization_fts) VALUES ('rebuild')")
     fun rebuildOrganizationFts()
 
