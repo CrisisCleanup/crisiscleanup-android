@@ -219,7 +219,7 @@ class CasesViewModel @Inject constructor(
         get() = worksiteLocationEditor.takeEditedLocation()?.let {
             // TODO Separate side effect
             if (isTableView.value) {
-                isTableView.value = false
+                setContentViewType(false)
             }
 
             LatLng(it.first, it.second)
