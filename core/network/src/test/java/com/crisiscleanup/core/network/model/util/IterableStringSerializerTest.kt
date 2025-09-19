@@ -118,6 +118,7 @@ class IterableStringSerializerTest {
         phoneNumbers,
         false,
         null,
+        null,
         emptyList(),
     )
 }

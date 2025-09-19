@@ -20,6 +20,7 @@ fun NetworkIncident.asEntity() = IncidentEntity(
     turnOnRelease = turnOnRelease,
     isArchived = isArchived ?: false,
     type = type,
+    ignoreClaimingThresholds = ignoreClaimingThresholds ?: false,
 )
 
 fun NetworkIncident.locationsAsEntity(): List<IncidentLocationEntity> =

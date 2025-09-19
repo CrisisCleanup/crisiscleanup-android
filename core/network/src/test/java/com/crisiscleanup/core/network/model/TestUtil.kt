@@ -33,6 +33,7 @@ internal fun fillNetworkIncident(
     activePhone: List<String>? = null,
     turnOnRelease: Boolean = false,
     isArchived: Boolean = false,
+    ignoreClaimingThresholds: Boolean? = null,
 ) = NetworkIncident(
     id,
     Instant.parse(startAt),
@@ -43,7 +44,8 @@ internal fun fillNetworkIncident(
     incidentType,
     activePhone,
     turnOnRelease,
-    isArchived,
+    isArchived = isArchived,
+    ignoreClaimingThresholds = ignoreClaimingThresholds,
 )
 
 internal fun fillNetworkLocation(

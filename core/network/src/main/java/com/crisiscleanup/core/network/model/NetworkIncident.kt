@@ -47,6 +47,8 @@ data class NetworkIncident(
     val turnOnRelease: Boolean,
     @SerialName("is_archived")
     val isArchived: Boolean?,
+    @SerialName("ignore_claiming_thresholds")
+    val ignoreClaimingThresholds: Boolean? = null,
 
     @SerialName("form_fields")
     val fields: List<NetworkIncidentFormField>? = null,

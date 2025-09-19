@@ -68,6 +68,7 @@ class OfflineFirstIncidentsRepository @Inject constructor(
         "turn_on_release",
         "active_phone_number",
         "is_archived",
+        "ignore_claiming_thresholds",
     )
     private val fullIncidentQueryFields: List<String> =
         incidentsQueryFields.toMutableList().also { it.add("form_fields") }
