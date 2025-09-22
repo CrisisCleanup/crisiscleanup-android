@@ -623,7 +623,10 @@ class CreateEditCaseViewModel @Inject constructor(
                 val saveIncidentId = saveChangeIncident.id
                 val isIncidentChange = saveIncidentId != EmptyIncident.id &&
                     saveIncidentId != worksite.incidentId
-                if (worksite == initialWorksite && !isIncidentChange) {
+                if (worksite == initialWorksite &&
+                    !isIncidentChange &&
+                    (!claimUnclaimed || worksite.unclaimedCount == 0)
+                ) {
                     if (hasNewWorksitePhotosImages) {
                         propertyEditor?.propertyInputData?.let {
                             setInvalidSection(0, it)
