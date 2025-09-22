@@ -58,6 +58,9 @@ internal class SyncWorker @AssistedInject constructor(
                 async {
                     syncPuller.syncPullStatuses() is SyncResult.Success
                 },
+                async {
+                    syncPuller.syncPullAppConfig() is SyncResult.Success
+                },
             ).all { it }
 
             syncLogger

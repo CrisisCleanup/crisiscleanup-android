@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+option java_package = "com.crisiscleanup.core.datastore";
+option java_multiple_files = true;
+
+message AppConfig {
+  int32 claimed_work_type_count_threshold = 1;
+  float claimed_work_type_closed_ratio_threshold = 2;
+}

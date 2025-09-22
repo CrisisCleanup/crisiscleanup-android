@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 48,
-    "identityHash": "91fe5184896521095774e8897ddf564e",
+    "identityHash": "4686c49696fda2353872c0de154f8605",
     "entities": [
       {
         "tableName": "work_type_statuses",
@@ -3291,17 +3291,17 @@
       },
       {
         "tableName": "incident_claim_thresholds",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`incident_id` INTEGER NOT NULL, `user_id` INTEGER NOT NULL, `user_claim_count` INTEGER NOT NULL, `user_close_ratio` REAL NOT NULL, PRIMARY KEY(`incident_id`, `user_id`), FOREIGN KEY(`incident_id`) REFERENCES `incidents`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`user_id` INTEGER NOT NULL, `incident_id` INTEGER NOT NULL, `user_claim_count` INTEGER NOT NULL, `user_close_ratio` REAL NOT NULL, PRIMARY KEY(`user_id`, `incident_id`), FOREIGN KEY(`incident_id`) REFERENCES `incidents`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
-            "fieldPath": "incidentId",
-            "columnName": "incident_id",
+            "fieldPath": "userId",
+            "columnName": "user_id",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "userId",
-            "columnName": "user_id",
+            "fieldPath": "incidentId",
+            "columnName": "incident_id",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -3321,10 +3321,21 @@
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "incident_id",
-            "user_id"
+            "user_id",
+            "incident_id"
           ]
         },
+        "indices": [
+          {
+            "name": "index_incident_claim_thresholds_incident_id",
+            "unique": false,
+            "columnNames": [
+              "incident_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_incident_claim_thresholds_incident_id` ON `${TABLE_NAME}` (`incident_id`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "incidents",
@@ -3342,7 +3353,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '91fe5184896521095774e8897ddf564e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4686c49696fda2353872c0de154f8605')"
     ]
   }
 }

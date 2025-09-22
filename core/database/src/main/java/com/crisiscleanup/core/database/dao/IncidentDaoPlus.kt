@@ -2,10 +2,12 @@ package com.crisiscleanup.core.database.dao
 
 import androidx.room.withTransaction
 import com.crisiscleanup.core.database.CrisisCleanupDatabase
+import com.crisiscleanup.core.database.model.IncidentClaimThresholdEntity
 import com.crisiscleanup.core.database.model.IncidentEntity
 import com.crisiscleanup.core.database.model.IncidentFormFieldEntity
 import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
 import com.crisiscleanup.core.database.model.IncidentLocationEntity
+import com.crisiscleanup.core.model.data.IncidentClaimThreshold
 import javax.inject.Inject
 
 class IncidentDaoPlus @Inject constructor(
@@ -54,4 +56,23 @@ class IncidentDaoPlus @Inject constructor(
             incidents.forEach { updateFormFields(it.first, it.second) }
         }
     }
+
+    suspend fun saveIncidentThresholds(
+        accountId: Long,
+        incidentThresholds: List<IncidentClaimThreshold>,
+    ) =
+        db.withTransaction {
+            val incidentDao = db.incidentDao()
+            val incidentIds = incidentThresholds.map(IncidentClaimThreshold::incidentId)
+            incidentDao.deleteUnspecifiedClaimThresholds(accountId, incidentIds)
+            val entities = incidentThresholds.map {
+                IncidentClaimThresholdEntity(
+                    userId = accountId,
+                    incidentId = it.incidentId,
+                    userClaimCount = it.claimedCount,
+                    userCloseRatio = it.closedRatio,
+                )
+            }
+            incidentDao.upsertIncidentClaimThresholds(entities)
+        }
 }

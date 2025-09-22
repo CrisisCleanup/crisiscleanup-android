@@ -8,6 +8,7 @@ import com.crisiscleanup.core.data.IncidentSelectManager
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AccountUpdateRepository
+import com.crisiscleanup.core.data.repository.AppConfigRepository
 import com.crisiscleanup.core.data.repository.AppDataManagementRepository
 import com.crisiscleanup.core.data.repository.AppEndOfLifeRepository
 import com.crisiscleanup.core.data.repository.AppMetricsRepository
@@ -16,6 +17,7 @@ import com.crisiscleanup.core.data.repository.CaseHistoryRepository
 import com.crisiscleanup.core.data.repository.CasesFilterRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupAccountDataRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupAccountUpdateRepository
+import com.crisiscleanup.core.data.repository.CrisisCleanupAppConfigRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupCasesFilterRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupDataManagementRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupListsRepository
@@ -215,4 +217,7 @@ interface DataModule {
     fun bindsIncidentCacheRepository(
         repository: IncidentWorksitesCacheRepository,
     ): IncidentCacheRepository
+
+    @Binds
+    fun appConfigRepository(repository: CrisisCleanupAppConfigRepository): AppConfigRepository
 }

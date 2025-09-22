@@ -206,6 +206,7 @@ class MainActivityViewModel @Inject constructor(
 
         syncPuller.appPullLanguage()
         syncPuller.appPullStatuses()
+        syncPuller.appPullAppConfig()
 
         syncPusher.scheduleSyncMedia()
 

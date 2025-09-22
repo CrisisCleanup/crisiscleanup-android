@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
 import com.crisiscleanup.core.database.dao.fts.PopulatedIncidentIdNameMatchInfo
+import com.crisiscleanup.core.database.model.IncidentClaimThresholdEntity
 import com.crisiscleanup.core.database.model.IncidentEntity
 import com.crisiscleanup.core.database.model.IncidentFormFieldEntity
 import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
@@ -95,6 +96,18 @@ interface IncidentDao {
         incidentId: Long,
         validFieldKeys: Set<String>,
     )
+
+    @Transaction
+    @Query(
+        """
+        DELETE FROM incident_claim_thresholds
+        WHERE user_id=:accountId AND incident_id NOT IN(:incidentIds)
+        """,
+    )
+    suspend fun deleteUnspecifiedClaimThresholds(accountId: Long, incidentIds: Collection<Long>)
+
+    @Upsert
+    suspend fun upsertIncidentClaimThresholds(claimThresholds: List<IncidentClaimThresholdEntity>)
 
     @Upsert
     suspend fun upsertFormFields(formFields: Collection<IncidentFormFieldEntity>)

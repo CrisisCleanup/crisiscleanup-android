@@ -7,6 +7,7 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.datastore.AccountInfoDataSource
+import com.crisiscleanup.core.model.data.IncidentClaimThreshold
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.profilePictureUrl
 import kotlinx.coroutines.CoroutineDispatcher
@@ -25,6 +26,7 @@ class AccountDataRefresher @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val accountDataRepository: AccountDataRepository,
     private val organizationsRepository: OrganizationsRepository,
+    private val incidentsRepository: IncidentsRepository,
     private val accountEventBus: AccountEventBus,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.Auth) private val logger: AppLogger,
@@ -57,6 +59,26 @@ class AccountDataRefresher @Inject constructor(
                     profile.approvedIncidents!!,
                     profile.activeRoles!!,
                 )
+
+                profile.internalState?.incidentThresholdLookup?.let {
+                    val incidentThresholds = it.mapNotNull { entry ->
+                        entry.key.toLongOrNull()?.let { incidentId ->
+                            val thresholds = entry.value
+                            if (thresholds.claimedCount != null && thresholds.closedRatio != null) {
+                                return@mapNotNull IncidentClaimThreshold(
+                                    incidentId = incidentId,
+                                    claimedCount = thresholds.claimedCount!!,
+                                    closedRatio = thresholds.closedRatio!!,
+                                )
+                            }
+                        }
+                        null
+                    }
+                    incidentsRepository.saveIncidentClaimThresholds(
+                        accountId,
+                        incidentThresholds,
+                    )
+                }
 
                 accountDataUpdateTime = Clock.System.now()
             }
