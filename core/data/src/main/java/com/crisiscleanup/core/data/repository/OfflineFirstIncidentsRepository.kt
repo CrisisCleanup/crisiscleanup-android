@@ -23,7 +23,6 @@ import com.crisiscleanup.core.datastore.LocalAppPreferencesDataSource
 import com.crisiscleanup.core.model.data.EmptyIncident
 import com.crisiscleanup.core.model.data.INCIDENT_ORGANIZATIONS_STABLE_MODEL_BUILD_VERSION
 import com.crisiscleanup.core.model.data.Incident
-import com.crisiscleanup.core.model.data.IncidentClaimThreshold
 import com.crisiscleanup.core.model.data.IncidentIdNameType
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkIncident
@@ -281,15 +280,4 @@ class OfflineFirstIncidentsRepository @Inject constructor(
     }
 
     override suspend fun getMatchingIncidents(q: String) = incidentDaoPlus.getMatchingIncidents(q)
-
-    override suspend fun saveIncidentClaimThresholds(
-        accountId: Long,
-        incidentThresholds: List<IncidentClaimThreshold>,
-    ) {
-        try {
-            incidentDaoPlus.saveIncidentThresholds(accountId, incidentThresholds)
-        } catch (e: Exception) {
-            logger.logException(e)
-        }
-    }
 }

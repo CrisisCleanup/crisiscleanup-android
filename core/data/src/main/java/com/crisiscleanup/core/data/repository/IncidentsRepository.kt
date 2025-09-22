@@ -1,7 +1,6 @@
 package com.crisiscleanup.core.data.repository
 
 import com.crisiscleanup.core.model.data.Incident
-import com.crisiscleanup.core.model.data.IncidentClaimThreshold
 import com.crisiscleanup.core.model.data.IncidentIdNameType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
@@ -38,9 +37,4 @@ interface IncidentsRepository {
     suspend fun pullIncidentOrganizations(incidentId: Long, force: Boolean = false)
 
     suspend fun getMatchingIncidents(q: String): List<IncidentIdNameType>
-
-    suspend fun saveIncidentClaimThresholds(
-        accountId: Long,
-        incidentThresholds: List<IncidentClaimThreshold>,
-    )
 }

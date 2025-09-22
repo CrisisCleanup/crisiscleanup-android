@@ -20,6 +20,7 @@ import com.crisiscleanup.core.data.repository.CrisisCleanupAccountUpdateReposito
 import com.crisiscleanup.core.data.repository.CrisisCleanupAppConfigRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupCasesFilterRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupDataManagementRepository
+import com.crisiscleanup.core.data.repository.CrisisCleanupIncidentClaimThresholdRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupListsRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupLocalImageRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupOrgVolunteerRepository
@@ -30,6 +31,7 @@ import com.crisiscleanup.core.data.repository.CrisisCleanupWorkTypeStatusReposit
 import com.crisiscleanup.core.data.repository.CrisisCleanupWorksiteChangeRepository
 import com.crisiscleanup.core.data.repository.EndOfLifeRepository
 import com.crisiscleanup.core.data.repository.IncidentCacheRepository
+import com.crisiscleanup.core.data.repository.IncidentClaimThresholdRepository
 import com.crisiscleanup.core.data.repository.IncidentWorksitesCacheRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
@@ -219,5 +221,10 @@ interface DataModule {
     ): IncidentCacheRepository
 
     @Binds
-    fun appConfigRepository(repository: CrisisCleanupAppConfigRepository): AppConfigRepository
+    fun bindsAppConfigRepository(repository: CrisisCleanupAppConfigRepository): AppConfigRepository
+
+    @Binds
+    fun bindsIncidentClaimThresholdRepository(
+        repository: CrisisCleanupIncidentClaimThresholdRepository,
+    ): IncidentClaimThresholdRepository
 }

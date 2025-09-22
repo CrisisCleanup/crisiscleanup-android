@@ -109,6 +109,18 @@ interface IncidentDao {
     @Upsert
     suspend fun upsertIncidentClaimThresholds(claimThresholds: List<IncidentClaimThresholdEntity>)
 
+    @Transaction
+    @Query(
+        """
+            SELECT * FROM incident_claim_thresholds
+            WHERE user_id=:accountId AND incident_id=:incidentId
+        """,
+    )
+    fun streamIncidentClaimThreshold(
+        accountId: Long,
+        incidentId: Long,
+    ): Flow<IncidentClaimThresholdEntity?>
+
     @Upsert
     suspend fun upsertFormFields(formFields: Collection<IncidentFormFieldEntity>)
 

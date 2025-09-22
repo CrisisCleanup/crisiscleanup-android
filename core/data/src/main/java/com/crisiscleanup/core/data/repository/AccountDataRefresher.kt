@@ -26,7 +26,7 @@ class AccountDataRefresher @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val accountDataRepository: AccountDataRepository,
     private val organizationsRepository: OrganizationsRepository,
-    private val incidentsRepository: IncidentsRepository,
+    private val incidentClaimThresholdRepository: IncidentClaimThresholdRepository,
     private val accountEventBus: AccountEventBus,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.Auth) private val logger: AppLogger,
@@ -74,7 +74,7 @@ class AccountDataRefresher @Inject constructor(
                         }
                         null
                     }
-                    incidentsRepository.saveIncidentClaimThresholds(
+                    incidentClaimThresholdRepository.saveIncidentClaimThresholds(
                         accountId,
                         incidentThresholds,
                     )

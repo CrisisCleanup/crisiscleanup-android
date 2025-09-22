@@ -28,6 +28,7 @@ import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AppPreferencesRepository
+import com.crisiscleanup.core.data.repository.IncidentClaimThresholdRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
 import com.crisiscleanup.core.data.repository.LocalImageRepository
@@ -88,7 +89,7 @@ class CreateEditCaseViewModel @Inject constructor(
     incidentsRepository: IncidentsRepository,
     incidentRefresher: IncidentRefresher,
     incidentBoundsProvider: IncidentBoundsProvider,
-    worksitesRepository: WorksitesRepository,
+    private val worksitesRepository: WorksitesRepository,
     languageRepository: LanguageTranslationsRepository,
     languageRefresher: LanguageRefresher,
     workTypeStatusRepository: WorkTypeStatusRepository,
@@ -96,6 +97,7 @@ class CreateEditCaseViewModel @Inject constructor(
     private val incidentSelector: IncidentSelector,
     private val translator: KeyResourceTranslator,
     private val worksiteChangeRepository: WorksiteChangeRepository,
+    private val incidentClaimThresholdRepository: IncidentClaimThresholdRepository,
     localImageRepository: LocalImageRepository,
     private val worksiteImageRepository: WorksiteImageRepository,
     private val preferencesRepository: AppPreferencesRepository,
@@ -104,7 +106,6 @@ class CreateEditCaseViewModel @Inject constructor(
     packageManager: PackageManager,
     appEnv: AppEnv,
     @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
-    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 
     inputValidator: InputValidator,
     searchWorksitesRepository: SearchWorksitesRepository,
@@ -115,6 +116,8 @@ class CreateEditCaseViewModel @Inject constructor(
     locationProvider: LocationProvider,
     addressSearchRepository: AddressSearchRepository,
     drawableResourceBitmapProvider: DrawableResourceBitmapProvider,
+
+    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     @Dispatcher(Default) coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : EditCaseBaseViewModel(editableWorksiteProvider, translator, logger), CaseCameraMediaManager {
     private val caseEditorArgs = CaseEditorArgs(savedStateHandle)
@@ -694,6 +697,14 @@ class CreateEditCaseViewModel @Inject constructor(
                 }
 
                 syncPusher.appPushWorksite(worksiteId, true)
+
+                incidentClaimThresholdRepository.onWorksiteCreated(worksiteId)
+
+                worksitesRepository.setRecentWorksite(
+                    incidentId = updatedIncidentId,
+                    worksiteId = worksiteId,
+                    viewStart = Clock.System.now(),
+                )
 
                 if (isIncidentChange) {
                     changeExistingWorksite.value =
