@@ -3,19 +3,18 @@ package com.crisiscleanup.core.data.repository
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
+import com.crisiscleanup.core.data.ClaimCloseCounts
 import com.crisiscleanup.core.data.IncidentSelector
+import com.crisiscleanup.core.data.WorksiteChangeWorkTypeAnalyzer
 import com.crisiscleanup.core.database.dao.IncidentDao
 import com.crisiscleanup.core.database.dao.IncidentDaoPlus
 import com.crisiscleanup.core.datastore.AccountInfoDataSource
 import com.crisiscleanup.core.model.data.IncidentClaimThreshold
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.first
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.ceil
 
 interface IncidentClaimThresholdRepository {
     suspend fun saveIncidentClaimThresholds(
@@ -24,51 +23,27 @@ interface IncidentClaimThresholdRepository {
     )
 
     fun onWorksiteCreated(worksiteId: Long)
+
+    suspend fun isUnderClaimThreshold(worksiteId: Long, additionalClaimCount: Int): Boolean
 }
 
 @Singleton
 class CrisisCleanupIncidentClaimThresholdRepository @Inject constructor(
-    incidentDao: IncidentDao,
-    accountInfoDataSource: AccountInfoDataSource,
+    private val incidentDao: IncidentDao,
+    private val accountInfoDataSource: AccountInfoDataSource,
     private val incidentDaoPlus: IncidentDaoPlus,
+    private val workTypeAnalyzer: WorksiteChangeWorkTypeAnalyzer,
     appConfigRepository: AppConfigRepository,
-    incidentSelector: IncidentSelector,
+    private val incidentSelector: IncidentSelector,
     @Logger(CrisisCleanupLoggers.Incidents) private val logger: AppLogger,
 ) : IncidentClaimThresholdRepository {
     private val worksitesCreated = ConcurrentHashMap<Long, Boolean>()
 
     private val incidentClaimThresholdConfig = appConfigRepository.appConfig
 
-    private val currentIncidentClaimThresholds = combine(
-        accountInfoDataSource.accountData,
-        incidentSelector.incidentId,
-        ::Pair,
-    )
-        .flatMapLatest { (accountData, incidentId) ->
-            val accountId = accountData.id
-            incidentDao.streamIncidentClaimThreshold(
-                accountId = accountId,
-                incidentId = incidentId,
-            )
-                .mapNotNull { it }
-                .map {
-                    IncidentClaimThreshold(
-                        incidentId = incidentId,
-                        claimedCount = it.userClaimCount,
-                        closedRatio = it.userCloseRatio,
-                    )
-                }
-        }
-
-    private val isAtIncidentClaimThreshold = combine(
-        incidentClaimThresholdConfig,
-        currentIncidentClaimThresholds,
-        ::Pair,
-    )
-        .mapLatest { (thresholdConfig, currentClaims) ->
-            currentClaims.claimedCount > thresholdConfig.claimCountThreshold &&
-                currentClaims.closedRatio < thresholdConfig.closedClaimRatioThreshold
-        }
+    override fun onWorksiteCreated(worksiteId: Long) {
+        worksitesCreated.put(worksiteId, true)
+    }
 
     override suspend fun saveIncidentClaimThresholds(
         accountId: Long,
@@ -81,7 +56,56 @@ class CrisisCleanupIncidentClaimThresholdRepository @Inject constructor(
         }
     }
 
-    override fun onWorksiteCreated(worksiteId: Long) {
-        worksitesCreated.put(worksiteId, true)
+    // TODO Write tests
+    override suspend fun isUnderClaimThreshold(
+        worksiteId: Long,
+        additionalClaimCount: Int,
+    ): Boolean {
+        if (additionalClaimCount <= 0) {
+            return true
+        }
+
+        val incidentId = incidentSelector.incidentId.first()
+
+        val accountData = accountInfoDataSource.accountData.first()
+        val accountId = accountData.id
+
+        val thresholdConfig = incidentClaimThresholdConfig.first()
+        val claimCountThreshold = thresholdConfig.claimCountThreshold
+        val closeRatioThreshold = thresholdConfig.closedClaimRatioThreshold
+
+        val currentIncidentThreshold = incidentDao.getIncidentClaimThreshold(
+            accountId = accountId,
+            incidentId = incidentId,
+        )
+        val userClaimCount = currentIncidentThreshold?.userClaimCount ?: 0
+        val userCloseRatio = currentIncidentThreshold?.userCloseRatio ?: 0.0f
+
+        var unsyncedCounts = ClaimCloseCounts(0, 0)
+        if (!worksitesCreated.contains(worksiteId)) {
+            try {
+                val orgId = accountData.org.id
+                unsyncedCounts = workTypeAnalyzer.countUnsyncedClaimCloseWork(
+                    orgId = orgId,
+                    incidentId = incidentId,
+                    worksitesCreated.keys,
+                )
+            } catch (e: Exception) {
+                logger.logException(e)
+            }
+        }
+        val unsyncedClaimCount = unsyncedCounts.claimCount
+
+        val claimCount = userClaimCount + unsyncedClaimCount
+        val closeRatio = if (unsyncedClaimCount > 0) {
+            val userCloseCount = ceil(userCloseRatio * userClaimCount)
+            val closeCount = userCloseCount + unsyncedCounts.closeCount
+            closeCount / claimCount
+        } else {
+            userCloseRatio
+        }
+
+        return claimCount < claimCountThreshold ||
+                closeRatio >= closeRatioThreshold
     }
 }

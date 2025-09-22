@@ -116,10 +116,10 @@ interface IncidentDao {
             WHERE user_id=:accountId AND incident_id=:incidentId
         """,
     )
-    fun streamIncidentClaimThreshold(
+    fun getIncidentClaimThreshold(
         accountId: Long,
         incidentId: Long,
-    ): Flow<IncidentClaimThresholdEntity?>
+    ): IncidentClaimThresholdEntity?
 
     @Upsert
     suspend fun upsertFormFields(formFields: Collection<IncidentFormFieldEntity>)

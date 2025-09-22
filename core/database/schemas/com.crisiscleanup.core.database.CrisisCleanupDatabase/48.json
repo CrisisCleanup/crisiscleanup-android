@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 48,
-    "identityHash": "4686c49696fda2353872c0de154f8605",
+    "identityHash": "14cfa1c49672e462fb73a8dffab22516",
     "entities": [
       {
         "tableName": "work_type_statuses",
@@ -1536,6 +1536,17 @@
               "DESC"
             ],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_worksite_changes_worksite_id_save_attempt_at_created_at` ON `${TABLE_NAME}` (`worksite_id` ASC, `save_attempt_at` ASC, `created_at` DESC)"
+          },
+          {
+            "name": "index_worksite_changes_organization_id_worksite_id_created_at",
+            "unique": false,
+            "columnNames": [
+              "organization_id",
+              "worksite_id",
+              "created_at"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_worksite_changes_organization_id_worksite_id_created_at` ON `${TABLE_NAME}` (`organization_id`, `worksite_id`, `created_at`)"
           }
         ],
         "foreignKeys": [
@@ -3353,7 +3364,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4686c49696fda2353872c0de154f8605')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '14cfa1c49672e462fb73a8dffab22516')"
     ]
   }
 }
