@@ -300,7 +300,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             if (syncPlan.syncIncidents) {
                 logStage(incidentId, IncidentCacheStage.Incidents)
 
-                accountDataRefresher.updateApprovedIncidents(true)
+                accountDataRefresher.updateProfileIncidentsData(true)
                 incidentsRepository.pullIncidents(true)
             }
 

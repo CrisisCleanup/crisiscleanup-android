@@ -102,7 +102,8 @@ class AccountDataRefresher @Inject constructor(
         refreshAccountData("accept terms", true)
     }
 
-    suspend fun updateApprovedIncidents(force: Boolean = false) {
-        refreshAccountData("approved incidents", force)
+    // Approved Incidents and Incident thresholds
+    suspend fun updateProfileIncidentsData(force: Boolean = false) {
+        refreshAccountData("profile incidents data", force)
     }
 }
