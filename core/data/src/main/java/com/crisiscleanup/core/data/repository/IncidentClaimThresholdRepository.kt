@@ -94,7 +94,7 @@ class CrisisCleanupIncidentClaimThresholdRepository @Inject constructor(
         val unsyncedClaimCount = unsyncedCounts.claimCount
 
         val claimCount = userClaimCount + unsyncedClaimCount
-        val closeRatio = if (unsyncedClaimCount > 0) {
+        val closeRatio = if (claimCount > 0) {
             val userCloseCount = ceil(userCloseRatio * userClaimCount)
             val closeCount = userCloseCount + unsyncedCounts.closeCount
             closeCount / claimCount

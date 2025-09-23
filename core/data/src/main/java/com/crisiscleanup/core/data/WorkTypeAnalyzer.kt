@@ -33,11 +33,9 @@ class WorksiteChangeWorkTypeAnalyzer @Inject constructor(
         val worksiteChangesLookup = mutableMapOf<Long, Pair<String, String?>>()
         worksiteChangeDao.getOrgChanges(orgId)
             .filter {
-                // TODO Write tests
                 !ignoreWorksiteIds.contains(it.entity.worksiteId)
             }
             .onEach {
-                // TODO Write tests
                 with(it.entity) {
                     val entry = worksiteChangesLookup[worksiteId]
                     worksiteChangesLookup[worksiteId] = if (entry == null) {
@@ -67,6 +65,7 @@ class WorksiteChangeWorkTypeAnalyzer @Inject constructor(
                         val startWorkLookup = firstSnapshot.workTypes.associateBy { it.localId }
                         val lastWorkLookup = lastSnapshot.workTypes.associateBy { it.localId }
                         for ((id, startWorkType) in startWorkLookup) {
+                            // TODO Test coverage on last work type is null
                             val lastWorkType = lastWorkLookup[id]?.workType
                             val change = Pair(startWorkType.workType, lastWorkType)
                             workTypeChanges.add(change)
@@ -81,14 +80,17 @@ class WorksiteChangeWorkTypeAnalyzer @Inject constructor(
         for ((startWorkType, lastWorkType) in workTypeChanges) {
             val wasClaimed = startWorkType.orgClaim == orgId
             val isClaimed = lastWorkType?.orgClaim == orgId
-            // TODO Write tests
             if (wasClaimed != isClaimed) {
-                if (isClaimed) {
-                    claimCount++
-                }
+                claimCount += if (isClaimed) 1 else -1
 
-                if (lastWorkType?.isClosed == true) {
+                if (isClaimed && lastWorkType.isClosed) {
                     closeCount++
+                }
+            } else if (isClaimed) {
+                val wasClosed = startWorkType.isClosed
+                val isClosed = lastWorkType.isClosed
+                if (wasClosed != isClosed) {
+                    closeCount += if (isClosed) 1 else -1
                 }
             }
         }

@@ -196,6 +196,84 @@ class IncidentClaimThresholdRepositoryTest {
     }
 
     @Test
+    fun unsyncedNegativeClaimCounts() = runTest {
+        every { appConfigRepository.appConfig } returns flowOf(
+            AppConfigData(20, 0.5f),
+        )
+
+        every {
+            incidentDao.getIncidentClaimThreshold(accountId = 84, incidentId = 34)
+        } returns makeClaimThresholdEntity(30, 0.3f)
+
+        var analyzerCallCounter = 0
+        val analyzerResults = listOf(
+            ClaimCloseCounts(-9, 1),
+            ClaimCloseCounts(-10, 0),
+            ClaimCloseCounts(-10, 1),
+            ClaimCloseCounts(-11, 0),
+        )
+        every {
+            workTypeAnalyzer.countUnsyncedClaimCloseWork(
+                77,
+                34,
+                emptySet(),
+            )
+        } answers {
+            analyzerResults[analyzerCallCounter++]
+        }
+
+        val expectedUnder = listOf(
+            false,
+            false,
+            true,
+            true,
+        )
+        for (i in expectedUnder.indices) {
+            val actual = claimThresholdRepository.isWithinClaimCloseThreshold(354, 1)
+            assertEquals(expectedUnder[i], actual, "$i")
+        }
+    }
+
+    @Test
+    fun unsyncedNegativeCloseCounts() = runTest {
+        every { appConfigRepository.appConfig } returns flowOf(
+            AppConfigData(20, 0.5f),
+        )
+
+        every {
+            incidentDao.getIncidentClaimThreshold(accountId = 84, incidentId = 34)
+        } returns makeClaimThresholdEntity(16, 0.75f)
+
+        var analyzerCallCounter = 0
+        val analyzerResults = listOf(
+            ClaimCloseCounts(4, -2),
+            ClaimCloseCounts(4, -1),
+            ClaimCloseCounts(4, -2),
+            ClaimCloseCounts(4, -3),
+        )
+        every {
+            workTypeAnalyzer.countUnsyncedClaimCloseWork(
+                77,
+                34,
+                emptySet(),
+            )
+        } answers {
+            analyzerResults[analyzerCallCounter++]
+        }
+
+        val expectedUnder = listOf(
+            true,
+            true,
+            true,
+            false,
+        )
+        for (i in expectedUnder.indices) {
+            val actual = claimThresholdRepository.isWithinClaimCloseThreshold(354, 1)
+            assertEquals(expectedUnder[i], actual, "$i")
+        }
+    }
+
+    @Test
     fun analyzerException() = runTest {
         every { appConfigRepository.appConfig } returns flowOf(
             AppConfigData(20, 0.5f),
