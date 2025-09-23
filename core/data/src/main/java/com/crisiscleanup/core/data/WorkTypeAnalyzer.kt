@@ -101,4 +101,3 @@ data class ClaimCloseCounts(
     val claimCount: Int,
     val closeCount: Int,
 )
-

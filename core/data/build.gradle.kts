@@ -34,4 +34,5 @@ dependencies {
     testImplementation(projects.core.testing)
     testImplementation(projects.core.datastoreTest)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
 }

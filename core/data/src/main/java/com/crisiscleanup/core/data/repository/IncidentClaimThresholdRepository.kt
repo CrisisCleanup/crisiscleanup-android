@@ -5,7 +5,7 @@ import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.data.ClaimCloseCounts
 import com.crisiscleanup.core.data.IncidentSelector
-import com.crisiscleanup.core.data.WorksiteChangeWorkTypeAnalyzer
+import com.crisiscleanup.core.data.WorkTypeAnalyzer
 import com.crisiscleanup.core.database.dao.IncidentDao
 import com.crisiscleanup.core.database.dao.IncidentDaoPlus
 import com.crisiscleanup.core.datastore.AccountInfoDataSource
@@ -24,22 +24,20 @@ interface IncidentClaimThresholdRepository {
 
     fun onWorksiteCreated(worksiteId: Long)
 
-    suspend fun isUnderClaimThreshold(worksiteId: Long, additionalClaimCount: Int): Boolean
+    suspend fun isWithinClaimCloseThreshold(worksiteId: Long, additionalClaimCount: Int): Boolean
 }
 
 @Singleton
 class CrisisCleanupIncidentClaimThresholdRepository @Inject constructor(
     private val incidentDao: IncidentDao,
-    private val accountInfoDataSource: AccountInfoDataSource,
     private val incidentDaoPlus: IncidentDaoPlus,
-    private val workTypeAnalyzer: WorksiteChangeWorkTypeAnalyzer,
-    appConfigRepository: AppConfigRepository,
+    private val accountInfoDataSource: AccountInfoDataSource,
+    private val workTypeAnalyzer: WorkTypeAnalyzer,
+    private val appConfigRepository: AppConfigRepository,
     private val incidentSelector: IncidentSelector,
     @Logger(CrisisCleanupLoggers.Incidents) private val logger: AppLogger,
 ) : IncidentClaimThresholdRepository {
     private val worksitesCreated = ConcurrentHashMap<Long, Boolean>()
-
-    private val incidentClaimThresholdConfig = appConfigRepository.appConfig
 
     override fun onWorksiteCreated(worksiteId: Long) {
         worksitesCreated.put(worksiteId, true)
@@ -56,8 +54,7 @@ class CrisisCleanupIncidentClaimThresholdRepository @Inject constructor(
         }
     }
 
-    // TODO Write tests
-    override suspend fun isUnderClaimThreshold(
+    override suspend fun isWithinClaimCloseThreshold(
         worksiteId: Long,
         additionalClaimCount: Int,
     ): Boolean {
@@ -70,7 +67,7 @@ class CrisisCleanupIncidentClaimThresholdRepository @Inject constructor(
         val accountData = accountInfoDataSource.accountData.first()
         val accountId = accountData.id
 
-        val thresholdConfig = incidentClaimThresholdConfig.first()
+        val thresholdConfig = appConfigRepository.appConfig.first()
         val claimCountThreshold = thresholdConfig.claimCountThreshold
         val closeRatioThreshold = thresholdConfig.closedClaimRatioThreshold
 
@@ -82,7 +79,7 @@ class CrisisCleanupIncidentClaimThresholdRepository @Inject constructor(
         val userCloseRatio = currentIncidentThreshold?.userCloseRatio ?: 0.0f
 
         var unsyncedCounts = ClaimCloseCounts(0, 0)
-        if (!worksitesCreated.contains(worksiteId)) {
+        if (!worksitesCreated.containsKey(worksiteId)) {
             try {
                 val orgId = accountData.org.id
                 unsyncedCounts = workTypeAnalyzer.countUnsyncedClaimCloseWork(
@@ -106,6 +103,6 @@ class CrisisCleanupIncidentClaimThresholdRepository @Inject constructor(
         }
 
         return claimCount < claimCountThreshold ||
-                closeRatio >= closeRatioThreshold
+            closeRatio >= closeRatioThreshold
     }
 }
