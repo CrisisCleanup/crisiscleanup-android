@@ -69,6 +69,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -86,7 +87,7 @@ import kotlin.time.Duration.Companion.seconds
 @HiltViewModel
 class CreateEditCaseViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    accountDataRepository: AccountDataRepository,
+    private val accountDataRepository: AccountDataRepository,
     accountDataRefresher: AccountDataRefresher,
     incidentsRepository: IncidentsRepository,
     incidentRefresher: IncidentRefresher,
@@ -122,6 +123,26 @@ class CreateEditCaseViewModel @Inject constructor(
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     @Dispatcher(Default) coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
 ) : EditCaseBaseViewModel(editableWorksiteProvider, translator, logger), CaseCameraMediaManager {
+    companion object {
+        internal suspend fun isOverClaiming(
+            orgId: Long,
+            startingWorksite: Worksite,
+            updatedWorksite: Worksite,
+            incidentClaimThresholdRepository: IncidentClaimThresholdRepository,
+        ): Boolean {
+            val endClaimCount = updatedWorksite.getClaimedCount(orgId)
+            val startClaimCount = startingWorksite.getClaimedCount(orgId)
+            val deltaClaimCount = endClaimCount - startClaimCount
+            if (deltaClaimCount > 0) {
+                return !incidentClaimThresholdRepository.isWithinClaimCloseThreshold(
+                    updatedWorksite.id,
+                    deltaClaimCount,
+                )
+            }
+            return false
+        }
+    }
+
     private val caseEditorArgs = CaseEditorArgs(savedStateHandle)
     private var worksiteIdArg = caseEditorArgs.worksiteId
     val isCreateWorksite: Boolean
@@ -222,6 +243,8 @@ class CreateEditCaseViewModel @Inject constructor(
 
     override val capturePhotoUri: Uri?
         get() = worksiteImageRepository.newPhotoUri
+
+    var isOverClaimingWork by mutableStateOf(false)
 
     init {
         updateHeaderTitle()
@@ -604,6 +627,20 @@ class CreateEditCaseViewModel @Inject constructor(
         }
     }
 
+    private suspend fun isOverClaiming(
+        startingWorksite: Worksite,
+        updatedWorksite: Worksite,
+    ): Boolean {
+        val accountData = accountDataRepository.accountData.first()
+        val orgId = accountData.org.id
+        return isOverClaiming(
+            orgId,
+            startingWorksite,
+            updatedWorksite,
+            incidentClaimThresholdRepository,
+        )
+    }
+
     fun saveChanges(
         claimUnclaimed: Boolean,
         backOnSuccess: Boolean = true,
@@ -681,6 +718,13 @@ class CreateEditCaseViewModel @Inject constructor(
                     updatedAt = Clock.System.now(),
                     what3Words = updatedWhat3Words,
                 )
+
+                if (!isCreateWorksite &&
+                    isOverClaiming(worksite, updatedWorksite)
+                ) {
+                    isOverClaimingWork = true
+                    return@launch
+                }
 
                 worksiteIdArg = worksiteChangeRepository.saveWorksiteChange(
                     initialWorksite,

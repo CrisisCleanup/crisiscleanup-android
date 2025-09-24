@@ -581,21 +581,14 @@ class ViewCaseViewModel @Inject constructor(
     private suspend fun isOverClaiming(
         startingWorksite: Worksite,
         changedWorksite: Worksite,
-    ): Boolean {
-        organizationId?.let { orgId ->
-            val endClaimCount = changedWorksite.getClaimedCount(orgId)
-            val startClaimCount = startingWorksite.getClaimedCount(orgId)
-            val deltaClaimCount = endClaimCount - startClaimCount
-            if (deltaClaimCount > 0) {
-                return !incidentClaimThresholdRepository.isWithinClaimCloseThreshold(
-                    changedWorksite.id,
-                    deltaClaimCount,
-                )
-            }
-        }
-
-        return false
-    }
+    ) = organizationId?.let { orgId ->
+        return@let CreateEditCaseViewModel.isOverClaiming(
+            orgId,
+            startingWorksite,
+            changedWorksite,
+            incidentClaimThresholdRepository,
+        )
+    } ?: false
 
     private val viewStateCaseData: CaseEditorViewState.CaseData?
         get() = viewState.value.asCaseData()
