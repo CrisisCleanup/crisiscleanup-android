@@ -26,6 +26,7 @@ import com.crisiscleanup.core.common.sync.SyncPusher
 import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifierNone
+import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.data.repository.IncidentClaimThresholdRepository
@@ -86,6 +87,7 @@ import kotlin.time.Duration.Companion.seconds
 class CreateEditCaseViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     accountDataRepository: AccountDataRepository,
+    accountDataRefresher: AccountDataRefresher,
     incidentsRepository: IncidentsRepository,
     incidentRefresher: IncidentRefresher,
     incidentBoundsProvider: IncidentBoundsProvider,
@@ -240,6 +242,7 @@ class CreateEditCaseViewModel @Inject constructor(
             incidentIdIn,
             worksiteIdArg,
             accountDataRepository,
+            accountDataRefresher,
             incidentsRepository,
             incidentRefresher,
             incidentBoundsProvider,
@@ -701,7 +704,9 @@ class CreateEditCaseViewModel @Inject constructor(
 
                 syncPusher.appPushWorksite(worksiteId, true)
 
-                incidentClaimThresholdRepository.onWorksiteCreated(worksiteId)
+                if (isCreateWorksite) {
+                    incidentClaimThresholdRepository.onWorksiteCreated(worksiteId)
+                }
 
                 worksitesRepository.setRecentWorksite(
                     incidentId = updatedIncidentId,

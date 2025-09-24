@@ -246,6 +246,11 @@ internal fun EditExistingCaseRoute(
 
         val actionDescription by viewModel.actionDescriptionMessage.collectAsStateWithLifecycle()
         TemporaryDialog(actionDescription)
+
+        if (viewModel.isOverClaimingWork) {
+            val closeDialog = remember(viewModel) { { viewModel.isOverClaimingWork = false } }
+            OverClaimAlertDialog(closeDialog)
+        }
     }
 }
 

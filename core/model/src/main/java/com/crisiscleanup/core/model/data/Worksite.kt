@@ -96,6 +96,15 @@ data class Worksite(
         )
     }
 
+    fun getClaimedCount(orgId: Long): Int {
+        return workTypes.fold(
+            0,
+            { acc, workType ->
+                acc + if (workType.orgClaim == orgId) 1 else 0
+            },
+        )
+    }
+
     val isReleaseEligible = createdAt?.let {
         Clock.System.now().minus(it) > WorkTypeReleaseDaysThreshold
     } ?: false

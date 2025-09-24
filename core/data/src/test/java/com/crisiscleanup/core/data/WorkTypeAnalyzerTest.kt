@@ -327,7 +327,7 @@ class WorkTypeAnalyzerTest {
             worksiteChangeN10(worksiteId = worksiteId),
             worksiteChange10(worksiteId = worksiteId),
             worksiteChange21(worksiteId = worksiteId),
-            worksiteChangeN01(worksiteId = worksiteId)
+            worksiteChangeN01(worksiteId = worksiteId),
         )
 
         val expected = ClaimCloseCounts(0, 0)

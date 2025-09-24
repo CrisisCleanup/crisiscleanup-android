@@ -31,6 +31,7 @@ import com.crisiscleanup.core.commoncase.oneDecimalFormat
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AppPreferencesRepository
+import com.crisiscleanup.core.data.repository.IncidentClaimThresholdRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
 import com.crisiscleanup.core.data.repository.LocalImageRepository
@@ -98,6 +99,7 @@ class ViewCaseViewModel @Inject constructor(
     val transferWorkTypeProvider: TransferWorkTypeProvider,
     permissionManager: PermissionManager,
     private val translator: KeyResourceTranslator,
+    private val incidentClaimThresholdRepository: IncidentClaimThresholdRepository,
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val worksiteImageRepository: WorksiteImageRepository,
     private val syncPusher: SyncPusher,
@@ -225,6 +227,8 @@ class ViewCaseViewModel @Inject constructor(
 
     val actionDescriptionMessage = MutableStateFlow("")
 
+    var isOverClaimingWork by mutableStateOf(false)
+
     init {
         updateHeaderTitle()
 
@@ -235,6 +239,7 @@ class ViewCaseViewModel @Inject constructor(
             incidentIdArg,
             worksiteIdArg,
             accountDataRepository,
+            accountDataRefresher,
             incidentsRepository,
             incidentRefresher,
             incidentBoundsProvider,
@@ -573,6 +578,25 @@ class ViewCaseViewModel @Inject constructor(
         }
     }
 
+    private suspend fun isOverClaiming(
+        startingWorksite: Worksite,
+        changedWorksite: Worksite,
+    ): Boolean {
+        organizationId?.let { orgId ->
+            val endClaimCount = changedWorksite.getClaimedCount(orgId)
+            val startClaimCount = startingWorksite.getClaimedCount(orgId)
+            val deltaClaimCount = endClaimCount - startClaimCount
+            if (deltaClaimCount > 0) {
+                return !incidentClaimThresholdRepository.isWithinClaimCloseThreshold(
+                    changedWorksite.id,
+                    deltaClaimCount,
+                )
+            }
+        }
+
+        return false
+    }
+
     private val viewStateCaseData: CaseEditorViewState.CaseData?
         get() = viewState.value.asCaseData()
     private val organizationId: Long?
@@ -593,6 +617,11 @@ class ViewCaseViewModel @Inject constructor(
             viewModelScope.launch(ioDispatcher) {
                 isSavingWorksite.value = true
                 try {
+                    if (isOverClaiming(startingWorksite, changedWorksite)) {
+                        isOverClaimingWork = true
+                        return@launch
+                    }
+
                     worksiteChangeRepository.saveWorksiteChange(
                         startingWorksite,
                         changedWorksite,
