@@ -134,7 +134,6 @@ class IncidentClaimThresholdRepositoryTest {
             true,
             true,
             true,
-            true,
         )
         for (i in expectedUnder.indices) {
             val actual = claimThresholdRepository.isWithinClaimCloseThreshold(354, 1)

@@ -133,13 +133,10 @@ class CreateEditCaseViewModel @Inject constructor(
             val endClaimCount = updatedWorksite.getClaimedCount(orgId)
             val startClaimCount = startingWorksite.getClaimedCount(orgId)
             val deltaClaimCount = endClaimCount - startClaimCount
-            if (deltaClaimCount > 0) {
-                return !incidentClaimThresholdRepository.isWithinClaimCloseThreshold(
-                    updatedWorksite.id,
-                    deltaClaimCount,
-                )
-            }
-            return false
+            return !incidentClaimThresholdRepository.isWithinClaimCloseThreshold(
+                updatedWorksite.id,
+                deltaClaimCount,
+            )
         }
     }
 

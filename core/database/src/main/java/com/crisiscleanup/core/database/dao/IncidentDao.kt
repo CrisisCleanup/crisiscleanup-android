@@ -112,8 +112,8 @@ interface IncidentDao {
     @Transaction
     @Query(
         """
-            SELECT * FROM incident_claim_thresholds
-            WHERE user_id=:accountId AND incident_id=:incidentId
+        SELECT * FROM incident_claim_thresholds
+        WHERE user_id=:accountId AND incident_id=:incidentId
         """,
     )
     fun getIncidentClaimThreshold(

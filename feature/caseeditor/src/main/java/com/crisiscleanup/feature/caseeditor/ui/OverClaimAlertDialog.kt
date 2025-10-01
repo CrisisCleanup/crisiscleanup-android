@@ -13,7 +13,7 @@ fun OverClaimAlertDialog(
     val t = LocalAppTranslator.current
     CrisisCleanupAlertDialog(
         onDismissRequest = closeDialog,
-        title = t("~~Overload"),
+        title = t("info.claiming_restricted_threshold_exceeded_title"),
         confirmButton = {
             CrisisCleanupTextButton(
                 text = t("actions.ok"),
@@ -21,6 +21,6 @@ fun OverClaimAlertDialog(
             )
         },
     ) {
-        LinkifyHtmlText(t("claiming_restricted_threshold_exceeded"))
+        LinkifyHtmlText(t("info.claiming_restricted_threshold_exceeded"))
     }
 }
