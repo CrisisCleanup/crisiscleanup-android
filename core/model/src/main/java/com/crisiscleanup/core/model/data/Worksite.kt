@@ -87,6 +87,24 @@ data class Worksite(
 
     fun toggleHighPriorityFlag() = toggleFlag(WorksiteFlagType.HighPriority)
 
+    val unclaimedCount by lazy {
+        workTypes.fold(
+            0,
+            { acc, workType ->
+                acc + if (workType.orgClaim == null) 1 else 0
+            },
+        )
+    }
+
+    fun getClaimedCount(orgId: Long): Int {
+        return workTypes.fold(
+            0,
+            { acc, workType ->
+                acc + if (workType.orgClaim == orgId) 1 else 0
+            },
+        )
+    }
+
     val isReleaseEligible = createdAt?.let {
         Clock.System.now().minus(it) > WorkTypeReleaseDaysThreshold
     } ?: false

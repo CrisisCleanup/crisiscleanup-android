@@ -34,6 +34,8 @@ import com.crisiscleanup.core.data.LanguageRefresher
 import com.crisiscleanup.core.data.OrganizationRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
+import com.crisiscleanup.core.data.repository.AppPreferencesRepository
+import com.crisiscleanup.core.data.repository.IncidentClaimThresholdRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
 import com.crisiscleanup.core.data.repository.LocalImageRepository
@@ -95,10 +97,12 @@ class ViewCaseViewModel @Inject constructor(
     languageRefresher: LanguageRefresher,
     workTypeStatusRepository: WorkTypeStatusRepository,
     localImageRepository: LocalImageRepository,
+    private val preferencesRepository: AppPreferencesRepository,
     private val editableWorksiteProvider: EditableWorksiteProvider,
     val transferWorkTypeProvider: TransferWorkTypeProvider,
     permissionManager: PermissionManager,
     private val translator: KeyResourceTranslator,
+    private val incidentClaimThresholdRepository: IncidentClaimThresholdRepository,
     private val worksiteChangeRepository: WorksiteChangeRepository,
     private val worksiteImageRepository: WorksiteImageRepository,
     private val syncPusher: SyncPusher,
@@ -124,6 +128,8 @@ class ViewCaseViewModel @Inject constructor(
     val mapMarkerIcon = MutableStateFlow<BitmapDescriptor?>(null)
     private var inBoundsPinIcon: BitmapDescriptor? = null
     private var outOfBoundsPinIcon: BitmapDescriptor? = null
+
+    val isMapSatelliteView = preferencesRepository.preferences.map { it.isMapSatelliteView }
 
     val isSyncing = combine(
         worksiteChangeRepository.syncingWorksiteIds,
@@ -224,6 +230,8 @@ class ViewCaseViewModel @Inject constructor(
 
     val actionDescriptionMessage = MutableStateFlow("")
 
+    var isOverClaimingWork by mutableStateOf(false)
+
     init {
         updateHeaderTitle()
 
@@ -234,6 +242,7 @@ class ViewCaseViewModel @Inject constructor(
             incidentIdArg,
             worksiteIdArg,
             accountDataRepository,
+            accountDataRefresher,
             incidentsRepository,
             incidentRefresher,
             incidentBoundsProvider,
@@ -573,6 +582,18 @@ class ViewCaseViewModel @Inject constructor(
         }
     }
 
+    private suspend fun isOverClaiming(
+        startingWorksite: Worksite,
+        changedWorksite: Worksite,
+    ) = organizationId?.let { orgId ->
+        return@let CreateEditCaseViewModel.isOverClaiming(
+            orgId,
+            startingWorksite,
+            changedWorksite,
+            incidentClaimThresholdRepository,
+        )
+    } ?: false
+
     private val viewStateCaseData: CaseEditorViewState.CaseData?
         get() = viewState.value.asCaseData()
     private val organizationId: Long?
@@ -593,6 +614,11 @@ class ViewCaseViewModel @Inject constructor(
             viewModelScope.launch(ioDispatcher) {
                 isSavingWorksite.value = true
                 try {
+                    if (isOverClaiming(startingWorksite, changedWorksite)) {
+                        isOverClaimingWork = true
+                        return@launch
+                    }
+
                     worksiteChangeRepository.saveWorksiteChange(
                         startingWorksite,
                         changedWorksite,
@@ -645,6 +671,12 @@ class ViewCaseViewModel @Inject constructor(
                 "caseView.not_high_priority"
             }
             actionDescriptionMessage.value = translate(messageTranslateKey)
+        }
+    }
+
+    fun setMapSatelliteView(isSatellite: Boolean) {
+        viewModelScope.launch(ioDispatcher) {
+            preferencesRepository.setMapSatelliteView(isSatellite)
         }
     }
 

@@ -72,7 +72,7 @@ class RequestRedeployViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(ioDispatcher) {
-            accountDataRefresher.updateApprovedIncidents(true)
+            accountDataRefresher.updateProfileIncidentsData(true)
 
             requestedIncidentsStream.value = requestRedeployRepository.getRequestedIncidents()
 

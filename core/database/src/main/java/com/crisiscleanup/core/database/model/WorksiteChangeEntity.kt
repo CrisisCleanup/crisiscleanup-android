@@ -27,6 +27,7 @@ import kotlinx.datetime.Instant
             value = ["worksite_id", "save_attempt_at", "created_at"],
             orders = [Order.ASC, Order.ASC, Order.DESC],
         ),
+        Index(value = ["organization_id", "worksite_id", "created_at"]),
     ],
 )
 data class WorksiteChangeEntity(

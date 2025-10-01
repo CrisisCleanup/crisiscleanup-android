@@ -56,14 +56,11 @@ class WrongLocationFlagManager(
             started = SharingStarted.WhileSubscribed(),
         )
 
-    val validCoordinates = wrongLocationCoordinatesParse.mapLatest {
-        it?.let { latLng ->
+    val validCoordinates = wrongLocationCoordinatesParse.mapLatest { parsed ->
+        parsed?.let {
             isVerifyingCoordinates.value = true
             try {
-                val results = addressSearchRepository.getAddress(latLng)
-                results?.let { address ->
-                    return@mapLatest address
-                }
+                return@mapLatest addressSearchRepository.getAddress(parsed)
             } finally {
                 isVerifyingCoordinates.value = false
             }

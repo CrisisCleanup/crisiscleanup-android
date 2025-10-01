@@ -11,7 +11,6 @@ import com.crisiscleanup.core.database.model.PopulatedPersonContactMatch
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.database.util.ftsGlobEnds
 import com.crisiscleanup.core.database.util.ftsSanitize
-import com.crisiscleanup.core.database.util.ftsSanitizeAsToken
 import com.crisiscleanup.core.database.util.intArray
 import com.crisiscleanup.core.database.util.okapiBm25Score
 import com.crisiscleanup.core.model.data.PersonOrganization
@@ -67,21 +66,7 @@ data class PopulatedPersonContactIdNameMatchInfo(
     }
 }
 
-suspend fun PersonContactDaoPlus.rebuildPersonContactFts(force: Boolean = false) =
-    db.withTransaction {
-        with(db.personContactDao()) {
-            var rebuild = force
-            if (!force) {
-                getRandomPersonContactName()?.let { contactName ->
-                    val ftsMatch = matchSinglePersonContactFts(contactName.ftsSanitizeAsToken)
-                    rebuild = ftsMatch.isEmpty()
-                }
-            }
-            if (rebuild) {
-                rebuildPersonContactFts()
-            }
-        }
-    }
+fun PersonContactDaoPlus.rebuildPersonContactFts() = db.personContactDao().rebuildPersonContactFts()
 
 suspend fun PersonContactDaoPlus.getMatchingTeamMembers(
     q: String,

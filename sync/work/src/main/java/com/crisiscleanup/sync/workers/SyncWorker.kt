@@ -59,7 +59,10 @@ internal class SyncWorker @AssistedInject constructor(
                     syncPuller.syncPullStatuses() is SyncResult.Success
                 },
                 async {
-                    syncPuller.syncPullEquipment() !is SyncResult.Error
+                    syncPuller.syncPullAppConfig() is SyncResult.Success
+                },
+                async {
+                    syncPuller.syncPullEquipment() is SyncResult.Success
                 },
             ).all { it }
 

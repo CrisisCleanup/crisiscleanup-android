@@ -14,6 +14,7 @@ import com.crisiscleanup.core.database.dao.fts.WorksiteTextFtsEntity
 import com.crisiscleanup.core.database.model.CaseHistoryEventAttrEntity
 import com.crisiscleanup.core.database.model.CaseHistoryEventEntity
 import com.crisiscleanup.core.database.model.EquipmentEntity
+import com.crisiscleanup.core.database.model.IncidentClaimThresholdEntity
 import com.crisiscleanup.core.database.model.IncidentDataSyncParametersEntity
 import com.crisiscleanup.core.database.model.IncidentEntity
 import com.crisiscleanup.core.database.model.IncidentFormFieldEntity
@@ -101,6 +102,7 @@ import kotlinx.datetime.Instant
         IncidentWorksitesSecondarySyncStatsEntity::class,
         ListEntity::class,
         IncidentDataSyncParametersEntity::class,
+        IncidentClaimThresholdEntity::class,
         TeamRootEntity::class,
         TeamEntity::class,
         TeamMemberCrossRef::class,

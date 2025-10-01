@@ -68,7 +68,7 @@ import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberMarkerState
+import com.google.maps.android.compose.rememberUpdatedMarkerState
 import kotlinx.coroutines.launch
 
 @Composable
@@ -463,9 +463,8 @@ private fun MovableMapView(
 
     val mapCameraZoom by editor.mapCameraZoom.collectAsStateWithLifecycle()
 
-    val markerState = rememberMarkerState()
     val coordinates by editor.centerCoordinates.collectAsStateWithLifecycle()
-    markerState.position = coordinates
+    val markerState = rememberUpdatedMarkerState(coordinates)
 
     var uiSettings by rememberMapUiSettings()
     LaunchedEffect(isEditable, isMovable) {

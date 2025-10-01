@@ -16,6 +16,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -49,9 +50,10 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.maps.android.compose.CameraMoveStartedReason
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberMarkerState
+import com.google.maps.android.compose.rememberUpdatedMarkerState
 
 @Composable
 private fun AddressSummaryInColumn(
@@ -115,6 +117,7 @@ private fun AddressSummaryInColumn(
 internal fun BoxScope.LocationMapView(
     viewModel: EditCaseBaseViewModel,
     editor: CaseLocationDataEditor,
+    isSatelliteView: Boolean,
     modifier: Modifier = Modifier,
     zoomControls: Boolean = false,
     disablePanning: Boolean = false,
@@ -138,13 +141,16 @@ internal fun BoxScope.LocationMapView(
         disablePanning = disablePanning,
     )
 
-    val markerState = rememberMarkerState()
     val coordinates by editor.locationInputData.coordinates.collectAsStateWithLifecycle()
-    markerState.position = coordinates
+    val markerState = rememberUpdatedMarkerState(coordinates)
 
     val mapMarkerIcon by editor.mapMarkerIcon.collectAsStateWithLifecycle()
 
-    val mapProperties by rememberMapProperties()
+    var mapProperties by rememberMapProperties()
+    LaunchedEffect(isSatelliteView) {
+        val mapType = if (isSatelliteView) MapType.SATELLITE else MapType.NORMAL
+        mapProperties = mapProperties.copy(mapType = mapType)
+    }
     GoogleMap(
         modifier = modifier.testTag("mapView"),
         uiSettings = uiSettings,

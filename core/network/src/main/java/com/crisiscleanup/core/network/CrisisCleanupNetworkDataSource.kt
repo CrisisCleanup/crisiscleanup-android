@@ -2,6 +2,7 @@ package com.crisiscleanup.core.network
 
 import com.crisiscleanup.core.network.model.NetworkAccountProfileResult
 import com.crisiscleanup.core.network.model.NetworkCaseHistoryEvent
+import com.crisiscleanup.core.network.model.NetworkClaimThreshold
 import com.crisiscleanup.core.network.model.NetworkCountResult
 import com.crisiscleanup.core.network.model.NetworkEquipmentListResult
 import com.crisiscleanup.core.network.model.NetworkFlagsFormData
@@ -225,6 +226,8 @@ interface CrisisCleanupNetworkDataSource {
     suspend fun getLists(ids: List<Long>): List<NetworkList?>
 
     suspend fun getWorksiteChanges(after: Instant): List<NetworkWorksiteChange>
+
+    suspend fun getClaimThresholds(): NetworkClaimThreshold
 
     suspend fun getTeams(
         incidentId: Long? = null,

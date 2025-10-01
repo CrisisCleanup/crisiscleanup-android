@@ -73,6 +73,7 @@ import com.crisiscleanup.core.designsystem.component.CrisisCleanupTextArea
 import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_DETAIL_WEIGHT
 import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_LIST_WEIGHT
 import com.crisiscleanup.core.designsystem.component.LeadingIconChip
+import com.crisiscleanup.core.designsystem.component.MapViewToggleButton
 import com.crisiscleanup.core.designsystem.component.TemporaryDialog
 import com.crisiscleanup.core.designsystem.component.WorkTypeBusyAction
 import com.crisiscleanup.core.designsystem.component.WorkTypePrimaryAction
@@ -111,9 +112,10 @@ import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberMarkerState
+import com.google.maps.android.compose.rememberUpdatedMarkerState
 import kotlinx.coroutines.launch
 
 private val flagColorFallback = Color(0xFF000000)
@@ -244,6 +246,11 @@ internal fun EditExistingCaseRoute(
 
         val actionDescription by viewModel.actionDescriptionMessage.collectAsStateWithLifecycle()
         TemporaryDialog(actionDescription)
+
+        if (viewModel.isOverClaimingWork) {
+            val closeDialog = remember(viewModel) { { viewModel.isOverClaimingWork = false } }
+            OverClaimAlertDialog(closeDialog)
+        }
     }
 }
 
@@ -531,10 +538,11 @@ private fun ColumnScope.ExistingCaseContent(
 private fun CaseInfoView(
     isFullEditMode: Boolean,
     worksite: Worksite,
-    viewModel: ViewCaseViewModel = hiltViewModel(),
     copyToClipboard: (String?) -> Unit = {},
+    viewModel: ViewCaseViewModel = hiltViewModel(),
 ) {
     val mapMarkerIcon by viewModel.mapMarkerIcon.collectAsStateWithLifecycle()
+    val isMapSatelliteView by viewModel.isMapSatelliteView.collectAsStateWithLifecycle(false)
     val workTypeProfile by viewModel.workTypeProfile.collectAsStateWithLifecycle()
 
     val removeFlag = remember(viewModel) { { flag: WorksiteFlag -> viewModel.removeFlag(flag) } }
@@ -577,6 +585,8 @@ private fun CaseInfoView(
         flagItems(worksite, removeFlag)
         propertyInfoItems(
             worksite,
+            isMapSatelliteView,
+            viewModel::setMapSatelliteView,
             mapMarkerIcon,
             copyToClipboard,
             distanceAwayText,
@@ -675,6 +685,8 @@ private fun FlagChip(
 @OptIn(ExperimentalFoundationApi::class)
 private fun LazyListScope.propertyInfoItems(
     worksite: Worksite,
+    isMapSatelliteView: Boolean,
+    setMapSatelliteView: (Boolean) -> Unit = {},
     mapMarkerIcon: BitmapDescriptor? = null,
     copyToClipboard: (String?) -> Unit = {},
     distanceAwayText: String = "",
@@ -755,15 +767,26 @@ private fun LazyListScope.propertyInfoItems(
                     }
                 }
 
-                PropertyInfoMapView(
-                    worksite.coordinates,
-                    // TODO Common dimensions
+                Box(
                     Modifier
-                        .testTag("editCasePropertyInfoMapView")
+                        // TODO Common dimensions
                         .height(192.dp)
                         .padding(top = edgeSpacingHalf),
-                    mapMarkerIcon = mapMarkerIcon,
-                )
+                ) {
+                    PropertyInfoMapView(
+                        worksite.coordinates,
+                        isMapSatelliteView,
+                        Modifier
+                            .fillMaxSize()
+                            .testTag("editCasePropertyInfoMapView"),
+                        mapMarkerIcon = mapMarkerIcon,
+                    )
+
+                    MapViewToggleButton(
+                        isMapSatelliteView,
+                        setMapSatelliteView,
+                    )
+                }
             }
         }
     }
@@ -1040,6 +1063,7 @@ data class IconTextAction(
 @Composable
 private fun PropertyInfoMapView(
     coordinates: LatLng,
+    isSatelliteView: Boolean,
     modifier: Modifier = Modifier,
     mapMarkerIcon: BitmapDescriptor? = null,
     onMapLoaded: () -> Unit = {},
@@ -1050,13 +1074,16 @@ private fun PropertyInfoMapView(
         disablePanning = true,
     )
 
-    val markerState = rememberMarkerState()
-    markerState.position = coordinates
+    val markerState = rememberUpdatedMarkerState(coordinates)
 
     val update = CameraUpdateFactory.newLatLngZoom(coordinates, 13f)
     cameraPositionState.move(update)
 
-    val mapProperties by rememberMapProperties()
+    var mapProperties by rememberMapProperties()
+    LaunchedEffect(isSatelliteView) {
+        val mapType = if (isSatelliteView) MapType.SATELLITE else MapType.NORMAL
+        mapProperties = mapProperties.copy(mapType = mapType)
+    }
     GoogleMap(
         modifier = modifier,
         uiSettings = uiSettings,

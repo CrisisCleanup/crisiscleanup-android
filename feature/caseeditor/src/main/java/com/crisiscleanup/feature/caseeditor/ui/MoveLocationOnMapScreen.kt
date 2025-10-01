@@ -3,6 +3,7 @@ package com.crisiscleanup.feature.caseeditor.ui
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -27,6 +28,7 @@ import com.crisiscleanup.core.designsystem.component.BusyButton
 import com.crisiscleanup.core.designsystem.component.ExplainLocationPermissionDialog
 import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_DETAIL_WEIGHT
 import com.crisiscleanup.core.designsystem.component.LIST_DETAIL_LIST_WEIGHT
+import com.crisiscleanup.core.designsystem.component.MapViewToggleButton
 import com.crisiscleanup.core.designsystem.component.TopAppBarBackAction
 import com.crisiscleanup.core.designsystem.component.cancelButtonColors
 import com.crisiscleanup.core.designsystem.component.listDetailDetailMaxWidth
@@ -46,9 +48,10 @@ import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.maps.android.compose.CameraMoveStartedReason
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberMarkerState
+import com.google.maps.android.compose.rememberUpdatedMarkerState
 
 @Composable
 internal fun EditCaseMapMoveLocationRoute(
@@ -71,6 +74,8 @@ internal fun EditCaseMapMoveLocationRoute(
 
         val isOnline by viewModel.isOnline.collectAsStateWithLifecycle()
 
+        val isMapSatelliteView by viewModel.isMapSatelliteView.collectAsStateWithLifecycle(false)
+
         val isListDetailLayout = LocalDimensions.current.isListDetailWidth
 
         val t = LocalAppTranslator.current
@@ -85,20 +90,24 @@ internal fun EditCaseMapMoveLocationRoute(
                 title,
                 locationQuery,
                 editor,
-                isOnline,
+                isOnline = isOnline,
+                isEditable = isEditable,
+                isMapSatelliteView = isMapSatelliteView,
                 onBack,
-                isEditable,
                 onUseMyLocation,
+                viewModel::setMapSatelliteView,
             )
         } else {
             PortraitLayout(
                 title,
                 locationQuery,
                 editor,
-                isOnline,
+                isOnline = isOnline,
+                isEditable = isEditable,
+                isMapSatelliteView = isMapSatelliteView,
                 onBack,
-                isEditable,
                 onUseMyLocation,
+                viewModel::setMapSatelliteView,
             )
         }
 
@@ -138,6 +147,27 @@ private fun UseMyLocationAction(
     }
 }
 
+@Composable
+private fun ColumnScope.MoveMapContainer(
+    editor: CaseLocationDataEditor,
+    isEditable: Boolean,
+    isMapSatelliteView: Boolean,
+    setMapSatelliteView: (Boolean) -> Unit,
+) {
+    Box(Modifier.weight(1f)) {
+        MoveMapUnderLocation(
+            editor,
+            isEditable = isEditable,
+            isSatelliteView = isMapSatelliteView,
+        )
+
+        MapViewToggleButton(
+            isMapSatelliteView,
+            setMapSatelliteView,
+        )
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PortraitLayout(
@@ -145,9 +175,11 @@ private fun PortraitLayout(
     locationQuery: String,
     editor: CaseLocationDataEditor,
     isOnline: Boolean,
+    isEditable: Boolean,
+    isMapSatelliteView: Boolean,
     onBack: () -> Unit = {},
-    isEditable: Boolean = false,
     onUseMyLocation: () -> Unit = {},
+    setMapSatelliteView: (Boolean) -> Unit = {},
 ) {
     Column {
         TopAppBarBackAction(
@@ -164,9 +196,12 @@ private fun PortraitLayout(
         }
 
         if (locationQuery.isBlank()) {
-            Box(Modifier.weight(1f)) {
-                MoveMapUnderLocation(editor, isEditable)
-            }
+            MoveMapContainer(
+                editor,
+                isEditable = isEditable,
+                isMapSatelliteView = isMapSatelliteView,
+                setMapSatelliteView,
+            )
 
             UseMyLocationAction(
                 isEditable = isEditable,
@@ -188,9 +223,11 @@ private fun ListDetailLayout(
     locationQuery: String,
     editor: CaseLocationDataEditor,
     isOnline: Boolean,
+    isEditable: Boolean,
+    isMapSatelliteView: Boolean,
     onBack: () -> Unit = {},
-    isEditable: Boolean = false,
     onUseMyLocation: () -> Unit = {},
+    setMapSatelliteView: (Boolean) -> Unit = {},
 ) {
     Row {
         Column(Modifier.weight(LIST_DETAIL_LIST_WEIGHT)) {
@@ -223,9 +260,12 @@ private fun ListDetailLayout(
                 .sizeIn(maxWidth = listDetailDetailMaxWidth),
         ) {
             if (locationQuery.isBlank()) {
-                Box(Modifier.weight(1f)) {
-                    MoveMapUnderLocation(editor, isEditable)
-                }
+                MoveMapContainer(
+                    editor,
+                    isEditable = isEditable,
+                    isMapSatelliteView = isMapSatelliteView,
+                    setMapSatelliteView,
+                )
             } else {
                 editor.isMapLoaded = false
                 AddressSearchResults(editor, locationQuery, isEditable = isEditable)
@@ -238,6 +278,7 @@ private fun ListDetailLayout(
 private fun BoxScope.MoveMapUnderLocation(
     editor: CaseLocationDataEditor,
     isEditable: Boolean,
+    isSatelliteView: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val onMapCameraChange = remember(editor) {
@@ -252,9 +293,8 @@ private fun BoxScope.MoveMapUnderLocation(
 
     val mapCameraZoom by editor.mapCameraZoom.collectAsStateWithLifecycle()
 
-    val markerState = rememberMarkerState()
     val coordinates by editor.locationInputData.coordinates.collectAsStateWithLifecycle()
-    markerState.position = coordinates
+    val markerState = rememberUpdatedMarkerState(coordinates)
 
     val mapMarkerIcon by editor.mapMarkerIcon.collectAsStateWithLifecycle()
 
@@ -265,7 +305,11 @@ private fun BoxScope.MoveMapUnderLocation(
             zoomGesturesEnabled = isEditable,
         )
     }
-    val mapProperties by rememberMapProperties()
+    var mapProperties by rememberMapProperties()
+    LaunchedEffect(isSatelliteView) {
+        val mapType = if (isSatelliteView) MapType.SATELLITE else MapType.NORMAL
+        mapProperties = mapProperties.copy(mapType = mapType)
+    }
     val cameraPositionState = rememberCameraPositionState()
     GoogleMap(
         modifier = modifier,

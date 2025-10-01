@@ -6,6 +6,7 @@ import com.crisiscleanup.core.common.AppEnv
 import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.common.LocationProvider
 import com.crisiscleanup.core.common.combine
+import com.crisiscleanup.core.common.epochZero
 import com.crisiscleanup.core.common.haversineDistance
 import com.crisiscleanup.core.common.kmToMiles
 import com.crisiscleanup.core.common.log.AppLogger
@@ -300,7 +301,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
             if (syncPlan.syncIncidents) {
                 logStage(incidentId, IncidentCacheStage.Incidents)
 
-                accountDataRefresher.updateApprovedIncidents(true)
+                accountDataRefresher.updateProfileIncidentsData(true)
                 incidentsRepository.pullIncidents(true)
             }
 
@@ -358,7 +359,7 @@ class IncidentWorksitesCacheRepository @Inject constructor(
                     incidentId,
                     syncDataMeasures = IncidentDataSyncParameters.SyncDataMeasure.relative(),
                     preferencesBoundedRegion,
-                    Instant.fromEpochSeconds(0),
+                    Instant.epochZero,
                 )
             if (syncStatsEntity == null) {
                 syncParameterDao.insertSyncStats(syncStats.asEntity(appLogger))

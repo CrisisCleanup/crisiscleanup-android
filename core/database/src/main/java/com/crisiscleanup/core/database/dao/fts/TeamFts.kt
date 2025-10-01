@@ -4,14 +4,12 @@ import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.Fts4
-import androidx.room.withTransaction
 import com.crisiscleanup.core.database.dao.TeamDaoPlus
 import com.crisiscleanup.core.database.model.PopulatedTeam
 import com.crisiscleanup.core.database.model.TeamEntity
 import com.crisiscleanup.core.database.model.asExternalModel
 import com.crisiscleanup.core.database.util.ftsGlobEnds
 import com.crisiscleanup.core.database.util.ftsSanitize
-import com.crisiscleanup.core.database.util.ftsSanitizeAsToken
 import com.crisiscleanup.core.database.util.intArray
 import com.crisiscleanup.core.database.util.okapiBm25Score
 import kotlinx.coroutines.coroutineScope
@@ -60,20 +58,7 @@ data class PopulatedTeamMatchInfo(
     }
 }
 
-suspend fun TeamDaoPlus.rebuildTeamFts(force: Boolean = false) = db.withTransaction {
-    with(db.teamDao()) {
-        var rebuild = force
-        if (!force) {
-            getRandomTeamName()?.let { teamName ->
-                val ftsMatch = matchSingleTeamFts(teamName.ftsSanitizeAsToken)
-                rebuild = ftsMatch.isEmpty()
-            }
-        }
-        if (rebuild) {
-            rebuildTeamFts()
-        }
-    }
-}
+fun TeamDaoPlus.rebuildTeamFts() = db.teamDao().rebuildTeamFts()
 
 suspend fun TeamDaoPlus.streamMatchingTeams(
     q: String,

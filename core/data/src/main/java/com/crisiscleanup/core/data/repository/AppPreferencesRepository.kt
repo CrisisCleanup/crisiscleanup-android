@@ -54,6 +54,8 @@ interface AppPreferencesRepository {
     suspend fun setWorkScreenView(isTableView: Boolean)
 
     suspend fun setSyncMediaImmediate(syncImmediate: Boolean)
+
+    suspend fun setMapSatelliteView(isSatellite: Boolean)
 }
 
 @Singleton
@@ -122,5 +124,9 @@ class AppPreferencesRepositoryImpl @Inject constructor(
 
     override suspend fun setSyncMediaImmediate(syncImmediate: Boolean) {
         preferencesDataSource.saveSyncMediaImmediate(syncImmediate)
+    }
+
+    override suspend fun setMapSatelliteView(isSatellite: Boolean) {
+        preferencesDataSource.saveMapSatelliteView(isSatellite)
     }
 }

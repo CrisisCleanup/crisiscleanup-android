@@ -357,7 +357,7 @@ internal fun CasesScreen(
                 enableIncidentSelect = enableIncidentSelect,
             )
         } else {
-            var isSatelliteMapType by remember { mutableStateOf(false) }
+            val isSatelliteMapType by viewModel.isMapSatelliteView.collectAsStateWithLifecycle(false)
 
             CasesMapView(
                 Modifier,
@@ -384,9 +384,7 @@ internal fun CasesScreen(
                     onCasesAction(CasesAction.Layers)
                 },
                 isSatelliteMapType = isSatelliteMapType,
-                onToggleSatelliteType = { isSatellite: Boolean ->
-                    isSatelliteMapType = isSatellite
-                },
+                onToggleSatelliteType = viewModel::setMapSatelliteView,
             )
         }
         CaseMapOverlayElements(

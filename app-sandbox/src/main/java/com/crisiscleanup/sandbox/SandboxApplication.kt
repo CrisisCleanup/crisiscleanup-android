@@ -130,6 +130,10 @@ class AppSyncer @Inject constructor() : SyncPuller, SyncPusher {
 
     override suspend fun syncPullStatuses() = SyncResult.NotAttempted("")
 
+    override fun appPullAppConfig() {}
+
+    override suspend fun syncPullAppConfig() = SyncResult.NotAttempted("")
+
     override fun appPullEquipment(force: Boolean) {}
 
     override suspend fun syncPullEquipment() = SyncResult.NotAttempted("")

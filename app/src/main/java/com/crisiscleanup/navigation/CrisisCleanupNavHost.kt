@@ -7,6 +7,9 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.crisiscleanup.core.appnav.RouteConstant.ACCOUNT_RESET_PASSWORD_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.ACCOUNT_TRANSFER_ORG_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.CASES_FILTER_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASES_GRAPH_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASES_SEARCH_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_ADD_FLAG_ROUTE
@@ -16,12 +19,18 @@ import com.crisiscleanup.core.appnav.RouteConstant.CASE_EDITOR_SEARCH_ADDRESS_RO
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_HISTORY_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.CASE_SHARE_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.INCIDENT_WORKSITES_CACHE_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.INVITE_TEAMMATE_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.LISTS_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.REQUEST_REDEPLOY_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.TEAM_CASES_SEARCH_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.TEAM_EDITOR_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.TEAM_SCAN_QR_CODE_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.USER_FEEDBACK_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_CASE_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_CASE_ROUTE_RESTRICTED
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_CASE_TRANSFER_WORK_TYPES_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.VIEW_IMAGE_ROUTE
+import com.crisiscleanup.core.appnav.RouteConstant.VIEW_LIST_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.VIEW_TEAM_ROUTE
 import com.crisiscleanup.core.appnav.RouteConstant.WORKSITE_IMAGES_ROUTE
 import com.crisiscleanup.core.appnav.navigateToViewCase
@@ -180,6 +189,8 @@ fun CrisisCleanupNavHost(
 
     val searchCasesOnBack = rememberBackOnRoute(navController, onBack, CASES_SEARCH_ROUTE)
 
+    val filterCasesOnBack = rememberBackOnRoute(navController, onBack, CASES_FILTER_ROUTE)
+
     val caseEditorOnBack = rememberBackStartingRoute(navController, onBack, CASE_EDITOR_ROUTE)
 
     val searchAddressOnBack =
@@ -196,6 +207,7 @@ fun CrisisCleanupNavHost(
 
     val historyOnBack = rememberBackOnRoute(navController, onBack, CASE_HISTORY_ROUTE)
 
+    val viewSingleImageOnBack = rememberBackStartingRoute(navController, onBack, VIEW_IMAGE_ROUTE)
     val worksiteImagesOnBack =
         rememberBackStartingRoute(navController, onBack, WORKSITE_IMAGES_ROUTE)
 
@@ -264,6 +276,17 @@ fun CrisisCleanupNavHost(
         rememberBackOnRoute(navController, onBack, INCIDENT_WORKSITES_CACHE_ROUTE)
     val openIncidentCache = navController::navigateToIncidentWorksitesCache
 
+    val viewListsOnBack = rememberBackOnRoute(navController, onBack, LISTS_ROUTE)
+    val viewListOnBack = rememberBackStartingRoute(navController, onBack, VIEW_LIST_ROUTE)
+    val inviteTeammatesOnBack = rememberBackOnRoute(navController, onBack, INVITE_TEAMMATE_ROUTE)
+    val requestRedeployOnBack = rememberBackOnRoute(navController, onBack, REQUEST_REDEPLOY_ROUTE)
+    val userFeedbackOnBack = rememberBackOnRoute(navController, onBack, USER_FEEDBACK_ROUTE)
+
+    val resetPasswordOnBack =
+        rememberBackOnRoute(navController, onBack, ACCOUNT_RESET_PASSWORD_ROUTE)
+    val requestAccessOnBack =
+        rememberBackStartingRoute(navController, onBack, ACCOUNT_TRANSFER_ORG_ROUTE)
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -273,6 +296,7 @@ fun CrisisCleanupNavHost(
             navController,
             nestedGraphs = {
                 casesSearchScreen(searchCasesOnBack, viewCaseUnit)
+                casesFilterScreen(filterCasesOnBack)
                 caseEditorScreen(navController, caseEditorOnBack)
                 caseEditSearchAddressScreen(navController, searchAddressOnBack)
                 caseEditMoveLocationOnMapScreen(moveLocationOnBack)
@@ -335,15 +359,15 @@ fun CrisisCleanupNavHost(
             openSyncLogs = navController::navigateToSyncInsights,
         )
         incidentWorksitesCache(incidentWorksitesCacheOnBack)
-        viewSingleImageScreen(onBack)
+        viewSingleImageScreen(viewSingleImageOnBack)
         viewWorksiteImagesScreen(worksiteImagesOnBack)
         // Invite to org not teams feature
-        inviteTeammateScreen(onBack)
-        requestRedeployScreen(onBack)
-        userFeedbackScreen(onBack)
-        listsScreen(navController, onBack)
+        inviteTeammateScreen(inviteTeammatesOnBack)
+        requestRedeployScreen(requestRedeployOnBack)
+        userFeedbackScreen(userFeedbackOnBack)
+        listsScreen(navController, viewListsOnBack)
         viewListScreen(
-            onBack,
+            viewListOnBack,
             openList = openList,
             openWorksite = openViewCase,
         )
@@ -351,14 +375,14 @@ fun CrisisCleanupNavHost(
 
         resetPasswordScreen(
             isAuthenticated = true,
-            onBack = onBack,
-            closeResetPassword = onBack,
+            onBack = resetPasswordOnBack,
+            closeResetPassword = resetPasswordOnBack,
         )
 
         requestAccessScreen(
             true,
-            onBack = onBack,
-            closeRequestAccess = onBack,
+            onBack = requestAccessOnBack,
+            closeRequestAccess = requestAccessOnBack,
             openAuth = {},
             openForgotPassword = {},
         )

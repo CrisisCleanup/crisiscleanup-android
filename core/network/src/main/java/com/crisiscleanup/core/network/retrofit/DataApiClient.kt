@@ -18,6 +18,7 @@ import com.crisiscleanup.core.network.model.NetworkLocationsResult
 import com.crisiscleanup.core.network.model.NetworkOrganizationUsersResult
 import com.crisiscleanup.core.network.model.NetworkOrganizationsResult
 import com.crisiscleanup.core.network.model.NetworkOrganizationsSearchResult
+import com.crisiscleanup.core.network.model.NetworkPortalConfig
 import com.crisiscleanup.core.network.model.NetworkRedeployRequestsResult
 import com.crisiscleanup.core.network.model.NetworkTeamResult
 import com.crisiscleanup.core.network.model.NetworkTeamsResult
@@ -378,6 +379,9 @@ private interface DataSourceApi {
         @Query("since")
         after: Instant,
     ): NetworkWorksiteChangesResult
+
+    @GET("portals/current")
+    suspend fun getCurrentPortalConfig(): NetworkPortalConfig
 
     @TokenAuthenticationHeader
     @GET("teams")
@@ -769,6 +773,8 @@ class DataApiClient @Inject constructor(
         }
         return result.changes ?: emptyList()
     }
+
+    override suspend fun getClaimThresholds() = networkApi.getCurrentPortalConfig().attr
 
     override suspend fun getTeams(incidentId: Long?, limit: Int, offset: Int) =
         networkApi.getTeams(incidentId, limit, offset)

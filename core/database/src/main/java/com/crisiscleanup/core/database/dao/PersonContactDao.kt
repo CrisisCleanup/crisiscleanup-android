@@ -85,21 +85,6 @@ interface PersonContactDao {
     ): Flow<List<PopulatedPersonContactOrganization>>
 
     @Transaction
-    @Query("SELECT last_name FROM person_contacts ORDER BY RANDOM() LIMIT 1")
-    fun getRandomPersonContactName(): String?
-
-    @Transaction
-    @Query(
-        """
-        SELECT docid
-        FROM person_contact_fts
-        WHERE person_contact_fts MATCH :query
-        LIMIT 1
-        """,
-    )
-    fun matchSinglePersonContactFts(query: String): List<Long>
-
-    @Transaction
     @Query("INSERT INTO person_contact_fts(person_contact_fts) VALUES ('rebuild')")
     fun rebuildPersonContactFts()
 

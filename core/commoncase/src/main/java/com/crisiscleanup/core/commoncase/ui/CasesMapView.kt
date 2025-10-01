@@ -54,7 +54,7 @@ fun BoxScope.CasesMapView(
     onMarkerSelect: (WorksiteMapMark) -> Boolean = { false },
     editedWorksiteLocation: LatLng? = null,
     isMyLocationEnabled: Boolean = false,
-    onEditLocationZoom: Float = 12f,
+    onEditLocationZoom: Float = 15f,
     isSatelliteMapType: Boolean = false,
 ) {
     // TODO Profile and optimize recompositions when map is changed (by user) if possible.
@@ -76,13 +76,8 @@ fun BoxScope.CasesMapView(
         isMyLocation = isMyLocationEnabled,
     )
     LaunchedEffect(isSatelliteMapType) {
-        mapProperties = mapProperties.copy(
-            mapType = if (isSatelliteMapType) {
-                MapType.SATELLITE
-            } else {
-                MapType.NORMAL
-            },
-        )
+        val mapType = if (isSatelliteMapType) MapType.SATELLITE else MapType.NORMAL
+        mapProperties = mapProperties.copy(mapType = mapType)
     }
     GoogleMap(
         modifier = Modifier

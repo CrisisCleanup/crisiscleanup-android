@@ -50,6 +50,9 @@ interface SyncPuller {
     fun appPullStatuses()
     suspend fun syncPullStatuses(): SyncResult
 
+    fun appPullAppConfig()
+    suspend fun syncPullAppConfig(): SyncResult
+
     fun appPullEquipment(force: Boolean = false)
     suspend fun syncPullEquipment(): SyncResult
 }

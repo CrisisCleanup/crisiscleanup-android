@@ -88,21 +88,6 @@ interface IncidentOrganizationDao {
     fun upsertOrganizationIncidents(organizationIncidents: Collection<OrganizationIncidentCrossRef>)
 
     @Transaction
-    @Query("SELECT name FROM incident_organizations ORDER BY RANDOM() LIMIT 1")
-    fun getRandomOrganizationName(): String?
-
-    @Transaction
-    @Query(
-        """
-        SELECT docid
-        FROM incident_organization_fts
-        WHERE incident_organization_fts MATCH :query
-        LIMIT 1
-        """,
-    )
-    fun matchSingleOrganizationFts(query: String): List<Long>
-
-    @Transaction
     @Query("INSERT INTO incident_organization_fts(incident_organization_fts) VALUES ('rebuild')")
     fun rebuildOrganizationFts()
 

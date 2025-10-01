@@ -43,6 +43,7 @@ import com.crisiscleanup.core.database.dao.fts.WorksiteTextFtsEntity
 import com.crisiscleanup.core.database.model.CaseHistoryEventAttrEntity
 import com.crisiscleanup.core.database.model.CaseHistoryEventEntity
 import com.crisiscleanup.core.database.model.EquipmentEntity
+import com.crisiscleanup.core.database.model.IncidentClaimThresholdEntity
 import com.crisiscleanup.core.database.model.IncidentDataSyncParametersEntity
 import com.crisiscleanup.core.database.model.IncidentEntity
 import com.crisiscleanup.core.database.model.IncidentFormFieldEntity
@@ -125,6 +126,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         IncidentWorksitesSecondarySyncStatsEntity::class,
         ListEntity::class,
         IncidentDataSyncParametersEntity::class,
+        IncidentClaimThresholdEntity::class,
         TeamRootEntity::class,
         TeamEntity::class,
         TeamMemberCrossRef::class,
@@ -138,7 +140,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         PersonContactFtsEntity::class,
         UserEquipmentEntity::class,
     ],
-    version = 48,
+    version = 49,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3, spec = Schema2To3::class),
@@ -187,6 +189,7 @@ import com.crisiscleanup.core.database.util.InstantConverter
         AutoMigration(from = 45, to = 46, spec = Schema45To46::class),
         AutoMigration(from = 46, to = 47),
         AutoMigration(from = 47, to = 48),
+        AutoMigration(from = 48, to = 49),
     ],
     exportSchema = true,
 )

@@ -22,6 +22,7 @@ import com.crisiscleanup.core.database.dao.fts.rebuildOrganizationFts
 import com.crisiscleanup.core.database.dao.fts.rebuildPersonContactFts
 import com.crisiscleanup.core.database.dao.fts.rebuildTeamFts
 import com.crisiscleanup.core.database.dao.fts.rebuildWorksiteTextFts
+import com.crisiscleanup.core.datastore.AppMaintenanceDataSource
 import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.InitialIncidentWorksitesCachePreferences
 import kotlinx.coroutines.CoroutineDispatcher
@@ -76,11 +77,14 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
     @CasesFilterType(CasesFilterTypes.Cases) private val casesFilterRepository: CasesFilterRepository,
     @CasesFilterType(CasesFilterTypes.TeamCases) private val teamCasesFilterRepository: CasesFilterRepository,
     private val appMetricsRepository: AppMetricsRepository,
+    private val maintenanceDataSource: AppMaintenanceDataSource,
     private val accountEventBus: AccountEventBus,
     @ApplicationScope private val externalScope: CoroutineScope,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.App) private val logger: AppLogger,
 ) : AppDataManagementRepository {
+    private val isRebuildingFts = AtomicBoolean()
+
     override val clearingAppDataStep = MutableStateFlow(ClearAppDataStep.None)
     override val isAppDataCleared = clearingAppDataStep.map { it == ClearAppDataStep.Cleared }
 
@@ -90,11 +94,23 @@ class CrisisCleanupDataManagementRepository @Inject constructor(
     private val isClearingAppData = AtomicBoolean()
 
     override suspend fun rebuildFts() {
-        incidentDaoPlus.rebuildIncidentFts()
-        organizationDaoPlus.rebuildOrganizationFts()
-        worksiteDaoPlus.rebuildWorksiteTextFts()
-        teamDaoPlus.rebuildTeamFts()
-        personContactDaoPlus.rebuildPersonContactFts()
+        if (!isRebuildingFts.compareAndSet(false, true)) {
+            return
+        }
+
+        try {
+            val rebuildVersion = maintenanceDataSource.maintenanceData.first().ftsRebuildVersion
+            if (rebuildVersion < 260) {
+                incidentDaoPlus.rebuildIncidentFts()
+                organizationDaoPlus.rebuildOrganizationFts()
+                worksiteDaoPlus.rebuildWorksiteTextFts()
+                teamDaoPlus.rebuildTeamFts()
+                personContactDaoPlus.rebuildPersonContactFts()
+                maintenanceDataSource.setFtsRebuildVersion(260)
+            }
+        } finally {
+            isRebuildingFts.set(false)
+        }
     }
 
     override fun clearAppData() {

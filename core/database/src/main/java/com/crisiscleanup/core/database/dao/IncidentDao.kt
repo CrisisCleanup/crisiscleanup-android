@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
 import com.crisiscleanup.core.database.dao.fts.PopulatedIncidentIdNameMatchInfo
+import com.crisiscleanup.core.database.model.IncidentClaimThresholdEntity
 import com.crisiscleanup.core.database.model.IncidentEntity
 import com.crisiscleanup.core.database.model.IncidentFormFieldEntity
 import com.crisiscleanup.core.database.model.IncidentIncidentLocationCrossRef
@@ -96,23 +97,32 @@ interface IncidentDao {
         validFieldKeys: Set<String>,
     )
 
-    @Upsert
-    suspend fun upsertFormFields(formFields: Collection<IncidentFormFieldEntity>)
-
     @Transaction
-    @Query("SELECT name FROM incidents ORDER BY RANDOM() LIMIT 1")
-    fun getRandomIncidentName(): String?
+    @Query(
+        """
+        DELETE FROM incident_claim_thresholds
+        WHERE user_id=:accountId AND incident_id NOT IN(:incidentIds)
+        """,
+    )
+    suspend fun deleteUnspecifiedClaimThresholds(accountId: Long, incidentIds: Collection<Long>)
+
+    @Upsert
+    suspend fun upsertIncidentClaimThresholds(claimThresholds: List<IncidentClaimThresholdEntity>)
 
     @Transaction
     @Query(
         """
-        SELECT docid
-        FROM incident_fts
-        WHERE incident_fts MATCH :query
-        LIMIT 1
+        SELECT * FROM incident_claim_thresholds
+        WHERE user_id=:accountId AND incident_id=:incidentId
         """,
     )
-    fun matchSingleIncidentFts(query: String): List<Long>
+    fun getIncidentClaimThreshold(
+        accountId: Long,
+        incidentId: Long,
+    ): IncidentClaimThresholdEntity?
+
+    @Upsert
+    suspend fun upsertFormFields(formFields: Collection<IncidentFormFieldEntity>)
 
     @Transaction
     @Query("INSERT INTO incident_fts(incident_fts) VALUES ('rebuild')")

@@ -27,4 +27,6 @@ data class UserData(
     val isWorkScreenTableView: Boolean,
 
     val isSyncMediaImmediate: Boolean,
+
+    val isMapSatelliteView: Boolean,
 )

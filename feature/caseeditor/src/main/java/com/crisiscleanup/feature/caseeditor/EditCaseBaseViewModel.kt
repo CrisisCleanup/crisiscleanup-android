@@ -5,6 +5,7 @@ import com.crisiscleanup.core.common.KeyResourceTranslator
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
+import kotlinx.coroutines.flow.Flow
 
 abstract class EditCaseBaseViewModel(
     protected val worksiteProvider: EditableWorksiteProvider,
@@ -13,6 +14,10 @@ abstract class EditCaseBaseViewModel(
 ) : ViewModel(), KeyResourceTranslator {
     val breakGlassHint = translator("actions.edit")
     val helpHint = translator("actions.help_alt")
+
+    abstract val isMapSatelliteView: Flow<Boolean>
+
+    abstract fun setMapSatelliteView(isSatellite: Boolean)
 
     abstract fun onSystemBack(): Boolean
 

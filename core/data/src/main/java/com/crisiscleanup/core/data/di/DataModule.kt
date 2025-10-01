@@ -6,8 +6,11 @@ import com.crisiscleanup.core.data.AppIncidentMapTracker
 import com.crisiscleanup.core.data.IncidentMapTracker
 import com.crisiscleanup.core.data.IncidentSelectManager
 import com.crisiscleanup.core.data.IncidentSelector
+import com.crisiscleanup.core.data.WorkTypeAnalyzer
+import com.crisiscleanup.core.data.WorksiteChangeWorkTypeAnalyzer
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.AccountUpdateRepository
+import com.crisiscleanup.core.data.repository.AppConfigRepository
 import com.crisiscleanup.core.data.repository.AppDataManagementRepository
 import com.crisiscleanup.core.data.repository.AppEndOfLifeRepository
 import com.crisiscleanup.core.data.repository.AppMetricsRepository
@@ -17,8 +20,10 @@ import com.crisiscleanup.core.data.repository.AppPreferencesRepositoryImpl
 import com.crisiscleanup.core.data.repository.CaseHistoryRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupAccountDataRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupAccountUpdateRepository
+import com.crisiscleanup.core.data.repository.CrisisCleanupAppConfigRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupDataManagementRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupEquipmentRepository
+import com.crisiscleanup.core.data.repository.CrisisCleanupIncidentClaimThresholdRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupListsRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupLocalImageRepository
 import com.crisiscleanup.core.data.repository.CrisisCleanupOrgVolunteerRepository
@@ -31,6 +36,7 @@ import com.crisiscleanup.core.data.repository.CrisisCleanupWorksiteChangeReposit
 import com.crisiscleanup.core.data.repository.EndOfLifeRepository
 import com.crisiscleanup.core.data.repository.EquipmentRepository
 import com.crisiscleanup.core.data.repository.IncidentCacheRepository
+import com.crisiscleanup.core.data.repository.IncidentClaimThresholdRepository
 import com.crisiscleanup.core.data.repository.IncidentWorksitesCacheRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
@@ -216,6 +222,17 @@ interface DataModule {
     fun bindsIncidentCacheRepository(
         repository: IncidentWorksitesCacheRepository,
     ): IncidentCacheRepository
+
+    @Binds
+    fun bindsAppConfigRepository(repository: CrisisCleanupAppConfigRepository): AppConfigRepository
+
+    @Binds
+    fun bindsIncidentClaimThresholdRepository(
+        repository: CrisisCleanupIncidentClaimThresholdRepository,
+    ): IncidentClaimThresholdRepository
+
+    @Binds
+    fun bindsWorkTypeAnalyzer(analyzer: WorksiteChangeWorkTypeAnalyzer): WorkTypeAnalyzer
 
     @Binds
     fun bindsEquipmentRepository(

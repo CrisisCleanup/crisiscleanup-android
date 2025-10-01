@@ -8,6 +8,7 @@ import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.datastore.AccountInfoDataSource
+import com.crisiscleanup.core.model.data.IncidentClaimThreshold
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.profilePictureUrl
 import kotlinx.coroutines.CoroutineDispatcher
@@ -19,6 +20,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.minutes
 
 @Singleton
 class AccountDataRefresher @Inject constructor(
@@ -26,11 +28,13 @@ class AccountDataRefresher @Inject constructor(
     private val networkDataSource: CrisisCleanupNetworkDataSource,
     private val accountDataRepository: AccountDataRepository,
     private val organizationsRepository: OrganizationsRepository,
+    private val incidentClaimThresholdRepository: IncidentClaimThresholdRepository,
     private val accountEventBus: AccountEventBus,
     @Dispatcher(CrisisCleanupDispatchers.IO) private val ioDispatcher: CoroutineDispatcher,
     @Logger(CrisisCleanupLoggers.Auth) private val logger: AppLogger,
 ) {
     private var accountDataUpdateTime = Instant.epochZero
+    private var incidentClaimThresholdTime = Instant.epochZero
 
     private suspend fun refreshAccountData(
         syncTag: String,
@@ -44,7 +48,7 @@ class AccountDataRefresher @Inject constructor(
             return
         }
 
-        logger.logCapture("Syncing $syncTag")
+        logger.logCapture("Refreshing $syncTag")
 
         val accountId = accountDataRepository.accountData.first().id
         try {
@@ -59,7 +63,29 @@ class AccountDataRefresher @Inject constructor(
                     profile.activeRoles!!,
                 )
 
-                accountDataUpdateTime = Clock.System.now()
+                profile.internalState?.incidentThresholdLookup?.let {
+                    val incidentThresholds = it.mapNotNull { entry ->
+                        entry.key.toLongOrNull()?.let { incidentId ->
+                            val thresholds = entry.value
+                            if (thresholds.claimedCount != null && thresholds.closedRatio != null) {
+                                return@mapNotNull IncidentClaimThreshold(
+                                    incidentId = incidentId,
+                                    claimedCount = thresholds.claimedCount!!,
+                                    closedRatio = thresholds.closedRatio!!,
+                                )
+                            }
+                        }
+                        null
+                    }
+                    incidentClaimThresholdRepository.saveIncidentClaimThresholds(
+                        accountId,
+                        incidentThresholds,
+                    )
+                }
+
+                val now = Clock.System.now()
+                accountDataUpdateTime = now
+                incidentClaimThresholdTime = now
             }
         } catch (e: Exception) {
             logger.logException(e)
@@ -67,7 +93,7 @@ class AccountDataRefresher @Inject constructor(
     }
 
     suspend fun updateProfilePicture() {
-        refreshAccountData("profile pic", false)
+        refreshAccountData("profile-pic", false)
     }
 
     suspend fun updateMyOrganization(force: Boolean) = withContext(ioDispatcher) {
@@ -85,10 +111,18 @@ class AccountDataRefresher @Inject constructor(
     }
 
     suspend fun updateAcceptedTerms() {
-        refreshAccountData("accept terms", true)
+        refreshAccountData("accept-terms", true)
     }
 
-    suspend fun updateApprovedIncidents(force: Boolean = false) {
-        refreshAccountData("approved incidents", force)
+    // Approved Incidents and Incident thresholds
+    suspend fun updateProfileIncidentsData(force: Boolean = false) {
+        refreshAccountData("profile-incidents-data", force)
+    }
+
+    suspend fun updateIncidentClaimThreshold() {
+        refreshAccountData(
+            "incident-claim-threshold",
+            Clock.System.now().minus(incidentClaimThresholdTime) > 5.minutes,
+        )
     }
 }

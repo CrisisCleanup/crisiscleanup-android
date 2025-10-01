@@ -9,6 +9,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.PolyUtil
 import com.google.maps.android.SphericalUtil
+import kotlin.math.abs
 import kotlin.math.sqrt
 
 fun Pair<Double, Double>.toLatLng() = LatLng(first, second)
@@ -109,7 +110,7 @@ internal fun Collection<LocationLatLng>.toBounds(): IncidentBounds {
                     val polyDelta = polyPoint.subtract(incidentCentroid)
                     val polyDeltaNorm = polyDelta.normalizeOrSelf()
                     if (polyDelta != polyDeltaNorm &&
-                        polyDeltaNorm.latitude * deltaNorm.latitude + polyDeltaNorm.longitude * deltaNorm.longitude > 0.9
+                        abs(polyDeltaNorm.latitude * deltaNorm.latitude + polyDeltaNorm.longitude * deltaNorm.longitude) > 0.9
                     ) {
                         val distance =
                             SphericalUtil.computeDistanceBetween(incidentCentroid, polyPoint)

@@ -1,5 +1,6 @@
 package com.crisiscleanup.core.commoncase.map
 
+import com.crisiscleanup.core.common.epochZero
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
@@ -43,7 +44,7 @@ class CasesMapBoundsManager(
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
     private val logger: AppLogger,
 ) {
-    private val epoch0 = Instant.fromEpochSeconds(0)
+    private val epoch0 = Instant.epochZero
     private val mapLoadTime = MutableStateFlow(epoch0)
 
     val isMapLoaded: Boolean

@@ -111,6 +111,11 @@ internal fun CreateEditCaseRoute(
                     openPhoto = openPhoto,
                 )
             }
+
+            if (viewModel.isOverClaimingWork) {
+                val closeDialog = remember(viewModel) { { viewModel.isOverClaimingWork = false } }
+                OverClaimAlertDialog(closeDialog)
+            }
         }
     }
 }
