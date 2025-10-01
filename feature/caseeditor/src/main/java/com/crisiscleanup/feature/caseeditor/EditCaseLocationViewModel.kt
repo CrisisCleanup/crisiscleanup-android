@@ -19,6 +19,7 @@ import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.commoncase.model.CaseSummaryResult
 import com.crisiscleanup.core.data.model.ExistingWorksiteIdentifier
+import com.crisiscleanup.core.data.repository.AppPreferencesRepository
 import com.crisiscleanup.core.data.repository.SearchWorksitesRepository
 import com.crisiscleanup.core.mapmarker.DrawableResourceBitmapProvider
 import com.crisiscleanup.core.mapmarker.IncidentBoundsProvider
@@ -617,6 +618,7 @@ internal class EditableLocationDataEditor(
 @HiltViewModel
 class EditCaseLocationViewModel @Inject constructor(
     worksiteProvider: EditableWorksiteProvider,
+    private val preferencesRepository: AppPreferencesRepository,
     permissionManager: PermissionManager,
     locationProvider: LocationProvider,
     boundsProvider: IncidentBoundsProvider,
@@ -629,8 +631,12 @@ class EditCaseLocationViewModel @Inject constructor(
     translator: KeyResourceTranslator,
     @Logger(CrisisCleanupLoggers.Worksites) logger: AppLogger,
     @Dispatcher(Default) coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
-    @Dispatcher(IO) ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : EditCaseBaseViewModel(worksiteProvider, translator, logger) {
+
+    override val isMapSatelliteView =
+        preferencesRepository.userPreferences.map { it.isMapSatelliteView }
+
     val editor: CaseLocationDataEditor = EditableLocationDataEditor(
         worksiteProvider,
         permissionManager,
@@ -654,6 +660,12 @@ class EditCaseLocationViewModel @Inject constructor(
             initialValue = true,
             started = SharingStarted.WhileSubscribed(),
         )
+
+    override fun setMapSatelliteView(isSatellite: Boolean) {
+        viewModelScope.launch(ioDispatcher) {
+            preferencesRepository.setMapSatelliteView(isSatellite)
+        }
+    }
 
     private fun onBackValidateSaveWorksite() = editor.onBackValidateSaveWorksite()
 

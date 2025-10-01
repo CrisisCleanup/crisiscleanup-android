@@ -6,6 +6,8 @@ import androidx.datastore.dataStoreFile
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.datastore.AccountInfoProtoSerializer
+import com.crisiscleanup.core.datastore.AppConfigSerializer
+import com.crisiscleanup.core.datastore.AppMaintenanceSerializer
 import com.crisiscleanup.core.datastore.AppMetricsSerializer
 import com.crisiscleanup.core.datastore.CasesFiltersProtoSerializer
 import com.crisiscleanup.core.datastore.IncidentCachePreferencesSerializer
@@ -86,5 +88,31 @@ object DataStoreModule {
         scope = CoroutineScope(ioDispatcher + SupervisorJob()),
     ) {
         context.dataStoreFile("incident_cache_preferences.pb")
+    }
+
+    @Provides
+    @Singleton
+    fun providesAppMaintenanceDataStore(
+        @ApplicationContext context: Context,
+        @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
+        serializer: AppMaintenanceSerializer,
+    ) = DataStoreFactory.create(
+        serializer = serializer,
+        scope = CoroutineScope(ioDispatcher + SupervisorJob()),
+    ) {
+        context.dataStoreFile("app_maintenance.pb")
+    }
+
+    @Provides
+    @Singleton
+    fun providesAppConfigDataStore(
+        @ApplicationContext context: Context,
+        @Dispatcher(IO) ioDispatcher: CoroutineDispatcher,
+        serializer: AppConfigSerializer,
+    ) = DataStoreFactory.create(
+        serializer = serializer,
+        scope = CoroutineScope(ioDispatcher + SupervisorJob()),
+    ) {
+        context.dataStoreFile("app_config.pb")
     }
 }

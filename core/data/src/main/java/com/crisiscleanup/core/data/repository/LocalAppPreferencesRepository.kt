@@ -42,4 +42,6 @@ interface LocalAppPreferencesRepository {
     suspend fun setWorkScreenView(isTableView: Boolean)
 
     suspend fun setSyncMediaImmediate(syncImmediate: Boolean)
+
+    suspend fun setMapSatelliteView(isSatellite: Boolean)
 }

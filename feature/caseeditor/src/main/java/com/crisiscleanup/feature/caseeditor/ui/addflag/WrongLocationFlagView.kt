@@ -92,7 +92,11 @@ internal fun ColumnScope.WrongLocationFlagView(
         }
     }
 
-    val onSave = remember(viewModel) { { viewModel.updateLocation(validCoordinates) } }
+    val onSave = remember(viewModel, validCoordinates) {
+        {
+            viewModel.updateLocation(validCoordinates)
+        }
+    }
     AddFlagSaveActionBar(
         onSave = onSave,
         onCancel = onBack,

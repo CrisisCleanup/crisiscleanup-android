@@ -9,7 +9,6 @@ import com.crisiscleanup.core.database.dao.IncidentOrganizationDaoPlus
 import com.crisiscleanup.core.database.model.IncidentOrganizationEntity
 import com.crisiscleanup.core.database.util.ftsGlobEnds
 import com.crisiscleanup.core.database.util.ftsSanitize
-import com.crisiscleanup.core.database.util.ftsSanitizeAsToken
 import com.crisiscleanup.core.database.util.intArray
 import com.crisiscleanup.core.database.util.okapiBm25Score
 import com.crisiscleanup.core.model.data.OrganizationIdName
@@ -57,21 +56,8 @@ data class PopulatedOrganizationIdNameMatchInfo(
     }
 }
 
-suspend fun IncidentOrganizationDaoPlus.rebuildOrganizationFts(force: Boolean = false) =
-    db.withTransaction {
-        with(db.incidentOrganizationDao()) {
-            var rebuild = force
-            if (!force) {
-                getRandomOrganizationName()?.let { orgName ->
-                    val ftsMatch = matchOrganizationName(orgName.ftsSanitizeAsToken)
-                    rebuild = ftsMatch.isEmpty()
-                }
-            }
-            if (rebuild) {
-                rebuildOrganizationFts()
-            }
-        }
-    }
+fun IncidentOrganizationDaoPlus.rebuildOrganizationFts() =
+    db.incidentOrganizationDao().rebuildOrganizationFts()
 
 suspend fun IncidentOrganizationDaoPlus.getMatchingOrganizations(q: String): List<OrganizationIdName> =
     coroutineScope {

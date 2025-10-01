@@ -36,6 +36,9 @@ interface SyncPuller {
     fun appPullStatuses()
     suspend fun syncPullStatuses(): SyncResult
 
+    fun appPullAppConfig()
+    suspend fun syncPullAppConfig(): SyncResult
+
     fun appPullIncidents() = appPullIncidentData(
         cancelOngoing = true,
         forcePullIncidents = true,

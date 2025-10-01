@@ -39,6 +39,8 @@ data class IncidentEntity(
     val turnOnRelease: Boolean = false,
     @ColumnInfo("is_archived", defaultValue = "0")
     val isArchived: Boolean = false,
+    @ColumnInfo("ignore_claiming_thresholds", defaultValue = "0")
+    val ignoreClaimingThresholds: Boolean = false,
 )
 
 @Entity("incident_locations")

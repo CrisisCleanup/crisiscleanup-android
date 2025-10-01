@@ -20,4 +20,5 @@ val UserDataNone = UserData(
     teamMapBounds = IncidentCoordinateBoundsNone,
     isWorkScreenTableView = false,
     isSyncMediaImmediate = false,
+    isMapSatelliteView = false,
 )

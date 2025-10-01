@@ -7,6 +7,7 @@ import com.crisiscleanup.core.common.log.TagLogger
 import com.crisiscleanup.core.commoncase.model.FormFieldNode
 import com.crisiscleanup.core.commoncase.model.WORK_FORM_GROUP_KEY
 import com.crisiscleanup.core.commoncase.model.flatten
+import com.crisiscleanup.core.data.repository.AccountDataRefresher
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.data.repository.IncidentsRepository
 import com.crisiscleanup.core.data.repository.LanguageTranslationsRepository
@@ -43,6 +44,7 @@ internal class CaseEditorDataLoader(
     incidentIdIn: Long,
     worksiteIdIn: Long?,
     accountDataRepository: AccountDataRepository,
+    accountDataRefresher: AccountDataRefresher,
     incidentsRepository: IncidentsRepository,
     incidentRefresher: IncidentRefresher,
     incidentBoundsProvider: IncidentBoundsProvider,
@@ -372,6 +374,14 @@ internal class CaseEditorDataLoader(
         if (logDebug) {
             (logger as? TagLogger)?.let {
                 it.tag = debugTag
+            }
+        }
+
+        coroutineScope.launch(coroutineDispatcher) {
+            try {
+                accountDataRefresher.updateIncidentClaimThreshold()
+            } catch (e: Exception) {
+                logger.logException(e)
             }
         }
 

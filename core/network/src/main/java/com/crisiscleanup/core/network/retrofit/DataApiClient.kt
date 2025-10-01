@@ -16,6 +16,7 @@ import com.crisiscleanup.core.network.model.NetworkListsResult
 import com.crisiscleanup.core.network.model.NetworkLocationsResult
 import com.crisiscleanup.core.network.model.NetworkOrganizationsResult
 import com.crisiscleanup.core.network.model.NetworkOrganizationsSearchResult
+import com.crisiscleanup.core.network.model.NetworkPortalConfig
 import com.crisiscleanup.core.network.model.NetworkRedeployRequestsResult
 import com.crisiscleanup.core.network.model.NetworkTeamResult
 import com.crisiscleanup.core.network.model.NetworkUserProfile
@@ -384,6 +385,9 @@ private interface DataSourceApi {
         @Query("since")
         after: Instant,
     ): NetworkWorksiteChangesResult
+
+    @GET("portals/current")
+    suspend fun getCurrentPortalConfig(): NetworkPortalConfig
 }
 
 private val worksiteCoreDataFields = listOf(
@@ -721,4 +725,6 @@ class DataApiClient @Inject constructor(
         }
         return result.changes ?: emptyList()
     }
+
+    override suspend fun getClaimThresholds() = networkApi.getCurrentPortalConfig().attr
 }

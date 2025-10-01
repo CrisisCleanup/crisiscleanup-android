@@ -19,4 +19,20 @@ data class NetworkAccountProfileResult(
     val organization: NetworkOrganizationShort?,
     @SerialName("active_roles")
     val activeRoles: Set<Int>?,
+    @SerialName("internal_state")
+    val internalState: NetworkProfileInternalState?,
+)
+
+@Serializable
+data class NetworkProfileInternalState(
+    @SerialName("incidents")
+    val incidentThresholdLookup: Map<String, NetworkIncidentClaimThreshold>,
+)
+
+@Serializable
+data class NetworkIncidentClaimThreshold(
+    @SerialName("claimed_work_type_count")
+    val claimedCount: Int?,
+    @SerialName("claimed_work_type_closed_ratio")
+    val closedRatio: Float?,
 )

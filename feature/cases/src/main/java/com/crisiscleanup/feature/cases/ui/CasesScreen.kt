@@ -400,7 +400,7 @@ internal fun CasesScreen(
                 enableIncidentSelect = enableIncidentSelect,
             )
         } else {
-            var isSatelliteMapType by remember { mutableStateOf(false) }
+            val isSatelliteMapType by viewModel.isMapSatelliteView.collectAsStateWithLifecycle(false)
 
             CasesMapView(
                 mapCameraBounds,
@@ -426,9 +426,7 @@ internal fun CasesScreen(
                     onCasesAction(CasesAction.Layers)
                 },
                 isSatelliteMapType = isSatelliteMapType,
-                onToggleSatelliteType = { isSatellite: Boolean ->
-                    isSatelliteMapType = isSatellite
-                },
+                onToggleSatelliteType = viewModel::setMapSatelliteView,
             )
         }
         CasesOverlayElements(
@@ -505,13 +503,8 @@ internal fun BoxScope.CasesMapView(
         isMyLocation = isMyLocationEnabled,
     )
     LaunchedEffect(isSatelliteMapType) {
-        mapProperties = mapProperties.copy(
-            mapType = if (isSatelliteMapType) {
-                MapType.SATELLITE
-            } else {
-                MapType.NORMAL
-            },
-        )
+        val mapType = if (isSatelliteMapType) MapType.SATELLITE else MapType.NORMAL
+        mapProperties = mapProperties.copy(mapType = mapType)
     }
     GoogleMap(
         modifier = Modifier

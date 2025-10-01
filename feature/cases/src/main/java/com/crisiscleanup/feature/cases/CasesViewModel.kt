@@ -155,6 +155,8 @@ class CasesViewModel @Inject constructor(
 
     val filtersCount = filterRepository.filtersCount
 
+    val isMapSatelliteView = appPreferencesRepository.userPreferences.map { it.isMapSatelliteView }
+
     val isTableView = qsm.isTableView
 
     private val tableDataDistanceSortSearchRadius = 100.0f
@@ -214,7 +216,14 @@ class CasesViewModel @Inject constructor(
     }
 
     val editedWorksiteLocation: LatLng?
-        get() = worksiteLocationEditor.takeEditedLocation()?.let { LatLng(it.first, it.second) }
+        get() = worksiteLocationEditor.takeEditedLocation()?.let {
+            // TODO Separate side effect
+            if (isTableView.value) {
+                setContentViewType(false)
+            }
+
+            LatLng(it.first, it.second)
+        }
 
     val isIncidentLoading = incidentsRepository.isLoading
 
@@ -640,6 +649,12 @@ class CasesViewModel @Inject constructor(
     }
 
     fun zoomToInteractive() = adjustMapZoom(MAP_MARKERS_ZOOM_LEVEL + 0.5f)
+
+    fun setMapSatelliteView(isSatellite: Boolean) {
+        viewModelScope.launch(ioDispatcher) {
+            appPreferencesRepository.setMapSatelliteView(isSatellite)
+        }
+    }
 
     private fun setMapToMyCoordinates() {
         viewModelScope.launch {

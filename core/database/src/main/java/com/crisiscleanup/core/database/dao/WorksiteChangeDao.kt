@@ -24,6 +24,16 @@ interface WorksiteChangeDao {
     @Transaction
     @Query(
         """
+        SELECT * FROM worksite_changes
+        WHERE organization_id=:orgId
+        ORDER BY worksite_id, created_at
+        """,
+    )
+    fun getOrgChanges(orgId: Long): List<PopulatedWorksiteChange>
+
+    @Transaction
+    @Query(
+        """
         UPDATE worksite_changes
         SET archive_action  =:action,
             save_attempt    =save_attempt+1,

@@ -642,10 +642,6 @@ interface WorksiteDao {
     fun deleteNetworkWorksites(networkWorksiteIds: Collection<Long>)
 
     @Transaction
-    @Query("SELECT case_number FROM worksites ORDER BY RANDOM() LIMIT 1")
-    fun getRandomWorksiteCaseNumber(): String?
-
-    @Transaction
     @Query("INSERT INTO worksite_text_fts_c(worksite_text_fts_c) VALUES ('rebuild')")
     fun rebuildWorksiteTextFts()
 

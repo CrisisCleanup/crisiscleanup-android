@@ -172,7 +172,7 @@ class MainActivityViewModel @Inject constructor(
                         syncFullWorksites = false,
                     )
                     accountDataRefresher.updateMyOrganization(true)
-                    accountDataRefresher.updateApprovedIncidents()
+                    accountDataRefresher.updateProfileIncidentsData()
 
                     logger.setAccountId(it.id.toString())
                 } else {
@@ -206,6 +206,7 @@ class MainActivityViewModel @Inject constructor(
 
         syncPuller.appPullLanguage()
         syncPuller.appPullStatuses()
+        syncPuller.appPullAppConfig()
 
         syncPusher.scheduleSyncMedia()
 
