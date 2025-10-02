@@ -36,6 +36,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -70,6 +71,11 @@ class MenuViewModel @Inject constructor(
 ) : ViewModel() {
     val isDebuggable = appEnv.isDebuggable
     val isNotProduction = appEnv.isNotProduction
+
+    val showSyncLogs = incidentSelector.incidentId
+        .map {
+            appEnv.isNotProduction || it == 171L
+        }
 
     val termsOfServiceUrl = appSettingsProvider.termsOfServiceUrl
     val privacyPolicyUrl = appSettingsProvider.privacyPolicyUrl

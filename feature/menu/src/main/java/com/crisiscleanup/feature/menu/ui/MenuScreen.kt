@@ -250,6 +250,8 @@ private fun MenuScreen(
             }
         }
 
+        val showSyncLogs by viewModel.showSyncLogs.collectAsStateWithLifecycle(false)
+
         LazyColumn(
             Modifier.weight(1f)
                 .sizeIn(maxWidth = LocalDimensions.current.contentMaxWidth),
@@ -409,14 +411,16 @@ private fun MenuScreen(
                 }
             }
 
-            if (viewModel.isNotProduction) {
+            if (showSyncLogs) {
                 item {
                     CrisisCleanupTextButton(
                         onClick = openSyncLogs,
                         text = "See sync logs",
                     )
                 }
+            }
 
+            if (viewModel.isNotProduction) {
                 item {
                     CrisisCleanupTextButton(
                         onClick = viewModel::checkInactivity,
