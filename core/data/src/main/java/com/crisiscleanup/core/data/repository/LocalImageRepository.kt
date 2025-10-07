@@ -27,6 +27,7 @@ import java.io.FileInputStream
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import javax.inject.Inject
+import androidx.core.net.toUri
 
 interface LocalImageRepository {
     val syncingWorksiteId: Flow<Long>
@@ -168,17 +169,17 @@ class CrisisCleanupLocalImageRepository @Inject constructor(
             _syncingWorksiteId.value = worksiteId
             try {
                 for (localImage in imagesPendingUpload) {
-                    val uri = Uri.parse(localImage.uri)
-                    if (uri == null) {
+                    val uri = localImage.uri.toUri()
+                    if (uri.toString().isBlank()) {
                         deleteLogMessage = "Invalid URI ${localImage.uri}"
                     } else {
-                        val (fileName, mimeType) = getFileNameType(uri)
-                        if (fileName.isBlank() || mimeType.isBlank()) {
-                            deleteLogMessage = "File not found from ${localImage.uri}"
-                        } else {
-                            _syncingWorksiteImage.value = localImage.id
+                        try {
+                            val (fileName, mimeType) = getFileNameType(uri)
+                            if (fileName.isBlank() || mimeType.isBlank()) {
+                                deleteLogMessage = "File not found from ${localImage.uri}"
+                            } else {
+                                _syncingWorksiteImage.value = localImage.id
 
-                            try {
                                 val imageFile = copyImageToFile(uri, fileName)
                                 if (imageFile == null) {
                                     syncLogger.log("Unable to copy image", localImage.uri)
@@ -200,10 +201,10 @@ class CrisisCleanupLocalImageRepository @Inject constructor(
                                         "$saveCount/${imagesPendingUpload.size}",
                                     )
                                 }
-                            } catch (e: Exception) {
-                                appLogger.logException(e)
-                                syncLogger.log("Sync error", e.message ?: "")
                             }
+                        } catch (e: Exception) {
+                            appLogger.logException(e)
+                            syncLogger.log("Sync error", e.message ?: "")
                         }
                     }
 
