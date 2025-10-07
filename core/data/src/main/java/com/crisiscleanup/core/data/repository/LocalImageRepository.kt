@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import androidx.core.net.toUri
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -27,7 +28,6 @@ import java.io.FileInputStream
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import javax.inject.Inject
-import androidx.core.net.toUri
 
 interface LocalImageRepository {
     val syncingWorksiteId: Flow<Long>
@@ -60,11 +60,8 @@ class CrisisCleanupLocalImageRepository @Inject constructor(
 ) : LocalImageRepository {
     private val fileUploadMutex = Mutex()
 
-    private val _syncingWorksiteId = MutableStateFlow(EmptyWorksite.id)
-    override val syncingWorksiteId = _syncingWorksiteId
-
-    private val _syncingWorksiteImage = MutableStateFlow(0L)
-    override val syncingWorksiteImage = _syncingWorksiteImage
+    override val syncingWorksiteId = MutableStateFlow(EmptyWorksite.id)
+    override val syncingWorksiteImage = MutableStateFlow(0L)
 
     override fun streamNetworkImageUrl(id: Long) = networkFileDao.streamNetworkImageUrl(id)
     override fun streamLocalImageUri(id: Long) = localImageDao.streamLocalImageUri(id)
@@ -166,7 +163,7 @@ class CrisisCleanupLocalImageRepository @Inject constructor(
         var deleteLogMessage = ""
 
         if (fileUploadMutex.tryLock()) {
-            _syncingWorksiteId.value = worksiteId
+            syncingWorksiteId.value = worksiteId
             try {
                 for (localImage in imagesPendingUpload) {
                     val uri = localImage.uri.toUri()
@@ -178,7 +175,7 @@ class CrisisCleanupLocalImageRepository @Inject constructor(
                             if (fileName.isBlank() || mimeType.isBlank()) {
                                 deleteLogMessage = "File not found from ${localImage.uri}"
                             } else {
-                                _syncingWorksiteImage.value = localImage.id
+                                syncingWorksiteImage.value = localImage.id
 
                                 val imageFile = copyImageToFile(uri, fileName)
                                 if (imageFile == null) {
@@ -217,9 +214,9 @@ class CrisisCleanupLocalImageRepository @Inject constructor(
                     }
                 }
             } finally {
+                syncingWorksiteId.value = EmptyWorksite.id
+                syncingWorksiteImage.value = 0
                 fileUploadMutex.unlock()
-                _syncingWorksiteId.value = EmptyWorksite.id
-                _syncingWorksiteImage.value = 0
             }
         }
 

@@ -81,7 +81,7 @@ class OfflineFirstWorksiteImageRepository @Inject constructor(
         get() = newWorksiteImagesCache.isNotEmpty()
 
     override fun setUriFileAccessPermissions(uri: Uri) {
-        // TODO v29 fails to set access permission
+        // TODO API 29 (v10) fails to set access permission
         //      Must inform user file uploads will not work
         try {
             val flag = Intent.FLAG_GRANT_READ_URI_PERMISSION
