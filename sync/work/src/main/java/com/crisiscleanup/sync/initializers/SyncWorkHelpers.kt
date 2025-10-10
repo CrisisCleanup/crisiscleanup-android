@@ -47,7 +47,7 @@ fun scheduleSyncMedia(context: Context, syncImmediate: Boolean) {
     WorkManager.getInstance(context).apply {
         enqueueUniqueWork(
             SYNC_MEDIA_WORK_NAME,
-            ExistingWorkPolicy.REPLACE,
+            ExistingWorkPolicy.KEEP,
             SyncMediaWorker.oneTimeSyncWork(syncImmediate),
         )
     }
