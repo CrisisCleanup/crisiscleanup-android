@@ -434,18 +434,27 @@ class CrisisCleanupWorksiteChangeRepository @Inject constructor(
         }
     }
 
+    // TODO Write integration tests
     override suspend fun syncWorksiteMedia(): Boolean {
-        val worksitesWithImages = localImageDao.getUploadImageWorksiteIds()
-        var isSyncedAll = true
-        for (worksiteImageUpload in worksitesWithImages) {
-            val worksiteId = worksiteImageUpload.id
-            val syncCount = localImageRepository.syncWorksiteMedia(worksiteId)
-            if (syncCount > 0) {
-                syncWorksite(worksiteId)
+        var unsyncedImageIds = mutableSetOf<Long>()
+        for (i in 0..<3) {
+            val worksitesWithImages = localImageDao.getUploadImageWorksiteIds()
+            for (worksiteImageUpload in worksitesWithImages) {
+                val worksiteId = worksiteImageUpload.id
+                val syncResult = localImageRepository.syncWorksiteMedia(worksiteId)
+                unsyncedImageIds.addAll(syncResult.unsyncedImageIds)
+                if (syncResult.syncedImageIds.isNotEmpty()) {
+                    syncWorksite(worksiteId)
+                }
             }
-            val unsyncedCount = worksiteImageUpload.count - syncCount
-            isSyncedAll = isSyncedAll && unsyncedCount == 0
+
+            val newestImageId = localImageDao.getNewestLocalImageId()
+            if (newestImageId == null || unsyncedImageIds.contains(newestImageId)) {
+                break
+            } else {
+                unsyncedImageIds = mutableSetOf()
+            }
         }
-        return isSyncedAll
+        return unsyncedImageIds.isEmpty()
     }
 }
