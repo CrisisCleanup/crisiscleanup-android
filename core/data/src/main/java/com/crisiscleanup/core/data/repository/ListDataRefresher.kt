@@ -4,12 +4,12 @@ import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
 import com.crisiscleanup.core.data.ListsDataSyncer
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Instant
 
 @Singleton
 class ListDataRefresher @Inject constructor(

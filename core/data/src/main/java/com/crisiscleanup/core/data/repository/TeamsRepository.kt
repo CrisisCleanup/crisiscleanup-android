@@ -18,9 +18,9 @@ import com.crisiscleanup.core.network.model.tryThrowException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import javax.inject.Inject
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 interface TeamsRepository {
     suspend fun streamIncidentTeams(incidentId: Long): Flow<IncidentTeams>

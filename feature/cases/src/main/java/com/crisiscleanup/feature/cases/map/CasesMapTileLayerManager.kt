@@ -8,7 +8,7 @@ import com.crisiscleanup.core.model.data.EmptyIncident
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 
 /**
  * Signals when the Compose map tile layer should invalidate its cache and/or redraw new or updated tiles.

@@ -3,10 +3,10 @@ package com.crisiscleanup.feature.caseeditor.model
 import com.crisiscleanup.core.model.data.WorksiteFormValue
 import com.crisiscleanup.core.network.model.DynamicValue
 import com.crisiscleanup.core.testing.model.makeTestWorksite
-import kotlinx.datetime.Clock
 import org.junit.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 
 class WorksiteFormDataChangeTest {

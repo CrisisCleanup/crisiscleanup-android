@@ -7,8 +7,8 @@ import com.crisiscleanup.core.model.data.InitiatePhoneLoginResult
 import com.crisiscleanup.core.model.data.PasswordResetInitiation
 import com.crisiscleanup.core.network.CrisisCleanupAccountApi
 import kotlinx.coroutines.flow.first
-import kotlinx.datetime.Clock
 import javax.inject.Inject
+import kotlin.time.Clock
 
 interface AccountUpdateRepository {
     suspend fun initiateEmailMagicLink(emailAddress: String): Boolean

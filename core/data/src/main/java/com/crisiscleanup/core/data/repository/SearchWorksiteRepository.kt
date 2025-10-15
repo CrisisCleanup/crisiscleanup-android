@@ -18,10 +18,10 @@ import com.crisiscleanup.core.model.data.WorksiteSummary
 import com.crisiscleanup.core.network.CrisisCleanupNetworkDataSource
 import com.crisiscleanup.core.network.model.NetworkWorksiteShort
 import kotlinx.coroutines.coroutineScope
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import javax.inject.Inject
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Instant
 
 interface SearchWorksitesRepository {
     suspend fun searchWorksites(

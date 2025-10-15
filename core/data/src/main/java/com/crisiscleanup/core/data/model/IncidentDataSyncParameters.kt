@@ -1,11 +1,11 @@
 package com.crisiscleanup.core.data.model
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlin.math.abs
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 
 data class IncidentDataSyncParameters(
     val incidentId: Long,

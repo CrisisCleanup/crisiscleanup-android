@@ -16,7 +16,7 @@ import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 class WorksiteChangeProcessor(
     private val changeSetOperator: WorksiteChangeSetOperator,

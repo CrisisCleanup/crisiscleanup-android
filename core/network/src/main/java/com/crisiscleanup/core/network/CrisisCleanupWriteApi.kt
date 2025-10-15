@@ -9,8 +9,8 @@ import com.crisiscleanup.core.network.model.NetworkType
 import com.crisiscleanup.core.network.model.NetworkWorkType
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.core.network.model.NetworkWorksitePush
-import kotlinx.datetime.Instant
 import java.io.File
+import kotlin.time.Instant
 
 interface CrisisCleanupWriteApi {
     suspend fun saveWorksite(

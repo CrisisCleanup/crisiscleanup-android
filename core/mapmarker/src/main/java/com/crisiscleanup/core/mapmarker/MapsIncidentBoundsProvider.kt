@@ -17,12 +17,12 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Instant
 
 interface IncidentBoundsProvider {
     val mappingBoundsIncidentIds: Flow<Set<Long>>

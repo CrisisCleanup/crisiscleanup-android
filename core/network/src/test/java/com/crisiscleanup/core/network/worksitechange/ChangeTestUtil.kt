@@ -7,10 +7,10 @@ import com.crisiscleanup.core.network.model.NetworkNote
 import com.crisiscleanup.core.network.model.NetworkType
 import com.crisiscleanup.core.network.model.NetworkWorkType
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Instant
 
 internal val createdAtA = Clock.System.now().minus(10.days)
 internal val updatedAtA = createdAtA.plus(1.hours)

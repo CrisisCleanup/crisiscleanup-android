@@ -1,8 +1,8 @@
 package com.crisiscleanup.core.model.data
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Instant
 
 /**
  * General data on a user account

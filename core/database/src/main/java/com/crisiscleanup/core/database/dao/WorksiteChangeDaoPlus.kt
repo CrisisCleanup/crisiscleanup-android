@@ -26,9 +26,9 @@ import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteChangeArchiveAction
 import com.crisiscleanup.core.model.data.WorksiteChangeSerializer
 import com.crisiscleanup.core.model.data.WorksiteSyncResult
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import javax.inject.Inject
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 class WorksiteChangeDaoPlus @Inject constructor(
     private val db: CrisisCleanupDatabase,

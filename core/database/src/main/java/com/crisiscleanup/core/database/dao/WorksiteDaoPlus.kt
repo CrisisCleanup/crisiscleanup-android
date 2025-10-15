@@ -30,10 +30,10 @@ import com.crisiscleanup.core.model.data.OrganizationLocationAreaBounds
 import com.crisiscleanup.core.model.data.WorksiteSortBy
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.ensureActive
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import javax.inject.Inject
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Instant
 
 class WorksiteDaoPlus @Inject constructor(
     internal val db: CrisisCleanupDatabase,

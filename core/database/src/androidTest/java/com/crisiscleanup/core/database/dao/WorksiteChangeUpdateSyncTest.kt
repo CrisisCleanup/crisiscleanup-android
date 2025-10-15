@@ -15,15 +15,15 @@ import com.crisiscleanup.core.database.model.WorksiteRootEntity
 import com.crisiscleanup.core.model.data.WorksiteChangeArchiveAction
 import com.crisiscleanup.core.model.data.WorksiteSyncResult
 import kotlinx.coroutines.test.runTest
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 
 class WorksiteChangeUpdateSyncTest {
     private lateinit var db: TestCrisisCleanupDatabase

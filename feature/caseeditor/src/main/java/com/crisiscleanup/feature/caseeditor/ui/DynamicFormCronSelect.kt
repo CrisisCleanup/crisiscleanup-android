@@ -51,9 +51,9 @@ import com.philjay.Frequency
 import com.philjay.RRule
 import com.philjay.Weekday
 import com.philjay.WeekdayNum
-import kotlinx.datetime.Instant
-import kotlinx.datetime.toJavaInstant
 import java.time.format.DateTimeFormatter
+import kotlin.time.Instant
+import kotlin.time.toJavaInstant
 
 private val recurringDateFormat =
     DateTimeFormatter.ofPattern("yyyy-MM-dd").utcTimeZone

@@ -11,7 +11,7 @@ import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteNote
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 // Changes below should update WORKSITES_STABLE_MODEL_BUILD_VERSION in core.network
 

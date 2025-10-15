@@ -1,6 +1,6 @@
 package com.crisiscleanup.core.model.data
 
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 const val BOUNDED_REGION_RADIUS_MILES_DEFAULT = 30.0
 

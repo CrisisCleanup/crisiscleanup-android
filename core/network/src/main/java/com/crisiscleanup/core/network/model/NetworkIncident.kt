@@ -1,9 +1,9 @@
 package com.crisiscleanup.core.network.model
 
 import com.crisiscleanup.core.network.model.util.IterableStringSerializer
-import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
 
 @Serializable
 data class NetworkIncidentsResult(

@@ -7,8 +7,8 @@ import com.crisiscleanup.core.commoncase.model.WORK_FORM_GROUP_KEY
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.feature.caseeditor.model.FormFieldsInputData
 import com.crisiscleanup.feature.caseeditor.util.updateWorkTypeStatuses
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 interface FormDataEditor {
     val inputData: FormFieldsInputData

@@ -4,8 +4,8 @@ import androidx.datastore.core.DataStore
 import com.crisiscleanup.core.model.data.BoundedRegionParameters
 import com.crisiscleanup.core.model.data.IncidentWorksitesCachePreferences
 import kotlinx.coroutines.flow.map
-import kotlinx.datetime.Instant
 import javax.inject.Inject
+import kotlin.time.Instant
 
 class IncidentCachePreferencesDataSource @Inject constructor(
     private val dataStore: DataStore<IncidentCachePreferences>,

@@ -6,7 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import com.crisiscleanup.core.database.model.WorkTypeTransferRequestEntity
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Dao
 interface WorkTypeTransferRequestDao {

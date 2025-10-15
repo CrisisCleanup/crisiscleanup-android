@@ -3,7 +3,7 @@ package com.crisiscleanup.feature.authentication
 import com.crisiscleanup.core.data.repository.AccountDataRepository
 import com.crisiscleanup.core.model.data.OrgData
 import com.crisiscleanup.core.network.model.NetworkUserProfile
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 
 suspend fun AccountDataRepository.setAccount(

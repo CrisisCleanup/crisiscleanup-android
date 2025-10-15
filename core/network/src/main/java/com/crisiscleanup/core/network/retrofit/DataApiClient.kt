@@ -31,7 +31,6 @@ import com.crisiscleanup.core.network.model.NetworkWorksitesFullResult
 import com.crisiscleanup.core.network.model.NetworkWorksitesPageResult
 import com.crisiscleanup.core.network.model.NetworkWorksitesShortResult
 import com.crisiscleanup.core.network.model.tryThrowException
-import kotlinx.datetime.Instant
 import retrofit2.Retrofit
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -40,6 +39,7 @@ import retrofit2.http.Query
 import retrofit2.http.QueryMap
 import retrofit2.http.Tag
 import javax.inject.Inject
+import kotlin.time.Instant
 
 private interface DataSourceApi {
     @TokenAuthenticationHeader

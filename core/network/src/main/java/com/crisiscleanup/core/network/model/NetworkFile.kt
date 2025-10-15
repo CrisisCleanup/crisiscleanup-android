@@ -1,9 +1,9 @@
 package com.crisiscleanup.core.network.model
 
-import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import okhttp3.RequestBody.Companion.toRequestBody
+import kotlin.time.Instant
 
 @Serializable
 data class NetworkFile(

@@ -9,7 +9,7 @@ import androidx.room.Transaction
 import com.crisiscleanup.core.database.model.ListEntity
 import com.crisiscleanup.core.database.model.PopulatedList
 import kotlinx.coroutines.flow.Flow
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Dao
 interface ListDao {

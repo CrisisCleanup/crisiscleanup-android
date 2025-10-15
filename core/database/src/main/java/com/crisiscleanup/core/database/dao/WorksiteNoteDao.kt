@@ -7,9 +7,9 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.crisiscleanup.core.database.model.PopulatedIdNetworkId
 import com.crisiscleanup.core.database.model.WorksiteNoteEntity
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Instant
 
 @Dao
 interface WorksiteNoteDao {

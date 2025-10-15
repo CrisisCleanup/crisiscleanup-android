@@ -9,8 +9,8 @@ import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.core.model.data.flagFromLiteral
 import com.crisiscleanup.core.model.data.statusFromLiteral
 import kotlinx.coroutines.flow.map
-import kotlinx.datetime.Instant
 import javax.inject.Inject
+import kotlin.time.Instant
 
 class CasesFiltersDataSource @Inject constructor(
     private val dataStore: DataStore<LocalPersistedCasesFilters>,

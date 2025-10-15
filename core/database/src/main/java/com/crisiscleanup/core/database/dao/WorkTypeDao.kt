@@ -8,7 +8,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import com.crisiscleanup.core.database.model.PopulatedIdNetworkId
 import com.crisiscleanup.core.database.model.WorkTypeEntity
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Dao
 interface WorkTypeDao {

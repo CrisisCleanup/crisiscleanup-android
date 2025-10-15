@@ -10,11 +10,11 @@ import com.crisiscleanup.core.common.sync.SyncLogger
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteChangeSerializer
 import io.mockk.spyk
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 
 object TestUtil {
     // TODO Change spys to mock when https://github.com/mockk/mockk/issues/1035 is fixed

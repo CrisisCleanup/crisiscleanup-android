@@ -1,6 +1,6 @@
 package com.crisiscleanup.feature.authentication
 
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 interface AccessTokenDecoder {
     fun decode(accessToken: String): DecodedAccessToken

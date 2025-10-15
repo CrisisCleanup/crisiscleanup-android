@@ -1,10 +1,10 @@
 package com.crisiscleanup.core.network.model
 
 import com.crisiscleanup.core.network.model.util.InstantSerializer
-import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlin.time.Instant
 
 @Serializable
 data class NetworkWorksitesFullResult(

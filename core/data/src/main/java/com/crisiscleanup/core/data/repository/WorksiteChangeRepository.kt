@@ -34,9 +34,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.datetime.Clock
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Clock
 
 interface WorksiteChangeRepository {
     val syncingWorksiteIds: Flow<Set<Long>>

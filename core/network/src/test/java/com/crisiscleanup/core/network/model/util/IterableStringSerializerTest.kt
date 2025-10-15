@@ -2,11 +2,11 @@ package com.crisiscleanup.core.network.model.util
 
 import com.crisiscleanup.core.network.model.NetworkCrisisCleanupApiError
 import com.crisiscleanup.core.network.model.NetworkIncident
-import kotlinx.datetime.Instant
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.time.Instant
 
 class IterableStringSerializerTest {
     @Test

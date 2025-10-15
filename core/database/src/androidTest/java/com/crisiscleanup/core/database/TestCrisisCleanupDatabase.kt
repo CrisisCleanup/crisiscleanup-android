@@ -52,7 +52,7 @@ import com.crisiscleanup.core.database.model.WorksiteNoteEntity
 import com.crisiscleanup.core.database.model.WorksiteRootEntity
 import com.crisiscleanup.core.database.model.WorksiteSyncStatsEntity
 import com.crisiscleanup.core.database.util.InstantConverter
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Database(
     entities = [

@@ -3,9 +3,9 @@ package com.crisiscleanup.core.database.model
 import androidx.room.Embedded
 import com.crisiscleanup.core.model.data.Language
 import com.crisiscleanup.core.model.data.LanguageTranslations
-import kotlinx.datetime.Instant
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import kotlin.time.Instant
 
 data class PopulatedLanguage(
     val key: String,

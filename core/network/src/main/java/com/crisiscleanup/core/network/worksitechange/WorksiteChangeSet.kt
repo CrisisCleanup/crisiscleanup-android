@@ -3,7 +3,7 @@ package com.crisiscleanup.core.network.worksitechange
 import com.crisiscleanup.core.network.model.NetworkFlag
 import com.crisiscleanup.core.network.model.NetworkNote
 import com.crisiscleanup.core.network.model.NetworkWorksitePush
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 data class WorksiteChangeSet(
     val updatedAtFallback: Instant,

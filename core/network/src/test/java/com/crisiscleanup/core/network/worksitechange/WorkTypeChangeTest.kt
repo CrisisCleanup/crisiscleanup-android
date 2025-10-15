@@ -1,13 +1,13 @@
 package com.crisiscleanup.core.network.worksitechange
 
 import com.crisiscleanup.core.network.model.NetworkWorkType
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Instant
 
 class WorkTypeChangeTest {
     private val emptyChangesResult = Triple(

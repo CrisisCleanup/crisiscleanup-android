@@ -5,12 +5,12 @@ import com.crisiscleanup.core.database.TestUtil
 import com.crisiscleanup.core.database.WorksiteTestUtil
 import com.crisiscleanup.core.database.model.WorkTypeTransferRequestEntity
 import kotlinx.coroutines.test.runTest
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 
 private val now = Clock.System.now()
 

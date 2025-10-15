@@ -36,7 +36,7 @@ import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.authentication.InviteDisplayInfo
 import com.crisiscleanup.feature.authentication.OrgPersistentInviteViewModel
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -6,8 +6,8 @@ import com.crisiscleanup.core.network.model.NetworkFlag
 import com.crisiscleanup.core.network.model.NetworkNote
 import com.crisiscleanup.core.network.model.NetworkWorkType
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
-import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
 
 @Serializable
 data class WorksiteSnapshot(

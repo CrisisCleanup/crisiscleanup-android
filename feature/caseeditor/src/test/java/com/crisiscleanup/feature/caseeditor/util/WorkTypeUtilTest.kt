@@ -10,9 +10,9 @@ import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteFormValue
 import com.crisiscleanup.core.network.model.DynamicValue
 import com.crisiscleanup.feature.caseeditor.model.FieldDynamicValue
-import kotlinx.datetime.Clock
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.time.Clock
 
 class WorkTypeUtilTest {
 

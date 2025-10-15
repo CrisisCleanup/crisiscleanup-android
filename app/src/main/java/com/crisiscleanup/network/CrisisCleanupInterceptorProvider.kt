@@ -20,7 +20,6 @@ import com.crisiscleanup.core.network.retrofit.RequestHeaderKey
 import com.crisiscleanup.core.network.retrofit.RequestHeaderKeysLookup
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import kotlinx.datetime.Clock
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import okhttp3.Interceptor
@@ -32,6 +31,7 @@ import java.io.IOException
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Clock
 
 private fun Json.parseNetworkErrors(response: String): List<NetworkCrisisCleanupApiError> {
     var errors: List<NetworkCrisisCleanupApiError> = emptyList()

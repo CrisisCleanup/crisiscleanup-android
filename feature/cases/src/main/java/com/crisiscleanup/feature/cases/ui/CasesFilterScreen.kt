@@ -80,10 +80,10 @@ import com.crisiscleanup.core.ui.scrollFlingListener
 import com.crisiscleanup.feature.cases.CasesFilterViewModel
 import com.crisiscleanup.feature.cases.CollapsibleFilterSection
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Instant
-import kotlinx.datetime.toJavaInstant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.time.Instant
+import kotlin.time.toJavaInstant
 
 private val dateFormatter = DateTimeFormatter
     .ofPattern("yyyy-MM-dd")

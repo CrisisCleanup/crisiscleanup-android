@@ -2,9 +2,9 @@ package com.crisiscleanup.core.mapmarker.model
 
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 data class MapViewCameraBounds(
     val bounds: LatLngBounds,

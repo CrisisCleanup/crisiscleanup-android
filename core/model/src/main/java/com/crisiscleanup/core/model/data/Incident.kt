@@ -1,6 +1,6 @@
 package com.crisiscleanup.core.model.data
 
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 interface IncidentIdProvider {
     val id: Long

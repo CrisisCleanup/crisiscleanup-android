@@ -1,7 +1,7 @@
 package com.crisiscleanup.core.network.model
 
-import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
+import kotlin.time.Instant
 
 object TestUtil {
     val json = Json { ignoreUnknownKeys = true }

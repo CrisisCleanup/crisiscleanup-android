@@ -14,7 +14,6 @@ import com.crisiscleanup.core.network.model.NetworkPhoneCodeResult
 import com.crisiscleanup.core.network.model.NetworkPhonePayload
 import com.crisiscleanup.core.network.model.NetworkTransferOrganizationPayload
 import com.crisiscleanup.core.network.model.NetworkTransferOrganizationResult
-import kotlinx.datetime.Instant
 import retrofit2.Retrofit
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -22,6 +21,7 @@ import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 import javax.inject.Inject
+import kotlin.time.Instant
 
 private interface AccountApi {
     @POST("magic_link")
