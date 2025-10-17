@@ -10,6 +10,7 @@ import com.crisiscleanup.core.database.dao.IncidentDao
 import com.crisiscleanup.core.database.dao.IncidentDaoPlus
 import com.crisiscleanup.core.datastore.AccountInfoDataSource
 import com.crisiscleanup.core.model.data.IncidentClaimThreshold
+import com.crisiscleanup.core.model.data.IncidentsData
 import kotlinx.coroutines.flow.first
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
@@ -48,7 +49,13 @@ class CrisisCleanupIncidentClaimThresholdRepository @Inject constructor(
         incidentThresholds: List<IncidentClaimThreshold>,
     ) {
         try {
-            incidentDaoPlus.saveIncidentThresholds(accountId, incidentThresholds)
+            val incidentsData = incidentSelector.data.value
+            val incidentIds = (incidentsData as? IncidentsData.Incidents)?.incidents
+                ?.map { it.id }
+                ?.toSet()
+                ?: emptySet()
+            val thresholds = incidentThresholds.filter { incidentIds.contains(it.incidentId) }
+            incidentDaoPlus.saveIncidentThresholds(accountId, thresholds)
         } catch (e: Exception) {
             logger.logException(e)
         }
