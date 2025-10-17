@@ -51,7 +51,10 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
     private suspend fun placesClient(): PlacesClient {
         placesClientMutex.withLock {
             if (placesClientInternal == null) {
-                Places.initialize(context, settingsProvider.mapsApiKey)
+                Places.initializeWithNewPlacesApiEnabled(
+                    context,
+                    settingsProvider.mapsApiKey,
+                )
                 placesClientInternal = Places.createClient(context)
             }
         }

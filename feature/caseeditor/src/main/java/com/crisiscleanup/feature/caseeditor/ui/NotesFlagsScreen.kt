@@ -54,7 +54,8 @@ internal fun NoteView(
         }
         var noteText = note.note
         if (noteText.contains('<') &&
-            noteText.contains('>')
+            noteText.contains('>') ||
+            noteText.contains("&#")
         ) {
             noteText = HtmlCompat.fromHtml(noteText, HtmlCompat.FROM_HTML_MODE_COMPACT).toString()
         }
