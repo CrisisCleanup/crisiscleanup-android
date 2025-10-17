@@ -2,7 +2,7 @@ package com.crisiscleanup.core.database.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Relation
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 data class BoundedSyncedWorksiteIds(
     val id: Long,

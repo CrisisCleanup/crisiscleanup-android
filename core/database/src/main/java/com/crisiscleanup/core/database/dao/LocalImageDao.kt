@@ -85,4 +85,15 @@ interface LocalImageDao {
         """,
     )
     fun getUploadImageWorksiteIds(): List<PopulatedWorksiteImageCount>
+
+    @Transaction
+    @Query(
+        """
+        SELECT id
+        FROM worksite_local_images
+        ORDER BY id DESC
+        LIMIT 1
+        """,
+    )
+    fun getNewestLocalImageId(): Long?
 }

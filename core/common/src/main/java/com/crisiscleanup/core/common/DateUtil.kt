@@ -1,14 +1,14 @@
 package com.crisiscleanup.core.common
 
 import com.github.marlonlom.utilities.timeago.TimeAgo
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
-import kotlinx.datetime.toJavaInstant
-import kotlinx.datetime.toKotlinInstant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Instant
+import kotlin.time.toJavaInstant
+import kotlin.time.toKotlinInstant
 
 val Instant.relativeTime: String
     get() = TimeAgo.using(toEpochMilliseconds())

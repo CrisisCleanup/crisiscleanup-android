@@ -1,7 +1,7 @@
 package com.crisiscleanup.core.model.data
 
-import kotlinx.datetime.Instant
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Instant
 
 const val DEFAULT_SVI = 0f
 private const val DEFAULT_FILTER_DISTANCE = 0f

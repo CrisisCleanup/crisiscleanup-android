@@ -4,10 +4,10 @@ import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.WorkTypeStatus
 import com.crisiscleanup.core.model.data.closedWorkTypeStatuses
 import com.crisiscleanup.core.model.data.openWorkTypeStatuses
-import kotlinx.datetime.Instant
-import kotlinx.datetime.toJavaInstant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlin.time.Instant
+import kotlin.time.toJavaInstant
 
 private val CasesFilter.statusQueryString: String?
     get() {

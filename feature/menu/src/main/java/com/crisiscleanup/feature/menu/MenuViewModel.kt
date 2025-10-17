@@ -71,6 +71,11 @@ class MenuViewModel @Inject constructor(
     val isDebuggable = appEnv.isDebuggable
     val isNotProduction = appEnv.isNotProduction
 
+    val showSyncLogs = incidentSelector.incidentId
+        .map {
+            appEnv.isNotProduction || it == 171L
+        }
+
     val termsOfServiceUrl = appSettingsProvider.termsOfServiceUrl
     val privacyPolicyUrl = appSettingsProvider.privacyPolicyUrl
     val gettingStartedVideoUrl = appSettingsProvider.gettingStartedVideoUrl

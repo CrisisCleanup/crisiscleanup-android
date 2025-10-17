@@ -2,8 +2,8 @@ package com.crisiscleanup.core.network
 
 import com.crisiscleanup.core.model.data.InitiatePhoneLoginResult
 import com.crisiscleanup.core.network.model.InitiatePasswordResetResult
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 interface CrisisCleanupAccountApi {
     suspend fun initiateMagicLink(emailAddress: String): Boolean

@@ -4,7 +4,7 @@ import com.crisiscleanup.core.common.PhoneNumberUtil.searchablePhoneNumbers
 import com.crisiscleanup.core.common.UuidGenerator
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.Worksite
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 
 fun Worksite.asEntities(
     uuidGenerator: UuidGenerator,

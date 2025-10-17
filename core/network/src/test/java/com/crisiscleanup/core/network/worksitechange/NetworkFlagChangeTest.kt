@@ -1,9 +1,9 @@
 package com.crisiscleanup.core.network.worksitechange
 
 import com.crisiscleanup.core.network.model.NetworkFlag
-import kotlinx.datetime.Instant
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.time.Instant
 
 class NetworkFlagChangeTest {
     @Test

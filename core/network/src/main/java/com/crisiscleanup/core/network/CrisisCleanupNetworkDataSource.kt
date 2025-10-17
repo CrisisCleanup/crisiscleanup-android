@@ -27,7 +27,7 @@ import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.core.network.model.NetworkWorksiteLocationSearch
 import com.crisiscleanup.core.network.model.NetworkWorksiteShort
 import com.crisiscleanup.core.network.model.NetworkWorksitesPageResult
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 interface CrisisCleanupNetworkDataSource {
     suspend fun getProfileData(accountId: Long): NetworkAccountProfileResult

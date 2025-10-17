@@ -5,7 +5,7 @@ import com.crisiscleanup.core.common.kmToMiles
 import com.crisiscleanup.core.common.radians
 import com.crisiscleanup.core.model.data.CasesFilter
 import com.crisiscleanup.core.model.data.OrganizationLocationAreaBounds
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 fun CasesFilter.passesFilter(
     organizationAffiliates: Set<Long>,

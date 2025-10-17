@@ -7,10 +7,10 @@ import com.philjay.Weekday
 import com.philjay.WeekdayNum
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.datetime.Instant
-import kotlinx.datetime.toJavaInstant
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import kotlin.time.Instant
+import kotlin.time.toJavaInstant
 
 class RruleHumanReadableTextTest {
     private val translator = object : KeyResourceTranslator {

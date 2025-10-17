@@ -1,6 +1,6 @@
 package com.crisiscleanup.core.model.data
 
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 data class AppMetricsData(
     @Deprecated("Was for an initial release of app under different account")

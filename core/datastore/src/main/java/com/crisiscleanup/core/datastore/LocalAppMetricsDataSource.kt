@@ -7,9 +7,9 @@ import com.crisiscleanup.core.model.data.AppOpenInstant
 import com.crisiscleanup.core.model.data.BuildEndOfLife
 import com.crisiscleanup.core.model.data.MinSupportedAppVersion
 import kotlinx.coroutines.flow.map
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import javax.inject.Inject
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 class LocalAppMetricsDataSource @Inject constructor(
     private val appMetrics: DataStore<AppMetrics>,

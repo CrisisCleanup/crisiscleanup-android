@@ -3,7 +3,7 @@ package com.crisiscleanup.core.database.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Entity("language_translations")
 data class LanguageTranslationEntity(

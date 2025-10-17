@@ -5,7 +5,7 @@ import com.crisiscleanup.core.common.KeyTranslator
 import com.crisiscleanup.core.database.dao.testIncidentEntity
 import com.crisiscleanup.core.database.model.WorksiteEntity
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 // Data and util for tests relating to worksites
 object WorksiteTestUtil {

@@ -37,8 +37,8 @@ import com.crisiscleanup.core.network.model.NetworkList
 import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.datetime.Clock
 import javax.inject.Inject
+import kotlin.time.Clock
 
 interface ListsRepository {
     fun streamIncidentLists(incidentId: Long): Flow<List<CrisisCleanupList>>

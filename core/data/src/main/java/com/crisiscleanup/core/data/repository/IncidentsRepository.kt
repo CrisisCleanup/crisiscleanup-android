@@ -3,7 +3,7 @@ package com.crisiscleanup.core.data.repository
 import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.model.data.IncidentIdNameType
 import kotlinx.coroutines.flow.Flow
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 interface IncidentsRepository {
     val isLoading: Flow<Boolean>

@@ -8,11 +8,11 @@ import com.crisiscleanup.core.testing.model.makeTestWorksite
 import com.crisiscleanup.core.testing.model.makeTestWorksiteFlag
 import io.mockk.MockKAnnotations
 import io.mockk.impl.annotations.MockK
-import kotlinx.datetime.Clock
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
 

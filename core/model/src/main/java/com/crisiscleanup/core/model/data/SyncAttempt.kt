@@ -1,7 +1,7 @@
 package com.crisiscleanup.core.model.data
 
-import kotlinx.datetime.Clock
 import kotlin.math.ln
+import kotlin.time.Clock
 
 data class SyncAttempt(
     val successfulSeconds: Long,

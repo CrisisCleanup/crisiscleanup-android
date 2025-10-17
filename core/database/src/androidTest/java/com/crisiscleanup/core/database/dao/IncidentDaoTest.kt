@@ -11,11 +11,11 @@ import com.crisiscleanup.core.model.data.Incident
 import com.crisiscleanup.core.testing.util.nowTruncateMillis
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
-import kotlinx.datetime.Instant
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 
 class IncidentDaoTest {
     private lateinit var db: TestCrisisCleanupDatabase

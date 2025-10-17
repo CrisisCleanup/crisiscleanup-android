@@ -8,7 +8,7 @@ import com.crisiscleanup.core.model.data.WorkTypeStatusClaim
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteFlagType
 import com.crisiscleanup.core.model.data.WorksiteMapMark
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 /**
  * For read-only purposes with minimal data

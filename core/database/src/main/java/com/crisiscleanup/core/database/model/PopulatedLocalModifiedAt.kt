@@ -1,7 +1,7 @@
 package com.crisiscleanup.core.database.model
 
 import androidx.room.ColumnInfo
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 data class PopulatedLocalModifiedAt(
     @ColumnInfo("id")

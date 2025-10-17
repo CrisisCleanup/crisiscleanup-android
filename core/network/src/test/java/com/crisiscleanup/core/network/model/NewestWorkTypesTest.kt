@@ -1,11 +1,11 @@
 package com.crisiscleanup.core.network.model
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Instant
 
 private val now = Clock.System.now()
 

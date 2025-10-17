@@ -26,7 +26,6 @@ import com.crisiscleanup.core.network.model.NetworkWorksiteFull
 import com.crisiscleanup.core.network.model.NetworkWorksitePush
 import com.crisiscleanup.core.network.model.asPartMap
 import com.crisiscleanup.core.network.model.networkTypeFavorite
-import kotlinx.datetime.Instant
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -48,6 +47,7 @@ import retrofit2.http.Path
 import retrofit2.http.Url
 import java.io.File
 import javax.inject.Inject
+import kotlin.time.Instant
 
 private interface DataChangeApi {
     @TokenAuthenticationHeader

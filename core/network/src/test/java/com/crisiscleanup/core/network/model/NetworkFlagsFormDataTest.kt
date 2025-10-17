@@ -1,9 +1,9 @@
 package com.crisiscleanup.core.network.model
 
-import kotlinx.datetime.Instant
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.time.Instant
 
 class NetworkFlagsFormDataTest {
     @Test

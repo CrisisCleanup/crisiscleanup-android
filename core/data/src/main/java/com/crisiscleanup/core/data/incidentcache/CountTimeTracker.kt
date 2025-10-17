@@ -1,6 +1,6 @@
 package com.crisiscleanup.core.data.incidentcache
 
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 
 class CountTimeTracker {
     private val counts = mutableListOf<CountTime>()

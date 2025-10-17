@@ -1,13 +1,13 @@
 package com.crisiscleanup.core.network.worksitechange
 
 import com.crisiscleanup.core.network.model.NetworkNote
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Instant
 
 class NewNoteTest {
     @Test

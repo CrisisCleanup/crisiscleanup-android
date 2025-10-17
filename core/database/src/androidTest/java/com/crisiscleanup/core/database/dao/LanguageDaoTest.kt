@@ -8,14 +8,14 @@ import com.crisiscleanup.core.model.data.Language
 import com.crisiscleanup.core.model.data.LanguageTranslations
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Instant
 
 class LanguageDaoTest {
     private lateinit var db: CrisisCleanupDatabase

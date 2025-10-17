@@ -6,7 +6,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.crisiscleanup.core.model.data.NetworkImage
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Entity(
     "network_files",

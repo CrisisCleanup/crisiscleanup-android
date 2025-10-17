@@ -31,13 +31,13 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Instant
 
 class GooglePlaceAddressSearchRepository @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -51,7 +51,10 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
     private suspend fun placesClient(): PlacesClient {
         placesClientMutex.withLock {
             if (placesClientInternal == null) {
-                Places.initialize(context, settingsProvider.mapsApiKey)
+                Places.initializeWithNewPlacesApiEnabled(
+                    context,
+                    settingsProvider.mapsApiKey,
+                )
                 placesClientInternal = Places.createClient(context)
             }
         }

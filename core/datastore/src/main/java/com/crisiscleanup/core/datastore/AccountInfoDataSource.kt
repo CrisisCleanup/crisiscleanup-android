@@ -7,9 +7,9 @@ import com.crisiscleanup.core.model.data.AccountData
 import com.crisiscleanup.core.model.data.OrgData
 import com.crisiscleanup.core.model.data.emptyOrgData
 import kotlinx.coroutines.flow.map
-import kotlinx.datetime.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
+import kotlin.time.Instant
 
 // TODO Rewrite tests
 

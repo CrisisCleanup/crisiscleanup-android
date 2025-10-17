@@ -10,7 +10,7 @@ import com.crisiscleanup.core.database.model.PopulatedTeam
 import com.crisiscleanup.core.database.model.TeamEntity
 import com.crisiscleanup.core.database.model.TeamMemberCrossRef
 import kotlinx.coroutines.flow.Flow
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Dao
 interface TeamDao {

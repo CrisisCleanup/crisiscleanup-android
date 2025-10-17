@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import androidx.core.net.toUri
 import com.crisiscleanup.core.common.log.AppLogger
 import com.crisiscleanup.core.common.log.CrisisCleanupLoggers
 import com.crisiscleanup.core.common.log.Logger
@@ -43,7 +44,7 @@ interface LocalImageRepository {
 
     suspend fun deleteLocalImage(id: Long)
 
-    suspend fun syncWorksiteMedia(worksiteId: Long): Int
+    suspend fun syncWorksiteMedia(worksiteId: Long): UploadMediaResult
 }
 
 class CrisisCleanupLocalImageRepository @Inject constructor(
@@ -59,11 +60,8 @@ class CrisisCleanupLocalImageRepository @Inject constructor(
 ) : LocalImageRepository {
     private val fileUploadMutex = Mutex()
 
-    private val _syncingWorksiteId = MutableStateFlow(EmptyWorksite.id)
-    override val syncingWorksiteId = _syncingWorksiteId
-
-    private val _syncingWorksiteImage = MutableStateFlow(0L)
-    override val syncingWorksiteImage = _syncingWorksiteImage
+    override val syncingWorksiteId = MutableStateFlow(EmptyWorksite.id)
+    override val syncingWorksiteImage = MutableStateFlow(0L)
 
     override fun streamNetworkImageUrl(id: Long) = networkFileDao.streamNetworkImageUrl(id)
     override fun streamLocalImageUri(id: Long) = localImageDao.streamLocalImageUri(id)
@@ -146,39 +144,39 @@ class CrisisCleanupLocalImageRepository @Inject constructor(
         return writeApi.addFileToWorksite(networkWorksiteId, fileUpload.id, imageTag)
     }
 
-    override suspend fun syncWorksiteMedia(worksiteId: Long): Int {
+    override suspend fun syncWorksiteMedia(worksiteId: Long): UploadMediaResult {
         val imagesPendingUpload = localImageDao.getWorksiteLocalImages(worksiteId)
         if (imagesPendingUpload.isEmpty()) {
-            return 0
+            return UploadMediaResult(worksiteId)
         }
 
         val networkWorksiteId = worksiteDao.getWorksiteNetworkId(worksiteId)
         if (networkWorksiteId <= 0) {
-            return 0
+            return UploadMediaResult(worksiteId)
         }
 
         syncLogger.type = "worksite-$worksiteId-media"
 
         syncLogger.log("Syncing ${imagesPendingUpload.size} images")
 
-        var saveCount = 0
+        val syncedImageIds = mutableSetOf<Long>()
         var deleteLogMessage = ""
 
         if (fileUploadMutex.tryLock()) {
-            _syncingWorksiteId.value = worksiteId
+            syncingWorksiteId.value = worksiteId
             try {
                 for (localImage in imagesPendingUpload) {
-                    val uri = Uri.parse(localImage.uri)
-                    if (uri == null) {
+                    val uri = localImage.uri.toUri()
+                    if (uri.toString().isBlank()) {
                         deleteLogMessage = "Invalid URI ${localImage.uri}"
                     } else {
-                        val (fileName, mimeType) = getFileNameType(uri)
-                        if (fileName.isBlank() || mimeType.isBlank()) {
-                            deleteLogMessage = "File not found from ${localImage.uri}"
-                        } else {
-                            _syncingWorksiteImage.value = localImage.id
+                        try {
+                            val (fileName, mimeType) = getFileNameType(uri)
+                            if (fileName.isBlank() || mimeType.isBlank()) {
+                                deleteLogMessage = "File not found from ${localImage.uri}"
+                            } else {
+                                syncingWorksiteImage.value = localImage.id
 
-                            try {
                                 val imageFile = copyImageToFile(uri, fileName)
                                 if (imageFile == null) {
                                     syncLogger.log("Unable to copy image", localImage.uri)
@@ -194,16 +192,16 @@ class CrisisCleanupLocalImageRepository @Inject constructor(
                                         localImage,
                                         networkFile.asEntity(),
                                     )
-                                    saveCount++
+                                    syncedImageIds.add(localImage.id)
                                     syncLogger.log(
                                         "Synced ${localImage.id} (${networkFile.id} file ${networkFile.file})",
-                                        "$saveCount/${imagesPendingUpload.size}",
+                                        "${syncedImageIds.size}/${imagesPendingUpload.size}",
                                     )
                                 }
-                            } catch (e: Exception) {
-                                appLogger.logException(e)
-                                syncLogger.log("Sync error", e.message ?: "")
                             }
+                        } catch (e: Exception) {
+                            appLogger.logException(e)
+                            syncLogger.log("Sync error", e.message ?: "")
                         }
                     }
 
@@ -216,14 +214,27 @@ class CrisisCleanupLocalImageRepository @Inject constructor(
                     }
                 }
             } finally {
+                syncingWorksiteId.value = EmptyWorksite.id
+                syncingWorksiteImage.value = 0
                 fileUploadMutex.unlock()
-                _syncingWorksiteId.value = EmptyWorksite.id
-                _syncingWorksiteImage.value = 0
             }
         }
 
         syncLogger.flush()
 
-        return saveCount
+        val unsyncedIds = imagesPendingUpload.map { it.id }
+            .filter { !syncedImageIds.contains(it) }
+            .toSet()
+        return UploadMediaResult(
+            worksiteId,
+            syncedImageIds = syncedImageIds,
+            unsyncedImageIds = unsyncedIds,
+        )
     }
 }
+
+data class UploadMediaResult(
+    val worksiteId: Long,
+    val syncedImageIds: Set<Long> = emptySet(),
+    val unsyncedImageIds: Set<Long> = emptySet(),
+)

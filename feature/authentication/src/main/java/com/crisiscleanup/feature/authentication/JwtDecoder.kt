@@ -1,8 +1,8 @@
 package com.crisiscleanup.feature.authentication
 
 import com.auth0.android.jwt.JWT
-import kotlinx.datetime.Instant
 import javax.inject.Inject
+import kotlin.time.Instant
 
 class JwtDecoder @Inject constructor() : AccessTokenDecoder {
     override fun decode(accessToken: String): DecodedAccessToken {

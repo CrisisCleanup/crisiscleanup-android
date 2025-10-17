@@ -6,7 +6,7 @@ import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.core.model.data.WorksiteFlag
 import com.crisiscleanup.core.model.data.WorksiteFormValue
 import com.crisiscleanup.core.model.data.WorksiteNote
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 fun makeTestWorksite(
     prevUpdatedAt: Instant,

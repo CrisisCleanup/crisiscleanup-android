@@ -1,9 +1,9 @@
 package com.crisiscleanup.core.network.endoflife
 
 import com.crisiscleanup.core.network.model.TestUtil
-import kotlinx.datetime.Instant
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.time.Instant
 
 class NetworkBuildEndOfLifeTest {
     @Test

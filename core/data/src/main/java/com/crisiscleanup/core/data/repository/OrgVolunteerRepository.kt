@@ -13,8 +13,8 @@ import com.crisiscleanup.core.model.data.JoinOrgResult
 import com.crisiscleanup.core.model.data.OrgInviteResult
 import com.crisiscleanup.core.model.data.OrgUserInviteInfo
 import com.crisiscleanup.core.network.CrisisCleanupRegisterApi
-import kotlinx.datetime.Instant
 import javax.inject.Inject
+import kotlin.time.Instant
 
 interface OrgVolunteerRepository {
     suspend fun requestInvitation(invite: InvitationRequest): InvitationRequestResult?

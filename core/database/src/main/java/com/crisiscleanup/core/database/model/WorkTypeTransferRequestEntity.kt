@@ -6,7 +6,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.crisiscleanup.core.model.data.WorkTypeRequest
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Entity(
     "worksite_work_type_requests",

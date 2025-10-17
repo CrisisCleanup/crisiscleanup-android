@@ -4,8 +4,8 @@ import androidx.compose.runtime.MutableState
 import com.crisiscleanup.core.model.data.WorkType
 import com.crisiscleanup.core.model.data.Worksite
 import com.crisiscleanup.feature.caseeditor.model.FieldDynamicValue
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 // TODO Additional test coverage
 fun Worksite.updateWorkTypeStatuses(

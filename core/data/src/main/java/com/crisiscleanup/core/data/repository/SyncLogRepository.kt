@@ -10,6 +10,7 @@ import com.crisiscleanup.core.common.di.ApplicationScope
 import com.crisiscleanup.core.common.network.CrisisCleanupDispatchers.IO
 import com.crisiscleanup.core.common.network.Dispatcher
 import com.crisiscleanup.core.common.sync.SyncLogger
+import com.crisiscleanup.core.data.IncidentSelector
 import com.crisiscleanup.core.data.model.asEntity
 import com.crisiscleanup.core.database.dao.SyncLogDao
 import com.crisiscleanup.core.database.model.PopulatedSyncLog
@@ -26,8 +27,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.datetime.Clock
 import javax.inject.Inject
+import kotlin.time.Clock
 
 interface SyncLogRepository {
     fun streamLogCount(): Flow<Int>
@@ -40,6 +41,7 @@ interface SyncLogRepository {
 class PagingSyncLogRepository @Inject constructor(
     private val syncLogDao: SyncLogDao,
     private val appEnv: AppEnv,
+    private val incidentSelector: IncidentSelector,
     @ApplicationScope private val coroutineScope: CoroutineScope,
     @Dispatcher(IO) private val ioDispatcher: CoroutineDispatcher,
 ) : SyncLogger, SyncLogRepository {
@@ -53,11 +55,14 @@ class PagingSyncLogRepository @Inject constructor(
         },
     )
 
+    private val isLogging: Boolean
+        get() = appEnv.isNotProduction || incidentSelector.incidentId.value == 171L
+
     override var type = ""
 
     override fun log(message: String, details: String, type: String): SyncLogger {
         // TODO Log if sync logging is enabled
-        if (appEnv.isNotProduction) {
+        if (isLogging) {
             logEntries.add(
                 SyncLog(
                     0,

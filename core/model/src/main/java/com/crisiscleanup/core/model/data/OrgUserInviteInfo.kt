@@ -1,7 +1,7 @@
 package com.crisiscleanup.core.model.data
 
-import kotlinx.datetime.Instant
 import java.net.URL
+import kotlin.time.Instant
 
 data class OrgUserInviteInfo(
     val displayName: String,

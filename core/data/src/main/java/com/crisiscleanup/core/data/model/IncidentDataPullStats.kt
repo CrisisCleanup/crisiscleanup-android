@@ -1,8 +1,8 @@
 package com.crisiscleanup.core.data.model
 
 import com.crisiscleanup.core.model.data.EmptyIncident
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 enum class IncidentPullDataType {
     WorksitesCore,

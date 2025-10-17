@@ -1,7 +1,7 @@
 package com.crisiscleanup.core.network.worksitechange
 
-import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
 
 /**
  * 01 Initial model

@@ -7,8 +7,8 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.crisiscleanup.core.model.data.IncidentFormField
 import com.crisiscleanup.core.model.data.IncidentLocation
-import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
+import kotlin.time.Instant
 
 @Entity(
     "incidents",

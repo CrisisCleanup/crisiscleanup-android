@@ -1,6 +1,6 @@
 package com.crisiscleanup.core.model.data
 
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 /**
  * Build version of the app where worksite (related) entity models were last changed
