@@ -161,9 +161,7 @@ internal class EditableLocationDataEditor(
     override val isProcessingAction = kotlinx.coroutines.flow.combine(
         isSelectingWorksite,
         isSelectingAddress,
-        ::Pair,
-    )
-        .map { (b0, b1) -> b0 || b1 }
+    ) { b0, b1 -> b0 || b1 }
         .stateIn(
             scope = coroutineScope,
             initialValue = false,

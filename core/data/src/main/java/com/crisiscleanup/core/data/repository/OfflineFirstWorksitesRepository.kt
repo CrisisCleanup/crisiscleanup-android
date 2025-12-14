@@ -89,14 +89,12 @@ class OfflineFirstWorksitesRepository @Inject constructor(
         },
         filterRepository.casesFiltersLocation,
         organizationLocationAreaBounds,
-        ::Triple,
-    )
-        .map { (idCount, filtersLocation, areaBounds) ->
-            Pair(
-                idCount,
-                Pair(filtersLocation, areaBounds),
-            )
-        }
+    ) { idCount, filtersLocation, areaBounds ->
+        Pair(
+            idCount,
+            Pair(filtersLocation, areaBounds),
+        )
+    }
         .debounce(timeoutMillis = 150)
         .distinctUntilChanged()
         .mapLatest { streams ->

@@ -82,11 +82,9 @@ class MainActivityViewModel @Inject constructor(
     val viewState = combine(
         appPreferencesRepository.userPreferences,
         appMetricsRepository.metrics.distinctUntilChanged(),
-        ::Pair,
-    )
-        .map { (preferences, metrics) ->
-            MainActivityViewState.Success(preferences, metrics)
-        }
+    ) { preferences, metrics ->
+        MainActivityViewState.Success(preferences, metrics)
+    }
         .stateIn(
             scope = viewModelScope,
             initialValue = MainActivityViewState.Loading,
@@ -111,9 +109,7 @@ class MainActivityViewModel @Inject constructor(
     val isLoadingTermsAcceptance = combine(
         isFetchingTermsAcceptance,
         isUpdatingTermsAcceptance,
-        ::Pair,
-    )
-        .map { (b0, b1) -> b0 || b1 }
+    ) { b0, b1 -> b0 || b1 }
         .stateIn(
             scope = viewModelScope,
             initialValue = false,

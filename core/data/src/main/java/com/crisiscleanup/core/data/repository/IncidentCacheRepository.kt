@@ -137,11 +137,9 @@ class IncidentWorksitesCacheRepository @Inject constructor(
     private val isSyncingInitialIncidents = kCombine(
         syncingIncidentId,
         cacheStage,
-        ::Pair,
-    )
-        .map { (syncingId, stage) ->
-            syncingId == EmptyIncident.id && stage == IncidentCacheStage.Incidents
-        }
+    ) { syncingId, stage ->
+        syncingId == EmptyIncident.id && stage == IncidentCacheStage.Incidents
+    }
 
     private val planSubmissionCountFlow = MutableStateFlow(0)
     private val planSubmissionCounter = AtomicInteger(0)

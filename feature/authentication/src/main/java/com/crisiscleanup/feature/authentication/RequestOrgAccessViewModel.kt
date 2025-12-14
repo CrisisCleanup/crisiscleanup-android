@@ -135,9 +135,7 @@ class RequestOrgAccessViewModel @Inject constructor(
         isFetchingInviteInfo,
         isRequestingInvite,
         isTransferringOrg,
-        ::Triple,
-    )
-        .map { (b0, b1, b2) -> b0 || b1 || b2 }
+    ) { b0, b1, b2 -> b0 || b1 || b2 }
         .distinctUntilChanged()
         .shareIn(
             scope = viewModelScope,

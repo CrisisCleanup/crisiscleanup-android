@@ -107,9 +107,7 @@ class LoginWithPhoneViewModel @Inject constructor(
 
     val isExchangingCode = isRequestingCode.combine(
         isVerifyingCode,
-        ::Pair,
-    )
-        .map { it.first || it.second }
+    ) { b0, b1 -> b0 || b1 }
         .stateIn(
             scope = viewModelScope,
             initialValue = false,

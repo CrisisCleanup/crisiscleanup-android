@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -53,9 +52,7 @@ class PasswordRecoverViewModel @Inject constructor(
         isInitiatingPasswordReset,
         isInitiatingMagicLink,
         isResettingPassword,
-        ::Triple,
-    )
-        .map { (b0, b1, b2) -> b0 || b1 || b2 }
+    ) { b0, b1, b2 -> b0 || b1 || b2 }
         .stateIn(
             scope = viewModelScope,
             initialValue = false,

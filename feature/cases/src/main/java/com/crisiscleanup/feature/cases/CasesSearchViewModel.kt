@@ -64,9 +64,7 @@ class CasesSearchViewModel @Inject constructor(
     val isSearching = kCombine(
         isSearchingLocal,
         isSearchingNetwork,
-        ::Pair,
-    )
-        .map { (b0, b1) -> b0 || b1 }
+    ) { b0, b1 -> b0 || b1 }
         .stateIn(
             scope = viewModelScope,
             initialValue = false,

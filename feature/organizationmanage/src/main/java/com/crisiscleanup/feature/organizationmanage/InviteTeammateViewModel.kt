@@ -97,9 +97,7 @@ class InviteTeammateViewModel @Inject constructor(
     val isSearchingOrganizations = combine(
         isSearchingLocalOrganizations,
         isSearchingNetworkOrganizations,
-        ::Pair,
-    )
-        .map { it.first || it.second }
+    ) { b0, b1 -> b0 || b1 }
         .stateIn(
             scope = viewModelScope,
             initialValue = false,
@@ -109,9 +107,7 @@ class InviteTeammateViewModel @Inject constructor(
     private val otherOrgQuery = combine(
         inviteToAnotherOrg,
         organizationNameQuery,
-        ::Pair,
-    )
-        .map { (inviteToAnother, q) -> if (inviteToAnother) q else "" }
+    ) { inviteToAnother, q -> if (inviteToAnother) q else "" }
     val inviteOrgState = combine(
         inviteToAnotherOrg,
         selectedOtherOrg,
@@ -315,11 +311,9 @@ class InviteTeammateViewModel @Inject constructor(
     private val isGeneratingAffiliateQrCode = combine(
         generatingAffiliateOrgQrCode,
         selectedOtherOrg,
-        ::Pair,
-    )
-        .map { (generatingOrgId, selectedOrg) ->
-            generatingOrgId > 0L && generatingOrgId == selectedOrg.id
-        }
+    ) { generatingOrgId, selectedOrg ->
+        generatingOrgId > 0L && generatingOrgId == selectedOrg.id
+    }
         .shareIn(
             scope = viewModelScope,
             replay = 1,
@@ -330,9 +324,7 @@ class InviteTeammateViewModel @Inject constructor(
         isCreatingMyOrgPersistentInvitation,
         isGeneratingMyOrgQrCode,
         isGeneratingAffiliateQrCode,
-        ::Triple,
-    )
-        .map { it.first || it.second || it.third }
+    ) { b0, b1, b2 -> b0 || b1 || b2 }
         .stateIn(
             scope = viewModelScope,
             initialValue = false,
@@ -355,11 +347,7 @@ class InviteTeammateViewModel @Inject constructor(
     val isLoading = combine(
         isValidatingAccount,
         affiliateOrganizationIds,
-        ::Pair,
-    )
-        .map { (b0, affiliateIds) ->
-            b0 || affiliateIds == null
-        }
+    ) { b0, affiliateIds -> b0 || affiliateIds == null }
         .stateIn(
             scope = viewModelScope,
             initialValue = true,

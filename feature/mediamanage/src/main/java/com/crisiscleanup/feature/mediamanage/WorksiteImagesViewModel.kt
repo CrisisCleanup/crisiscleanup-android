@@ -185,11 +185,7 @@ class WorksiteImagesViewModel @Inject constructor(
     val enableRotate = combine(
         selectedImageData,
         rotatingImagesFlow,
-        ::Pair,
-    )
-        .map { (image, rotating) ->
-            !rotating.contains(image.imageUri)
-        }
+    ) { image, rotating -> !rotating.contains(image.imageUri) }
         .stateIn(
             scope = viewModelScope,
             initialValue = false,
@@ -203,10 +199,7 @@ class WorksiteImagesViewModel @Inject constructor(
     val enableDelete = combine(
         selectedImageData,
         deletingImagesFlow,
-        ::Pair,
-    ).map { (image, deleting) ->
-        !deleting.contains(image.imageUri)
-    }
+    ) { image, deleting -> !deleting.contains(image.imageUri) }
         .stateIn(
             scope = viewModelScope,
             initialValue = false,

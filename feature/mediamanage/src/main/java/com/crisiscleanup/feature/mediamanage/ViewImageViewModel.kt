@@ -43,7 +43,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
@@ -149,8 +148,7 @@ class ViewImageViewModel @Inject constructor(
         viewState,
         isSyncing,
         isDeleting,
-        ::Triple,
-    ).map { (state, syncing, deleting) ->
+    ) { state, syncing, deleting ->
         state is ViewImageViewState.Image &&
             imageId > 0 &&
             !(syncing || deleting)

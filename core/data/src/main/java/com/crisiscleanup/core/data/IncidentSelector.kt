@@ -55,12 +55,10 @@ class IncidentSelectManager @Inject constructor(
     private val selectedIncident = combine(
         preferencesIncidentId,
         incidentsSource,
-        ::Pair,
-    )
-        .map { (selectedId, incidents) ->
-            incidents.firstOrNull { it.id == selectedId }
-                ?: EmptyIncident
-        }
+    ) { selectedId, incidents ->
+        incidents.firstOrNull { it.id == selectedId }
+            ?: EmptyIncident
+    }
 
     override val data = combine(
         incidentsSource,
@@ -73,7 +71,8 @@ class IncidentSelectManager @Inject constructor(
             } else {
                 IncidentsData.Incidents(incidents, selected)
             }
-        }.stateIn(
+        }
+        .stateIn(
             scope = coroutineScope,
             initialValue = IncidentsData.Loading,
             started = subscribedReplay(),

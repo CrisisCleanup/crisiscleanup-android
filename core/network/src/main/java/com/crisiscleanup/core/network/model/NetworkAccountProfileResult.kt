@@ -20,7 +20,7 @@ data class NetworkAccountProfileResult(
     @SerialName("active_roles")
     val activeRoles: Set<Int>?,
     @SerialName("internal_state")
-    val internalState: NetworkProfileInternalState?,
+    val internalState: NetworkProfileInternalState? = null,
 )
 
 @Serializable

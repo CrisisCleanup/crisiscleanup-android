@@ -28,7 +28,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -65,9 +64,7 @@ class OrgPersistentInviteViewModel @Inject constructor(
     val isLoading = combine(
         inviteDisplay,
         isJoiningOrg,
-        ::Pair,
-    )
-        .map { (invite, b1) -> invite == null || b1 }
+    ) { invite, b1 -> invite == null || b1 }
         .stateIn(
             scope = viewModelScope,
             initialValue = false,
@@ -77,9 +74,7 @@ class OrgPersistentInviteViewModel @Inject constructor(
     val isEditable = combine(
         isJoiningOrg,
         isInviteAccepted,
-        ::Pair,
-    )
-        .map { (b0, b1) -> !(b0 || b1) }
+    ) { b0, b1 -> !(b0 || b1) }
         .stateIn(
             scope = viewModelScope,
             initialValue = false,
