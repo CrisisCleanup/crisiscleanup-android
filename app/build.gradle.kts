@@ -14,7 +14,7 @@ plugins {
 
 android {
     defaultConfig {
-        val buildVersion = 288
+        val buildVersion = 292
         applicationId = "com.crisiscleanup"
         versionCode = buildVersion
         versionName = "0.9.${buildVersion - 168}"
@@ -44,6 +44,7 @@ android {
                 "proguard-rules.pro",
                 "proguard-playservices.pro",
                 "proguard-crashlytics.pro",
+                "proguard-places.pro",
             )
 
             buildConfigField("Boolean", "IS_RELEASE_BUILD", "true")

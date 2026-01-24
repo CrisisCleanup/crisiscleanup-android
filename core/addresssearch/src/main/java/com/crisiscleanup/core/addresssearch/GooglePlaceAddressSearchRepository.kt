@@ -18,7 +18,6 @@ import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.AutocompletePrediction
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken
 import com.google.android.libraries.places.api.model.Place
-import com.google.android.libraries.places.api.model.PlaceTypes
 import com.google.android.libraries.places.api.model.RectangularBounds
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
@@ -153,7 +152,6 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
             // .setLocationRestriction(bounds)
             .setOrigin(center)
             .setCountries(countryCodes)
-            .setTypesFilter(listOf(PlaceTypes.ADDRESS))
             .setQuery(query)
             .setSessionToken(getSessionToken())
             .build()
@@ -168,6 +166,9 @@ class GooglePlaceAddressSearchRepository @Inject constructor(
         } catch (e: Exception) {
             if (e !is ApiException && e !is CancellationException) {
                 logger.logException(e)
+            } else {
+                // Enable debuggable to see this
+                logger.logDebug(e.message ?: "")
             }
         }
 

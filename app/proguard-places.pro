@@ -1,0 +1,3 @@
+-keep class com.google.android.libraries.places.** { *; }
+-keep interface com.google.android.libraries.places.** { *; }
+-dontwarn com.google.android.libraries.places.**

@@ -324,6 +324,7 @@ class CreateEditCaseViewModel @Inject constructor(
                     viewModelScope,
                 )
                 val locationEditor = EditableLocationDataEditor(
+                    networkMonitor,
                     editableWorksiteProvider,
                     permissionManager,
                     locationProvider,

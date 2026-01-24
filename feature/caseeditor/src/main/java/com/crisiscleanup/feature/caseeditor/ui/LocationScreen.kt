@@ -201,12 +201,15 @@ internal fun LocationFormView(
     val translator = LocalAppTranslator.current
     val isEditable = LocalCaseEditor.current.isEditable
 
+    val isOffline by editor.isOffline.collectAsStateWithLifecycle(false)
+
     val inputData = editor.locationInputData
 
     val closeKeyboard = rememberCloseKeyboard(inputData)
 
     inputData.run {
         val showAddressForm by remember(
+            isOffline,
             streetAddressError,
             zipCodeError,
             cityError,
@@ -215,7 +218,7 @@ internal fun LocationFormView(
             hasWrongLocation,
             isEditingAddress,
         ) {
-            derivedStateOf { hasAddressError || hasWrongLocation || isEditingAddress }
+            derivedStateOf { isOffline || hasAddressError || hasWrongLocation || isEditingAddress }
         }
         if (showAddressForm) {
             LocationAddressFormView(

@@ -60,6 +60,8 @@ import com.crisiscleanup.core.common.R as commonR
 import com.crisiscleanup.core.mapmarker.R as mapMarkerR
 
 interface CaseLocationDataEditor {
+    val isOffline: Flow<Boolean>
+
     val locationInputData: LocationInputData
 
     val searchResults: StateFlow<LocationSearchResults>
@@ -133,6 +135,7 @@ interface CaseLocationDataEditor {
 }
 
 internal class EditableLocationDataEditor(
+    networkMonitor: NetworkMonitor,
     private val worksiteProvider: EditableWorksiteProvider,
     private val permissionManager: PermissionManager,
     private val locationProvider: LocationProvider,
@@ -149,6 +152,8 @@ internal class EditableLocationDataEditor(
     private val coroutineScope: CoroutineScope,
 ) : CaseLocationDataEditor {
     private val incidentId: Long
+
+    override val isOffline = networkMonitor.isNotOnline
 
     override val locationInputData: LocationInputData
 
@@ -636,6 +641,7 @@ class EditCaseLocationViewModel @Inject constructor(
         preferencesRepository.userPreferences.map { it.isMapSatelliteView }
 
     val editor: CaseLocationDataEditor = EditableLocationDataEditor(
+        networkMonitor,
         worksiteProvider,
         permissionManager,
         locationProvider,
