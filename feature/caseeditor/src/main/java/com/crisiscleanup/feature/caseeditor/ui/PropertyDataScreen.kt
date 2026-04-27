@@ -95,7 +95,7 @@ internal fun PropertyFormView(
         val phoneNumberFormatHint = t("caseForm.phone_number_format")
         WithHelpDialog(
             viewModel,
-            helpTitle = t("~~Phone number format"),
+            helpTitle = t("caseForm.phone_number_format_help"),
             helpText = phoneNumberFormatHint,
         ) { showHelp ->
             HelpAction(

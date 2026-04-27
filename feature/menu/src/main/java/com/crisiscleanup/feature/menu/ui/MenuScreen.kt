@@ -381,7 +381,7 @@ private fun MenuScreen(
             }
 
             toggleItem(
-                "~~Sync photos immediately",
+                "actions.sync_photos_immediately",
                 isSyncPhotosImmediate,
                 viewModel::syncPhotosImmediately,
             )
@@ -738,7 +738,7 @@ private fun AppUpdateView() {
             Modifier.weight(1f),
         ) {
             Text(
-                t("~~A new version of the app is available"),
+                t("info.new_version_app_available"),
                 Modifier.align(Alignment.CenterStart),
             )
             Badge(
