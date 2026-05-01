@@ -8,20 +8,12 @@ android {
 }
 
 dependencies {
-    implementation(projects.core.common)
-    implementation(projects.core.data)
-
-    api(kotlin("test"))
-    api(libs.androidx.compose.ui.test)
-
-    debugApi(libs.androidx.compose.ui.testManifest)
+    api(libs.kotlinx.coroutines.test)
+    api(projects.core.common)
+    api(projects.core.data)
+    api(projects.core.model)
 
     implementation(libs.androidx.test.rules)
     implementation(libs.hilt.android.testing)
-    implementation(libs.kotlinx.coroutines.test)
-    implementation(libs.kotlinx.datetime)
-
-    api(libs.turbine)
-
     implementation(libs.kotlinx.datetime)
 }

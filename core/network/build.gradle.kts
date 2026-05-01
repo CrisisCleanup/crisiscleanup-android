@@ -2,25 +2,17 @@ plugins {
     alias(libs.plugins.nowinandroid.android.library)
     alias(libs.plugins.nowinandroid.android.library.jacoco)
     alias(libs.plugins.nowinandroid.hilt)
-    id("kotlinx-serialization")
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.secrets)
 }
 
 android {
-    buildFeatures {
-        buildConfig = true
-    }
+    buildFeatures { buildConfig = true }
     namespace = "com.crisiscleanup.core.network"
-    testOptions {
-        unitTests {
-            isIncludeAndroidResources = true
-        }
-    }
+    testOptions { unitTests { isIncludeAndroidResources = true } }
 }
 
-secrets {
-    defaultPropertiesFileName = "secrets.defaults.properties"
-}
+secrets { defaultPropertiesFileName = "secrets.defaults.properties" }
 
 dependencies {
     implementation(projects.core.common)

@@ -128,9 +128,9 @@ class CrisisCleanupInterceptorProvider @Inject constructor(
             return Pair(true, response)
         }
         response.body.let { responseBody ->
-            val body = responseBody.string()
+            val body = responseBody?.string() ?: ""
             val errors = json.parseNetworkErrors(body)
-            val bodyCopy = body.toResponseBody(responseBody.contentType())
+            val bodyCopy = body.toResponseBody(responseBody?.contentType())
             val copyResponse = response.newBuilder().body(bodyCopy).build()
             return Pair(errors.hasExpiredToken, copyResponse)
         }

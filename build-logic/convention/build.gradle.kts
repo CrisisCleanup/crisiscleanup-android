@@ -37,7 +37,7 @@ kotlin {
 }
 
 dependencies {
-    compileOnly(libs.android.gradleApiPlugin)
+    compileOnly(libs.android.gradlePlugin)
     compileOnly(libs.android.tools.common)
     compileOnly(libs.compose.gradlePlugin)
     compileOnly(libs.firebase.crashlytics.gradlePlugin)
@@ -45,6 +45,7 @@ dependencies {
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.ksp.gradlePlugin)
     compileOnly(libs.room.gradlePlugin)
+    compileOnly(libs.spotless.gradlePlugin)
     implementation(libs.truth)
     lintChecks(libs.androidx.lint.gradle)
 }
@@ -78,9 +79,13 @@ gradlePlugin {
             id = libs.plugins.nowinandroid.android.library.asProvider().get().pluginId
             implementationClass = "AndroidLibraryConventionPlugin"
         }
-        register("androidFeature") {
-            id = libs.plugins.nowinandroid.android.feature.get().pluginId
-            implementationClass = "AndroidFeatureConventionPlugin"
+        register("androidFeatureImpl") {
+            id = libs.plugins.nowinandroid.android.feature.impl.get().pluginId
+            implementationClass = "AndroidFeatureImplConventionPlugin"
+        }
+        register("androidFeatureApi") {
+            id = libs.plugins.nowinandroid.android.feature.api.get().pluginId
+            implementationClass = "AndroidFeatureApiConventionPlugin"
         }
         register("androidLibraryJacoco") {
             id = libs.plugins.nowinandroid.android.library.jacoco.get().pluginId

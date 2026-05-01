@@ -9,7 +9,7 @@ plugins {
     alias(libs.plugins.nowinandroid.android.application.firebase)
     alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.nowinandroid.hilt)
-    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+    alias(libs.plugins.secrets)
 }
 
 android {

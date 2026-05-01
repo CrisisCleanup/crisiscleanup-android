@@ -2,30 +2,33 @@
 accompanist = "0.37.3"
 androidDesugarJdkLibs = "2.1.5"
 # AGP and tools should be updated together
-androidGradlePlugin = "8.13.0"
-androidTools = "31.13.2"
-androidMapsUtil = "3.20.1"
-androidMapsUtilKtx = "5.2.1"
+androidGradlePlugin = "9.1.1"
+androidTools = "32.2.0"
+androidMapsUtil = "4.3.0"
+androidMapsUtilKtx = "6.0.1"
 androidMaterial = "1.13.0"
-androidxActivity = "1.12.1"
+androidxActivity = "1.13.0"
 androidxAppCompat = "1.7.1"
-androidxBrowser = "1.9.0"
-androidxCamera = "1.5.2"
-androidxComposeBom = "2025.12.00"
+androidxBrowser = "1.10.0"
+androidxCamera = "1.6.0"
+androidxComposeBom = "2026.04.01"
 androidxComposeMaterial3 = "1.4.0"
-androidxComposeRuntimeTracing = "1.10.0"
+androidxComposeRuntimeTracing = "1.11.0"
 androidxConstraintLayout = "1.1.1"
-androidxCore = "1.17.0"
+androidxCore = "1.18.0"
 androidxCoreSplashscreen = "1.2.0"
-androidxDataStore = "1.2.0"
+androidxDataStore = "1.2.1"
 androidxEspresso = "3.7.0"
+androidxHiltLifecycleViewModelCompose = "1.3.0"
 androidxHiltNavigationCompose = "1.3.0"
 androidxLifecycle = "2.10.0"
-androidxLintGradle = "1.0.0-alpha05"
+androidxLifecycleViewModelNavigation3 = "2.10.0"
+androidxLintGradle = "1.0.0-beta01"
 androidxMacroBenchmark = "1.4.1"
 androidxMetrics = "1.0.0"
-androidxNavigation = "2.9.6"
-androidxPaging = "3.3.6"
+androidxNavigation = "2.9.8"
+androidxNavigation3 = "1.1.1"
+androidxPaging = "3.4.2"
 androidxProfileinstaller = "1.4.1"
 androidxStartup = "1.2.0"
 androidxSecurityCrypto = "1.1.0"
@@ -36,46 +39,53 @@ androidxTestRunner = "1.7.0"
 androidxTracing = "1.3.0"
 androidxUiAutomator = "2.3.0"
 androidxWindowManager = "1.5.1"
-androidxWork = "2.11.0"
+androidxWork = "2.11.2"
 apacheCommonsText = "1.15.0"
 coil = "2.7.0"
 dependencyGuard = "0.5.0"
-firebaseBom = "34.7.0"
-firebaseCrashlyticsPlugin = "3.0.6"
+firebaseBom = "34.12.0"
+firebaseCrashlyticsPlugin = "3.0.7"
 firebasePerfPlugin = "2.0.2"
 gmsPlugin = "4.4.4"
-googleMapsCompose = "6.12.2"
-googlePlaces = "5.1.1"
-hilt = "2.57.2"
+googleMapsCompose = "8.3.0"
+googleOss = "17.5.1"
+googleOssPlugin = "0.11.0"
+googlePlaces = "5.2.0"
+hilt = "2.59.2"
 hiltExt = "1.3.0"
 jacoco = "0.8.12"
 junit4 = "4.13.2"
 jwtDecode = "2.0.2"
-kotlin = "2.2.21"
+kotlin = "2.3.20"
 kotlinxCoroutines = "1.10.2"
 kotlinxCoroutinesPlayServices = "1.10.2"
 kotlinxDatetime = "0.7.1"
-kotlinxSerializationJson = "1.9.0"
-ksp = "2.2.20-2.0.4"
-libphonenumber = "9.0.17"
+kotlinJetbrains = "2.3.21"
+kotlinxSerializationJson = "1.11.0"
+ksp = "2.3.6"
+# Needed by Spotless configuration in build-logic
+ktlint = "1.4.0"
+libphonenumber = "9.0.29"
 mlkitBarcodeScanning = "17.3.0"
-mockk = "1.14.7"
+mockk = "1.14.9"
 moduleGraph = "2.9.0"
 okhttp = "5.3.2"
 philJayRrule = "1.0.3"
-playServicesAuth = "21.4.0"
+playServicesAuth = "21.5.1"
 playServicesAuthPhone = "18.3.0"
 playServicesLocation = "21.3.0"
-playServicesMaps = "19.2.0"
-protobuf = "4.33.2"
-protobufPlugin = "0.9.5"
+playServicesMaps = "20.0.0"
+protobuf = "4.34.1"
+protobufPlugin = "0.10.0"
 retrofit = "3.0.0"
 retrofitKotlinxSerializationJson = "1.0.0"
 room = "2.8.4"
 secrets = "2.0.1"
-timeAgo = "4.1.0"
+spotless = "8.4.0"
+timeAgo = "4.2.0"
 truth = "1.4.5"
 turbine = "1.2.1"
+uiTestJunit4 = "1.11.0"
 zxing = "3.5.4"
 
 [bundles]
@@ -117,15 +127,20 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "androidxCoreSplashscreen" }
 androidx-dataStore-core = { group = "androidx.datastore", name = "datastore", version.ref = "androidxDataStore" }
 androidx-dataStore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "androidxDataStore" }
+androidx-hilt-lifecycle-viewModelCompose = { group = "androidx.hilt", name = "hilt-lifecycle-viewmodel-compose", version.ref = "androidxHiltLifecycleViewModelCompose" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "androidxHiltNavigationCompose" }
 androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "androidxLifecycle" }
 androidx-lifecycle-runtimeCompose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
 androidx-lifecycle-runtimeTesting = { group = "androidx.lifecycle", name = "lifecycle-runtime-testing", version.ref = "androidxLifecycle" }
 androidx-lifecycle-viewModelCompose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
+androidx-lifecycle-viewModel-testing = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-testing", version.ref = "androidxLifecycle" }
+androidx-lifecycle-viewModel-navigation3 = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-navigation3", version.ref = "androidxLifecycleViewModelNavigation3" }
 androidx-lint-gradle = { group = "androidx.lint", name = "lint-gradle", version.ref = "androidxLintGradle" }
 androidx-metrics = { group = "androidx.metrics", name = "metrics-performance", version.ref = "androidxMetrics" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidxNavigation" }
 androidx-navigation-testing = { group = "androidx.navigation", name = "navigation-testing", version.ref = "androidxNavigation" }
+androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "androidxNavigation3" }
+androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "androidxNavigation3" }
 androidx-paging-common = { group = "androidx.paging", name = "paging-common", version.ref = "androidxPaging" }
 androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "androidxPaging" }
 androidx-paging-runtime-ktx = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "androidxPaging" }
@@ -155,17 +170,20 @@ google-maps-compose = { group = "com.google.maps.android", name = "maps-compose"
 google-places = { group = "com.google.android.libraries.places", name = "places", version.ref = "googlePlaces" }
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }
-hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
+hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
 hilt-core = { group = "com.google.dagger", name = "hilt-core", version.ref = "hilt" }
 hilt-ext-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltExt" }
 hilt-ext-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltExt" }
-junit4 = { group = "junit", name = "junit", version.ref = "junit4" }
 jwt-decode = { group = "com.auth0.android", name = "jwtdecode", version.ref = "jwtDecode" }
-javax-inject = { module = "javax.inject:javax.inject", version = "1" }
-kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib-jdk8", version.ref = "kotlin" }
+#javax-inject = { module = "javax.inject:javax.inject", version = "1" }
+junit = { module = "junit:junit", version.ref = "junit4" }
+junit4 = { group = "junit", name = "junit", version.ref = "junit4" }
+kotlin-metadata = { module = "org.jetbrains.kotlin:kotlin-metadata-jvm", version.ref = "kotlin" }
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib-jdk8", version.ref = "kotlinJetbrains" }
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-guava = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-guava", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-playservices = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServices" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
@@ -199,7 +217,7 @@ turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine
 zxing = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
 
 # Dependencies of the included build-logic
-android-gradleApiPlugin = { group = "com.android.tools.build", name = "gradle-api", version.ref = "androidGradlePlugin" }
+android-gradlePlugin = { group = "com.android.tools.build", name = "gradle-api", version.ref = "androidGradlePlugin" }
 android-tools-common = { group = "com.android.tools", name = "common", version.ref = "androidTools" }
 compose-gradlePlugin = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
 firebase-crashlytics-gradlePlugin = { group = "com.google.firebase", name = "firebase-crashlytics-gradle", version.ref = "firebaseCrashlyticsPlugin" }
@@ -207,13 +225,15 @@ firebase-performance-gradlePlugin = { group = "com.google.firebase", name = "per
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 room-gradlePlugin = { group = "androidx.room", name = "room-gradle-plugin", version.ref = "room" }
+androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "uiTestJunit4" }
+spotless-gradlePlugin = { group = "com.diffplug.spotless", name = "spotless-plugin-gradle", version.ref = "spotless" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 android-lint = { id = "com.android.lint", version.ref = "androidGradlePlugin" }
 android-test = { id = "com.android.test", version.ref = "androidGradlePlugin" }
-baselineprofile = { id = "androidx.baselineprofile", version.ref = "androidxMacroBenchmark" }
+baselineprofile = { id = "androidx.baselineprofile", version.ref = "androidxMacroBenchmark"}
 compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 dependencyGuard = { id = "com.dropbox.dependency-guard", version.ref = "dependencyGuard" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }
@@ -223,9 +243,10 @@ hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-module-graph = { id = "com.jraska.module.graph.assertion", version.ref = "moduleGraph" }
+google-osslicenses = { id = "com.google.android.gms.oss-licenses-plugin", version.ref = "googleOssPlugin" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobufPlugin" }
 room = { id = "androidx.room", version.ref = "room" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 secrets = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secrets" }
 
 # Plugins defined by this project
@@ -234,7 +255,8 @@ nowinandroid-android-application-compose = { id = "nowinandroid.android.applicat
 nowinandroid-android-application-firebase = { id = "nowinandroid.android.application.firebase" }
 nowinandroid-android-application-flavors = { id = "nowinandroid.android.application.flavors" }
 nowinandroid-android-application-jacoco = { id = "nowinandroid.android.application.jacoco" }
-nowinandroid-android-feature = { id = "nowinandroid.android.feature" }
+nowinandroid-android-feature-impl = { id = "nowinandroid.android.feature.impl" }
+nowinandroid-android-feature-api = { id = "nowinandroid.android.feature.api" }
 nowinandroid-android-library = { id = "nowinandroid.android.library" }
 nowinandroid-android-library-compose = { id = "nowinandroid.android.library.compose" }
 nowinandroid-android-library-jacoco = { id = "nowinandroid.android.library.jacoco" }

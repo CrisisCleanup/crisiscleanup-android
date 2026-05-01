@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.nowinandroid.android.library.compose)
     alias(libs.plugins.nowinandroid.android.library.jacoco)
     alias(libs.plugins.nowinandroid.hilt)
-    id("kotlinx-serialization")
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
