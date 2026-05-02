@@ -28,7 +28,7 @@ fun BoxScope.MapViewToggleButton(
         CrisisCleanupIcons.SatelliteMap
     }
     val actionDescription =
-        LocalAppTranslator.current("~~Toggle map normal/satellite view")
+        LocalAppTranslator.current("worksiteMap.toggle_map_type")
     CrisisCleanupIconButton(
         Modifier
             .padding(padding)

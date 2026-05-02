@@ -383,7 +383,7 @@ class RequestOrgAccessViewModel @Inject constructor(
         } else {
             logger.logException(Exception("User transfer to org failed."))
             transferOrgErrorMessage =
-                translator("~~There was an issue during organization transfer. Try again later or reach out to support for help.")
+                translator("requestAccess.org_transfer_error")
         }
     }
 }
